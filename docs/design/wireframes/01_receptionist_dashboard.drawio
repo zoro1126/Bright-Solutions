@@ -1,0 +1,134 @@
+<mxfile host="app.diagrams.net" version="21.0.0">
+  <diagram name="Receptionist Dashboard" id="rec-dash-01">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1"
+                  tooltips="1" connect="1" arrows="1" fold="1" page="1"
+                  pageScale="1" pageWidth="1169" pageHeight="827"
+                  math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Screen frame -->
+        <mxCell id="screen-bg" value="" style="rounded=0;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="1120" height="780" as="geometry" />
+        </mxCell>
+
+        <!-- Header bar -->
+        <mxCell id="hdr-bar" value="CancerCare OS  |  Receptionist Portal" style="rounded=0;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="1120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Header: user badge -->
+        <mxCell id="hdr-user" value="👤 Priya R.  |  Logout" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="940" y="25" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Sidebar -->
+        <mxCell id="sidebar" value="" style="rounded=0;whiteSpace=wrap;fillColor=#ececec;strokeColor=#999999;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="20" y="70" width="200" height="730" as="geometry" />
+        </mxCell>
+
+        <!-- Sidebar: menu items -->
+        <mxCell id="nav-queue" value="📋  Patient Queue" style="rounded=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="90" width="180" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="nav-register" value="➕  New Registration" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="30" y="136" width="180" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="nav-search" value="🔍  Search Patient" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="30" y="182" width="180" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="nav-appointments" value="📅  Appointments" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="30" y="228" width="180" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- Main content area label -->
+        <mxCell id="main-title" value="Today's Patient Queue" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="80" width="300" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Search bar -->
+        <mxCell id="search-bar" value="🔍  Search patient name or MRN..." style="rounded=0;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#999999;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="115" width="400" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- New Registration button -->
+        <mxCell id="btn-new-reg" value="+ New Registration" style="rounded=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="115" width="150" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Queue table header -->
+        <mxCell id="tbl-hdr" value="MRN  |  Patient Name  |  Age  |  Visit Time  |  Status  |  Actions" style="rounded=0;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="162" width="890" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Queue row 1 -->
+        <mxCell id="row1" value="MRN-00142  |  Ananya Sharma  |  52  |  09:00 AM  |  [Insights Ready]  |  Open  Edit" style="rounded=0;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="196" width="890" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- Queue row 2 -->
+        <mxCell id="row2" value="MRN-00143  |  Rajan Pillai  |  67  |  09:30 AM  |  [Questionnaire Pending]  |  Open  Edit" style="rounded=0;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="232" width="890" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- Queue row 3 -->
+        <mxCell id="row3" value="MRN-00144  |  Meera Nair  |  44  |  10:00 AM  |  [Registered]  |  Open  Edit" style="rounded=0;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="268" width="890" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- Queue row 4 -->
+        <mxCell id="row4" value="MRN-00145  |  Dev Kapoor  |  58  |  10:30 AM  |  [In Consultation]  |  Open  Edit" style="rounded=0;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="304" width="890" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- Queue row 5 -->
+        <mxCell id="row5" value="MRN-00146  |  Sunita Rao  |  61  |  11:00 AM  |  [Done — Billing]  |  View" style="rounded=0;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="340" width="890" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- Section divider -->
+        <mxCell id="div1" value="" style="endArrow=none;dashed=1;strokeColor=#999999;" edge="1" parent="1">
+          <mxGeometry x="240" y="395" width="890" height="1" as="geometry" />
+        </mxCell>
+
+        <!-- Selected patient panel header -->
+        <mxCell id="panel-hdr" value="Selected Patient: Ananya Sharma — MRN-00142" style="rounded=0;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="405" width="890" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Demographics card -->
+        <mxCell id="card-demo" value="Demographics&#xa;─────────&#xa;Name: Ananya Sharma&#xa;DOB: 14 Mar 1974  |  Age: 52&#xa;Gender: Female&#xa;Phone: 98400 12345&#xa;Address: 12 Rose Garden, Chennai" style="rounded=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="450" width="280" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Insurance card -->
+        <mxCell id="card-ins" value="Insurance Details&#xa;─────────&#xa;Provider: Star Health Insurance&#xa;Policy No: SH-2024-44781&#xa;Coverage: 80%&#xa;Deductible: ₹5,000&#xa;Pre-Auth: PRE-00981" style="rounded=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="540" y="450" width="280" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Status card -->
+        <mxCell id="card-status" value="Visit Status&#xa;─────────&#xa;Status: ✅ Insights Ready&#xa;Questionnaire: Submitted 09:12 AM&#xa;ML Insights: Generated 09:12:28 AM&#xa;&#xa;Doctor: Dr. Kiran Patel" style="rounded=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="840" y="450" width="280" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Action buttons -->
+        <mxCell id="btn-open-q" value="📝 Open Questionnaire" style="rounded=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="610" width="180" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="btn-edit-demo" value="✏️ Edit Demographics" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#999999;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="440" y="610" width="180" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="btn-edit-ins" value="✏️ Edit Insurance" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#999999;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="640" y="610" width="180" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Footer status bar -->
+        <mxCell id="footer" value="CancerCare OS v1.0  |  Connected ● Live  |  Tue 30 Sep 2026  09:45 AM" style="rounded=0;whiteSpace=wrap;fillColor=#ececec;strokeColor=#999999;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="20" y="770" width="1120" height="30" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
