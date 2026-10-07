@@ -1,3 +1,5 @@
 .agents
 frontend/node_modules/
 frontend/dist/
+.venv/
+artifacts/
