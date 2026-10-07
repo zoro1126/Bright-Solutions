@@ -121,7 +121,7 @@
           <mxGeometry x="670" y="905" width="260" height="65" as="geometry"/>
         </mxCell>
 
-        <!-- ASSOCIATIONS: RECEPTIONIST (Clean direct lines to facing use cases) -->
+        <!-- ASSOCIATIONS: RECEPTIONIST (Clean dedicated channel routing without cutting across any use case) -->
         <mxCell id="e_r1" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_rec" target="uc01">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
@@ -132,26 +132,36 @@
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
         <mxCell id="e_r4" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_rec" target="uc04">
-          <mxGeometry relative="1" as="geometry"/>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="225" y="290"/>
+              <mxPoint x="225" y="462"/>
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e_r5" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_rec" target="uc05">
-          <mxGeometry relative="1" as="geometry"/>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="245" y="290"/>
+              <mxPoint x="245" y="547"/>
+            </Array>
+          </mxGeometry>
         </mxCell>
 
         <!-- ASSOCIATIONS: PATIENT (Routed along clear corridors without cutting across other use cases) -->
         <mxCell id="e_p1" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_pat" target="uc01">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="205" y="630"/>
-              <mxPoint x="205" y="187"/>
+              <mxPoint x="190" y="630"/>
+              <mxPoint x="190" y="187"/>
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="e_p2" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_pat" target="uc03">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="225" y="650"/>
-              <mxPoint x="225" y="345"/>
+              <mxPoint x="205" y="650"/>
+              <mxPoint x="205" y="345"/>
             </Array>
           </mxGeometry>
         </mxCell>
@@ -164,7 +174,7 @@
           </mxGeometry>
         </mxCell>
 
-        <!-- ASSOCIATIONS: DOCTOR (Routed via clear horizontal bands without overlapping intermediate boxes) -->
+        <!-- ASSOCIATIONS: DOCTOR (Routed via clear channels without overlapping intermediate use cases or rules engine) -->
         <mxCell id="e_d1" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc06">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
@@ -182,15 +192,17 @@
         <mxCell id="e_d3" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc08">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1360" y="270"/>
-              <mxPoint x="1055" y="270"/>
+              <mxPoint x="1350" y="215"/>
+              <mxPoint x="1075" y="215"/>
+              <mxPoint x="1075" y="345"/>
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="e_d4" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc09">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1360" y="462"/>
+              <mxPoint x="1355" y="290"/>
+              <mxPoint x="1355" y="462"/>
               <mxPoint x="1055" y="462"/>
             </Array>
           </mxGeometry>
@@ -198,29 +210,36 @@
         <mxCell id="e_d5" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc10">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1360" y="585"/>
+              <mxPoint x="1370" y="310"/>
+              <mxPoint x="1370" y="585"/>
               <mxPoint x="1055" y="585"/>
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="e_d6" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc11">
-          <mxGeometry relative="1" as="geometry"/>
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1345" y="330"/>
+              <mxPoint x="1345" y="530"/>
+            </Array>
+          </mxGeometry>
         </mxCell>
 
-        <!-- ASSOCIATIONS: DETERMINISTIC ENGINE -->
+        <!-- ASSOCIATIONS: DETERMINISTIC ENGINE (Routed through empty gap y=410..495) -->
         <mxCell id="e_eng1" style="endArrow=none;html=1;rounded=0;strokeColor=#546e7a;strokeWidth=1.5;dashed=1;" edge="1" parent="1" source="act_eng" target="uc08">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1350" y="475"/>
-              <mxPoint x="1350" y="430"/>
-              <mxPoint x="1055" y="430"/>
+              <mxPoint x="1335" y="460"/>
+              <mxPoint x="1335" y="420"/>
+              <mxPoint x="1075" y="420"/>
+              <mxPoint x="1075" y="365"/>
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="e_eng2" style="endArrow=none;html=1;rounded=0;strokeColor=#546e7a;strokeWidth=1.5;dashed=1;" edge="1" parent="1" source="act_eng" target="uc09">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1350" y="475"/>
+              <mxPoint x="1335" y="475"/>
               <mxPoint x="1055" y="475"/>
             </Array>
           </mxGeometry>

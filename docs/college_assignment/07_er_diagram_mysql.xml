@@ -149,12 +149,12 @@
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
 
-        <!-- visits 1 -> 0..1 prescriptions (Routed via clear empty horizontal band between rows at y=645) -->
+        <!-- visits 1 -> 0..1 prescriptions (Routed via clear empty horizontal band between rows at y=665) -->
         <mxCell id="rel_vis_rx" style="endArrow=ERzeroToOne;startArrow=ERone;html=1;rounded=0;strokeColor=#1b3a4b;strokeWidth=1.5;" edge="1" parent="1" source="t_vis" target="t_rx">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="700" y="645"/>
-              <mxPoint x="1200" y="645"/>
+              <mxPoint x="700" y="665"/>
+              <mxPoint x="1200" y="665"/>
             </Array>
           </mxGeometry>
         </mxCell>
@@ -179,14 +179,14 @@
           </mxGeometry>
         </mxCell>
 
-        <!-- users 1 -> N bills (Routed through 60px vertical corridor x=750 to bills) -->
+        <!-- users 1 -> N bills (Routed through 60px vertical corridor x=750 to bills at y=635) -->
         <mxCell id="rel_usr_bil" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#1b3a4b;strokeWidth=1.5;" edge="1" parent="1" source="t_usr" target="t_bil">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1050" y="340"/>
               <mxPoint x="750" y="340"/>
-              <mxPoint x="750" y="660"/>
-              <mxPoint x="680" y="660"/>
+              <mxPoint x="750" y="635"/>
+              <mxPoint x="680" y="635"/>
             </Array>
           </mxGeometry>
         </mxCell>

@@ -206,7 +206,7 @@
         <mxCell id="f3_5" value="Tender Copay (UPI / Card / Cash)" style="endArrow=classic;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;fontSize=9;fontColor=#263238;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="e_pat3" target="p63">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1915" y="755"/>
+              <mxPoint x="1915" y="735"/>
             </Array>
           </mxGeometry>
         </mxCell>
@@ -216,8 +216,8 @@
         <mxCell id="f3_7" value="Issue Official Receipt &amp;amp; Exit Slip" style="endArrow=classic;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;fontSize=9;fontColor=#263238;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="p63" target="e_pat3">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="2020" y="800"/>
-              <mxPoint x="1880" y="690"/>
+              <mxPoint x="2000" y="840"/>
+              <mxPoint x="1880" y="840"/>
             </Array>
           </mxGeometry>
         </mxCell>

@@ -206,14 +206,14 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <!-- Cashier 1 - 0..* Bill (Routed through vertical channel x=1350 and horizontal corridor y=815) -->
+        <!-- Cashier 1 - 0..* Bill (Routed through vertical channel x=1700 and bottom corridor y=1070 with zero intersections) -->
         <mxCell id="e_cas_bill" value="1        0..*" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;fontSize=10;fontColor=#263238;" edge="1" parent="1" source="c_cas" target="c_bill">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1420" y="480"/>
-              <mxPoint x="1350" y="480"/>
-              <mxPoint x="1350" y="815"/>
-              <mxPoint x="640" y="815"/>
+              <mxPoint x="1450" y="480"/>
+              <mxPoint x="1700" y="480"/>
+              <mxPoint x="1700" y="1070"/>
+              <mxPoint x="525" y="1070"/>
             </Array>
           </mxGeometry>
         </mxCell>
