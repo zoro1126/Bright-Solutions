@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mxfile host="app.diagrams.net" modified="2026-10-06T14:00:00.000Z" agent="Mozilla/5.0" version="21.0.0" type="device">
+  <diagram id="d_usecase" name="01 Use Case Diagram">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1150" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Header Banner (Centered on Page: Page Width 1600, Center 800) -->
+        <mxCell id="c_header" value="Clinic Management System (ClinicOS) &amp;mdash; UML Use Case Diagram" style="shape=rect;rounded=1;whiteSpace=wrap;html=1;fillColor=#1e3d59;strokeColor=none;fontColor=#ffffff;fontStyle=1;fontSize=16;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="20" width="1200" height="45" as="geometry"/>
+        </mxCell>
+        
+        <!-- System Scope Note -->
+        <mxCell id="c_note" value="&lt;b&gt;System Scope Summary&lt;/b&gt;&lt;br/&gt;• General Physician OPD Practice&lt;br/&gt;• Speech-to-Text Voice Intake&lt;br/&gt;• Deterministic Clinical Safety Rules&lt;br/&gt;• Diagnostic Upload (ECG / DICOM)&lt;br/&gt;• Cashless Claims &amp;amp; Copay Tenders" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#fff9c4;strokeColor=#fbc02d;size=14;fontSize=10;align=left;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="85" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- System Boundary (Centered: x=250, width=1100, right=1350. Left margin 250, Right margin 250) -->
+        <mxCell id="c_boundary" value="System Boundary: General OPD Clinic Operations &amp;amp; Deterministic Decision Support" style="shape=rect;rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#37474f;dashed=1;dashPattern=8 4;strokeWidth=2;align=center;verticalAlign=top;fontSize=13;fontStyle=1;fontColor=#1e3d59;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="250" y="85" width="1100" height="1020" as="geometry"/>
+        </mxCell>
+
+        <!-- Subsystem 1: Reception Desk (x=275, width=500) -->
+        <mxCell id="c_sub1" value="Subsystem 1: Patient Registration, Triage &amp;amp; Intake" style="shape=rect;rounded=1;whiteSpace=wrap;html=1;fillColor=#fcfcfc;strokeColor=#b0bec5;dashed=1;dashPattern=4 2;strokeWidth=1;align=left;verticalAlign=top;fontSize=11;fontStyle=2;fontColor=#455a64;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="275" y="125" width="500" height="490" as="geometry"/>
+        </mxCell>
+
+        <!-- Subsystem 2: Doctor Consultation (x=825, width=500. Gap = 50px) -->
+        <mxCell id="c_sub2" value="Subsystem 2: Doctor Consultation &amp;amp; Deterministic Clinical Insights" style="shape=rect;rounded=1;whiteSpace=wrap;html=1;fillColor=#fcfcfc;strokeColor=#b0bec5;dashed=1;dashPattern=4 2;strokeWidth=1;align=left;verticalAlign=top;fontSize=11;fontStyle=2;fontColor=#455a64;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="825" y="125" width="500" height="490" as="geometry"/>
+        </mxCell>
+
+        <!-- Subsystem 3: Billing & Settlement (x=275, width=1050. Spans both subsystems symmetrically) -->
+        <mxCell id="c_sub3" value="Subsystem 3: Itemized Billing, Cashless Claims &amp;amp; Settlement" style="shape=rect;rounded=1;whiteSpace=wrap;html=1;fillColor=#fcfcfc;strokeColor=#b0bec5;dashed=1;dashPattern=4 2;strokeWidth=1;align=left;verticalAlign=top;fontSize=11;fontStyle=2;fontColor=#455a64;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="275" y="635" width="1050" height="445" as="geometry"/>
+        </mxCell>
+
+        <!-- LEFT ACTORS (Centered in 250px left margin: center = 125) -->
+        <mxCell id="act_rec" value="Receptionist" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="90" y="240" width="70" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="act_pat" value="Patient" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="90" y="600" width="70" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- RIGHT ACTORS (Centered in 250px right margin: center = 1475) -->
+        <mxCell id="act_doc" value="Doctor&lt;br/&gt;(General Physician)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1435" y="230" width="80" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="act_eng" value="Deterministic&lt;br/&gt;Clinical Rules Engine&lt;br/&gt;&lt;i&gt;(System Service)&lt;/i&gt;" style="shape=rect;rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1395" y="445" width="160" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="act_cas" value="Cashier" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="770" width="70" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- USE CASES - SUBSYSTEM 1 (RECEPTION DESK) -->
+        <mxCell id="uc01" value="UC01: Register / Search&lt;br/&gt;Patient Demographics" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="295" y="160" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc02" value="UC02: Record Triage Vitals&lt;br/&gt;(BP, Pulse, Temp, SpO2, BMI)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="295" y="235" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc03" value="UC03: Conduct Voice-Enabled&lt;br/&gt;Intake Questionnaire" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="295" y="315" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc03a" value="&amp;laquo;include&amp;raquo;&lt;br/&gt;Transcribe Voice via STT&lt;br/&gt;(Speech-to-Text)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="545" y="295" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc03b" value="&amp;laquo;include&amp;raquo;&lt;br/&gt;Auto-Extract Chief&lt;br/&gt;Complaint &amp;amp; Duration" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="545" y="360" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc04" value="UC04: Upload External Reports&lt;br/&gt;(DICOM, ECG, Lab PDFs)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="295" y="435" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc05" value="UC05: Manage Patient Queue&lt;br/&gt;&amp;amp; Appointments" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="295" y="520" width="200" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- USE CASES - SUBSYSTEM 2 (DOCTOR CONSULTATION) -->
+        <mxCell id="uc06" value="UC06: Review Longitudinal&lt;br/&gt;History &amp;amp; Past Conclusions" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="845" y="160" width="210" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc07" value="UC07: Inspect External Diagnostic&lt;br/&gt;Reports (DICOM / ECG)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="845" y="235" width="210" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc08" value="UC08: Run Deterministic&lt;br/&gt;Clinical Rules Engine" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="845" y="315" width="210" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc08a" value="&amp;laquo;include&amp;raquo;&lt;br/&gt;Check Vitals Thresholds&lt;br/&gt;(e.g. Stage 1/2 HTN)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1105" y="290" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc08b" value="&amp;laquo;include&amp;raquo;&lt;br/&gt;Screen Drug Allergies&lt;br/&gt;&amp;amp; Contraindications" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1105" y="355" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc09" value="UC09: Generate Formulary&lt;br/&gt;Medicine Suggestions" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="845" y="435" width="210" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc10" value="UC10: Review, Override &amp;amp;&lt;br/&gt;Sign Clinical Insights" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="845" y="520" width="210" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc11" value="UC11: Issue E-Prescription &amp;amp;&lt;br/&gt;Finalize Consultation" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="500" width="200" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- USE CASES - SUBSYSTEM 3 (BILLING & SETTLEMENT) -->
+        <mxCell id="uc12" value="UC12: Generate Itemized Bill&lt;br/&gt;(OPD, Diagnostics, Tests)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="340" y="680" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc13" value="UC13: Verify Cashless /&lt;br/&gt;Insurance Policy" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="690" y="680" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc13a" value="&amp;laquo;extend&amp;raquo;&lt;br/&gt;Apply Copay &amp;amp; Policy&lt;br/&gt;Deductible Discount" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="680" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc14" value="UC14: Process Payment&lt;br/&gt;(Cash, UPI, Card, NetBanking)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="680" y="795" width="240" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc15" value="UC15: Issue Official Clinic Receipt&lt;br/&gt;&amp;amp; Close Visit Encounter" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="670" y="905" width="260" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- ASSOCIATIONS: RECEPTIONIST (Clean direct lines to facing use cases) -->
+        <mxCell id="e_r1" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_rec" target="uc01">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_r2" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_rec" target="uc02">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_r3" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_rec" target="uc03">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_r4" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_rec" target="uc04">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_r5" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_rec" target="uc05">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ASSOCIATIONS: PATIENT (Routed along clear corridors without cutting across other use cases) -->
+        <mxCell id="e_p1" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_pat" target="uc01">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="205" y="630"/>
+              <mxPoint x="205" y="187"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p2" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_pat" target="uc03">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="225" y="650"/>
+              <mxPoint x="225" y="345"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p3" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_pat" target="uc14">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="125" y="827"/>
+              <mxPoint x="680" y="827"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ASSOCIATIONS: DOCTOR (Routed via clear horizontal bands without overlapping intermediate boxes) -->
+        <mxCell id="e_d1" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc06">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1350" y="187"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_d2" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc07">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1350" y="262"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_d3" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc08">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1360" y="270"/>
+              <mxPoint x="1055" y="270"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_d4" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc09">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1360" y="462"/>
+              <mxPoint x="1055" y="462"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_d5" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc10">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1360" y="585"/>
+              <mxPoint x="1055" y="585"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_d6" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_doc" target="uc11">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ASSOCIATIONS: DETERMINISTIC ENGINE -->
+        <mxCell id="e_eng1" style="endArrow=none;html=1;rounded=0;strokeColor=#546e7a;strokeWidth=1.5;dashed=1;" edge="1" parent="1" source="act_eng" target="uc08">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1350" y="475"/>
+              <mxPoint x="1350" y="430"/>
+              <mxPoint x="1055" y="430"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_eng2" style="endArrow=none;html=1;rounded=0;strokeColor=#546e7a;strokeWidth=1.5;dashed=1;" edge="1" parent="1" source="act_eng" target="uc09">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1350" y="475"/>
+              <mxPoint x="1055" y="475"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ASSOCIATIONS: CASHIER (Routed along corridors without cutting across other use cases) -->
+        <mxCell id="e_c1" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_cas" target="uc12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1440" y="655"/>
+              <mxPoint x="450" y="655"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_c2" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_cas" target="uc13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1440" y="665"/>
+              <mxPoint x="800" y="665"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_c3" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_cas" target="uc14">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1440" y="827"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_c4" style="endArrow=none;html=1;rounded=0;strokeColor=#37474f;strokeWidth=1.5;" edge="1" parent="1" source="act_cas" target="uc15">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1440" y="937"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- INCLUDES & EXTENDS -->
+        <mxCell id="inc_1" value="&amp;laquo;include&amp;raquo;" style="endArrow=open;dashed=1;html=1;rounded=0;strokeColor=#0277bd;strokeWidth=1.5;endFill=0;fontSize=10;fontColor=#0277bd;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="uc03" target="uc03a">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="inc_2" value="&amp;laquo;include&amp;raquo;" style="endArrow=open;dashed=1;html=1;rounded=0;strokeColor=#0277bd;strokeWidth=1.5;endFill=0;fontSize=10;fontColor=#0277bd;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="uc03" target="uc03b">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="inc_3" value="&amp;laquo;include&amp;raquo;" style="endArrow=open;dashed=1;html=1;rounded=0;strokeColor=#0277bd;strokeWidth=1.5;endFill=0;fontSize=10;fontColor=#0277bd;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="uc08" target="uc08a">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="inc_4" value="&amp;laquo;include&amp;raquo;" style="endArrow=open;dashed=1;html=1;rounded=0;strokeColor=#0277bd;strokeWidth=1.5;endFill=0;fontSize=10;fontColor=#0277bd;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="uc08" target="uc08b">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ext_1" value="&amp;laquo;extend&amp;raquo;" style="endArrow=open;dashed=1;html=1;rounded=0;strokeColor=#ef6c00;strokeWidth=1.5;endFill=0;fontSize=10;fontColor=#ef6c00;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="uc13a" target="uc13">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="inc_5" value="&amp;laquo;include&amp;raquo;" style="endArrow=open;dashed=1;html=1;rounded=0;strokeColor=#0277bd;strokeWidth=1.5;endFill=0;fontSize=10;fontColor=#0277bd;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="uc10" target="uc11">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
