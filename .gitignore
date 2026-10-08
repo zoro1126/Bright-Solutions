@@ -1,5 +1,64 @@
-.agents
+# ==============================================================================
+# Bright Solutions — Git Ignore Configuration
+# ==============================================================================
+
+# Node / Frontend Dependencies & Builds
+node_modules/
+**/node_modules/
 frontend/node_modules/
-frontend/dist/
+frontend_legacy/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+.vite/
+**/.vite/
+
+# Node Package Manager Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Python & FastAPI
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+venv/
 .venv/
+env/
+ENV/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment Configurations & Secrets
+.env
+.env.*
+!.env.example
+backend/.env
+
+# Antigravity IDE & AI Workspace Artifacts
+.agents/
 artifacts/
+scratch/
+*.log
+
+# Operating System & IDE Artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
