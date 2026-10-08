@@ -5,6 +5,7 @@ from typing import Optional, List, Dict, Any
 from datetime import date, datetime
 import pymysql
 import os
+import math
 from database import get_connection, init_db
 
 app = FastAPI(
@@ -288,12 +289,38 @@ def preview_next_token():
 @app.get("/api/patients", tags=["Patients & Vitals"])
 def list_registered_patients(
     search: Optional[str] = Query(None, description="Search by name, phone, or UHID"),
-    limit: int = Query(50, ge=1, le=200)
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    limit: Optional[int] = Query(None, ge=1, le=200, description="Deprecated limit parameter for backwards compatibility")
 ):
-    """Lists registered patients along with their latest visit encounter and triage vital signs."""
+    """Lists registered patients with pagination, search, latest visit encounter, and triage vital signs."""
     conn = get_connection()
     try:
         with conn.cursor() as cur:
+            effective_page_size = limit if isinstance(limit, int) else (page_size if isinstance(page_size, int) else 20)
+            cur_page = page if isinstance(page, int) else 1
+            offset = (cur_page - 1) * effective_page_size
+
+            # 1. Count query for total matching records
+            count_query = "SELECT COUNT(*) AS total FROM patients p"
+            count_params = []
+            search_term = search.strip() if isinstance(search, str) and search.strip() else None
+            if search_term:
+                count_query += """
+                    WHERE p.first_name LIKE %s 
+                       OR p.last_name LIKE %s 
+                       OR p.phone LIKE %s 
+                       OR p.uhid LIKE %s
+                """
+                term = f"%{search_term}%"
+                count_params.extend([term, term, term, term])
+            
+            cur.execute(count_query, count_params)
+            count_row = cur.fetchone()
+            total_count = count_row["total"] if count_row else 0
+            total_pages = math.ceil(total_count / effective_page_size) if total_count > 0 else 1
+
+            # 2. Main data query with LIMIT and OFFSET
             query = """
                 SELECT 
                     p.id AS patient_id,
@@ -339,23 +366,27 @@ def list_registered_patients(
                 LEFT JOIN vital_signs vt ON vt.visit_id = v.id
             """
             params = []
-            if search:
+            if search_term:
                 query += """
                     WHERE p.first_name LIKE %s 
                        OR p.last_name LIKE %s 
                        OR p.phone LIKE %s 
                        OR p.uhid LIKE %s
                 """
-                term = f"%{search.strip()}%"
+                term = f"%{search_term}%"
                 params.extend([term, term, term, term])
             
-            query += " ORDER BY v.visit_date DESC, p.created_at DESC LIMIT %s;"
-            params.append(limit)
+            query += " ORDER BY v.visit_date DESC, p.created_at DESC LIMIT %s OFFSET %s;"
+            params.extend([effective_page_size, offset])
 
             cur.execute(query, params)
             patients = cur.fetchall()
 
             return {
+                "total_count": total_count,
+                "page": page,
+                "page_size": effective_page_size,
+                "total_pages": total_pages,
                 "count": len(patients),
                 "patients": patients
             }

@@ -114,6 +114,41 @@ def init_db():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             """)
 
+            # 5. Intake Questionnaires Table (Generic MCQ Options Matrix q1..q20 -> 0, 1, 2, 3...)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS intake_questionnaires (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                visit_id INT NOT NULL UNIQUE,
+                patient_id INT NOT NULL,
+                q1 INT NULL,
+                q2 INT NULL,
+                q3 INT NULL,
+                q4 INT NULL,
+                q5 INT NULL,
+                q6 INT NULL,
+                q7 INT NULL,
+                q8 INT NULL,
+                q9 INT NULL,
+                q10 INT NULL,
+                q11 INT NULL,
+                q12 INT NULL,
+                q13 INT NULL,
+                q14 INT NULL,
+                q15 INT NULL,
+                q16 INT NULL,
+                q17 INT NULL,
+                q18 INT NULL,
+                q19 INT NULL,
+                q20 INT NULL,
+                voice_notes TEXT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                CONSTRAINT fk_iq_visit FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE CASCADE ON UPDATE CASCADE,
+                CONSTRAINT fk_iq_patient FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE ON UPDATE CASCADE,
+                INDEX idx_iq_patient (patient_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            """)
+
             # Seed default users if table is empty
             cur.execute("SELECT COUNT(*) AS cnt FROM users;")
             row = cur.fetchone()
