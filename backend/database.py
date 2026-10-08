@@ -149,6 +149,27 @@ def init_db():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             """)
 
+            # 6. External Diagnostic Reports Table (DICOM, ECG, Lab PDF, etc.)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS external_reports (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                visit_id INT NOT NULL,
+                patient_id INT NOT NULL,
+                report_type ENUM('DICOM', 'ECG', 'LAB_PDF', 'XRAY', 'OTHER') NOT NULL,
+                modality VARCHAR(100) NULL,
+                file_path VARCHAR(500) NOT NULL,
+                file_size_mb DECIMAL(6, 2) NULL,
+                findings_summary TEXT NULL,
+                upload_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_er_visit FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE CASCADE ON UPDATE CASCADE,
+                CONSTRAINT fk_er_patient FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+                INDEX idx_er_visit (visit_id),
+                INDEX idx_er_patient (patient_id),
+                INDEX idx_er_type (report_type)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            """)
+
             # Seed default users if table is empty
             cur.execute("SELECT COUNT(*) AS cnt FROM users;")
             row = cur.fetchone()

@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Query, status
+from fastapi import FastAPI, HTTPException, Query, status, UploadFile, File, Form
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional, List, Dict, Any
@@ -6,6 +7,7 @@ from datetime import date, datetime
 import pymysql
 import os
 import math
+import shutil
 from database import get_connection, init_db
 
 app = FastAPI(
@@ -22,6 +24,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Create and mount uploads directory for external diagnostic media
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 @app.on_event("startup")
 def on_startup():
@@ -650,4 +657,130 @@ def get_visit_questionnaire(visit_id: int):
             }
     finally:
         conn.close()
+
+# ============================================================================
+# API ROUTES (FEATURE 3: EXTERNAL DIAGNOSTIC REPORTS ARCHIVAL)
+# ============================================================================
+
+@app.post("/api/visits/{visit_id}/reports/upload", tags=["External Reports"], status_code=status.HTTP_201_CREATED)
+def upload_external_report(
+    visit_id: int,
+    file: UploadFile = File(..., description="Binary report file (DICOM, PDF, ECG image, etc.)"),
+    report_type: str = Form(..., description="DICOM, ECG, LAB_PDF, XRAY, or OTHER"),
+    modality: Optional[str] = Form(None, description="Modality or descriptive scan title (e.g. Brain MRI T2)"),
+    findings_summary: Optional[str] = Form(None, description="Optional clinical impressions or extracted notes")
+):
+    """
+    FEAT-03: Archives patient-provided external diagnostic reports (DICOM, 12-lead ECG traces, lab PDFs)
+    and stores them on disk organized by visit encounter.
+    """
+    valid_types = {"DICOM", "ECG", "LAB_PDF", "XRAY", "OTHER"}
+    normalized_type = report_type.strip().upper()
+    if normalized_type not in valid_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid report_type '{report_type}'. Allowed types: {', '.join(sorted(valid_types))}"
+        )
+
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # 1. Verify visit encounter exists
+            cur.execute("SELECT id, patient_id FROM visits WHERE id = %s;", (visit_id,))
+            visit = cur.fetchone()
+            if not visit:
+                raise HTTPException(status_code=404, detail=f"Visit encounter with ID {visit_id} not found.")
+            patient_id = visit["patient_id"]
+
+            # 2. Prepare directory: uploads/{visit_id}/
+            visit_dir = os.path.join(UPLOAD_DIR, str(visit_id))
+            os.makedirs(visit_dir, exist_ok=True)
+
+            # 3. Sanitize filename & save file
+            orig_name = os.path.basename(file.filename or "report.bin")
+            timestamp = int(datetime.now().timestamp())
+            clean_filename = f"{timestamp}_{orig_name.replace(' ', '_')}"
+            dest_path = os.path.join(visit_dir, clean_filename)
+
+            with open(dest_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+
+            file_size_bytes = os.path.getsize(dest_path)
+            file_size_mb = round(file_size_bytes / (1024.0 * 1024.0), 2)
+            web_path = f"/uploads/{visit_id}/{clean_filename}"
+
+            # 4. Insert into external_reports
+            cur.execute("""
+                INSERT INTO external_reports 
+                (visit_id, patient_id, report_type, modality, file_path, file_size_mb, findings_summary)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);
+            """, (
+                visit_id,
+                patient_id,
+                normalized_type,
+                modality.strip() if modality else None,
+                web_path,
+                file_size_mb,
+                findings_summary.strip() if findings_summary else None
+            ))
+            report_id = cur.lastrowid
+
+            return {
+                "message": "External report uploaded successfully",
+                "report_id": report_id,
+                "visit_id": visit_id,
+                "patient_id": patient_id,
+                "file_name": orig_name,
+                "report_type": normalized_type,
+                "modality": modality,
+                "file_size_bytes": file_size_bytes,
+                "file_size_mb": file_size_mb,
+                "file_path": web_path,
+                "uploaded_at": datetime.now().isoformat()
+            }
+    except pymysql.MySQLError as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(err)}")
+    finally:
+        conn.close()
+
+@app.get("/api/visits/{visit_id}/reports", tags=["External Reports"])
+def list_visit_reports(visit_id: int):
+    """
+    FEAT-03: Lists all external diagnostic reports archived for a visit encounter.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # 1. Verify visit encounter exists
+            cur.execute("SELECT id, patient_id FROM visits WHERE id = %s;", (visit_id,))
+            visit = cur.fetchone()
+            if not visit:
+                raise HTTPException(status_code=404, detail=f"Visit encounter with ID {visit_id} not found.")
+
+            # 2. Query external reports
+            cur.execute("""
+                SELECT 
+                    id, visit_id, patient_id, report_type, modality, 
+                    file_path, file_size_mb, findings_summary, upload_date, created_at
+                FROM external_reports
+                WHERE visit_id = %s
+                ORDER BY upload_date DESC;
+            """, (visit_id,))
+            reports = cur.fetchall()
+
+            for r in reports:
+                if r.get("upload_date") and hasattr(r["upload_date"], "isoformat"):
+                    r["upload_date"] = r["upload_date"].isoformat()
+                if r.get("created_at") and hasattr(r["created_at"], "isoformat"):
+                    r["created_at"] = r["created_at"].isoformat()
+
+            return {
+                "visit_id": visit_id,
+                "patient_id": visit["patient_id"],
+                "count": len(reports),
+                "reports": reports
+            }
+    finally:
+        conn.close()
+
 
