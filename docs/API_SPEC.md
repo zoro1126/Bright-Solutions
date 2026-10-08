@@ -40,7 +40,7 @@ Every API route is guarded by role-based authorization:
 
 | Role Name | Scope Description | Permitted Route Prefixes |
 | :--- | :--- | :--- |
-| `RECEPTIONIST` | Patient demographics, vitals triage, questionnaire STT, token allocation | `/api/reception/*`, `/api/patients/*`, `/api/tokens/*`, `/api/visits/*` |
+| `RECEPTIONIST` | Patient demographics, vitals triage, MCQ intake questionnaire, token allocation | `/api/reception/*`, `/api/patients/*`, `/api/tokens/*`, `/api/visits/*` |
 | `DOCTOR` | Clinical consultation, history review, DICOM/ECG viewer, CDSS rules, e-Rx | `/api/doctor/*`, `/api/encounters/*`, `/api/insights/*`, `/api/prescriptions/*` |
 | `CASHIER` | Itemized invoice calculation, insurance copay verification, payment tender | `/api/cashier/*`, `/api/bills/*`, `/api/payments/*` |
 | `ADMIN` | Hospital executive analytics, staff provisioning, immutable audit trail | `/api/admin/*`, `/api/staff/*`, `/api/audit/*` |
@@ -266,35 +266,92 @@ Common HTTP status codes used across all endpoints:
 
 ---
 
-### 4.4 Save Voice-Enabled Intake Questionnaire (FEAT-02)
+### 4.4 Save Clinical Intake Questionnaire Responses (FEAT-02)
 - **Method & Route**: `POST /api/visits/{visit_id}/questionnaire`
 - **Access Level**: `RECEPTIONIST`
-- **Description**: Stores speech-to-text transcript and structured symptom checklist collected at reception.
+- **Description**: Records standardized clinical screening questionnaire responses. Since the questionnaire is not yet designed, the database stores responses as columns `q1, q2, q3...` where each value is an integer (`0, 1, 2, 3...`) corresponding to the chosen MCQ option (e.g. `0` for Option A / None, `1` for Option B / Mild, `2` for Option C / Moderate, `3` for Option D / Severe). Optional voice speech-to-text dictation notes can be passed alongside.
 
 #### Request Body
 ```json
 {
-  "transcript": "Patient states headache started four days ago, worse in the mornings. Denies chest pain or shortness of breath. History of mild hypertension on amlodipine. No drug allergies known.",
-  "symptoms_checklist": ["Headache", "Morning dizziness"],
-  "drug_allergies": ["None reported"],
-  "chronic_conditions": ["Hypertension (treated)"],
-  "current_medications": ["Amlodipine 5mg OD"]
+  "patient_id": 2,
+  "answers": {
+    "q1": 0,
+    "q2": 1,
+    "q3": 0,
+    "q4": 2,
+    "q5": 1,
+    "q6": 0,
+    "q7": 3,
+    "q8": 0,
+    "q9": 1,
+    "q10": 0,
+    "q11": 0,
+    "q12": 2
+  },
+  "voice_notes": "Patient dictated mild symptom onset 4 days ago; no prior drug allergies reported."
 }
 ```
 
 #### Response Body (`200 OK`)
 ```json
 {
-  "message": "Intake questionnaire saved successfully",
+  "message": "Intake questionnaire MCQ responses recorded successfully",
   "visit_id": 2,
   "questionnaire_id": 1,
+  "recorded_answers": {
+    "q1": 0,
+    "q2": 1,
+    "q3": 0,
+    "q4": 2,
+    "q5": 1,
+    "q6": 0,
+    "q7": 3,
+    "q8": 0,
+    "q9": 1,
+    "q10": 0,
+    "q11": 0,
+    "q12": 2
+  },
   "updated_at": "2026-10-08T10:34:10Z"
 }
 ```
 
 ---
 
-### 4.5 Upload External Diagnostic Reports (DICOM, ECG, PDF) (FEAT-03)
+### 4.5 Fetch Patient Intake Questionnaire Responses
+- **Method & Route**: `GET /api/visits/{visit_id}/questionnaire`
+- **Access Level**: `RECEPTIONIST`, `DOCTOR`
+- **Description**: Returns the saved MCQ questionnaire answers (`q1, q2, q3...` as numbers `0, 1, 2, 3...`) and voice notes for clinical review during physician consultation.
+
+#### Response Body (`200 OK`)
+```json
+{
+  "visit_id": 2,
+  "patient_id": 2,
+  "questionnaire_id": 1,
+  "answers": {
+    "q1": 0,
+    "q2": 1,
+    "q3": 0,
+    "q4": 2,
+    "q5": 1,
+    "q6": 0,
+    "q7": 3,
+    "q8": 0,
+    "q9": 1,
+    "q10": 0,
+    "q11": 0,
+    "q12": 2
+  },
+  "voice_notes": "Patient dictated mild symptom onset 4 days ago; no prior drug allergies reported.",
+  "recorded_at": "2026-10-08T10:34:10Z"
+}
+```
+
+---
+
+### 4.6 Upload External Diagnostic Reports (DICOM, ECG, PDF) (FEAT-03)
 - **Method & Route**: `POST /api/visits/{visit_id}/reports/upload`
 - **Access Level**: `RECEPTIONIST`
 - **Content-Type**: `multipart/form-data`
@@ -321,7 +378,7 @@ Common HTTP status codes used across all endpoints:
 
 ---
 
-### 4.6 Receptionist Live Operations Queue
+### 4.7 Receptionist Live Operations Queue
 - **Method & Route**: `GET /api/reception/queue`
 - **Access Level**: `RECEPTIONIST`
 - **Description**: Retrieves real-time token roster partitioned by status (*Waiting Triage*, *Triaged*, *In Consultation*, *Completed*).
@@ -705,7 +762,8 @@ Common HTTP status codes used across all endpoints:
 | **Queue** | `/api/tokens/next` | `GET` | `200 OK` | Verified Live |
 | **Intake** | `/api/patients` | `GET` | `200 OK` | Verified Live |
 | **Intake** | `/api/patients` | `POST` | `201 Created`| Verified Live |
-| **Intake STT** | `/api/visits/{id}/questionnaire` | `POST` | `200 OK` | Spec Ready |
+| **Intake MCQ** | `/api/visits/{id}/questionnaire` | `POST` | `200 OK` | Spec Ready |
+| **Intake MCQ** | `/api/visits/{id}/questionnaire` | `GET` | `200 OK` | Spec Ready |
 | **Reports** | `/api/visits/{id}/reports/upload` | `POST` | `201 Created`| Spec Ready |
 | **Doctor CDSS**| `/api/doctor/visits/{id}/insights` | `POST` | `200 OK` | Spec Ready |
 | **Doctor Sign**| `/api/doctor/visits/{id}/sign-off`| `POST` | `200 OK` | Spec Ready |

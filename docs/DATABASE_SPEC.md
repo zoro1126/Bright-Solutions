@@ -21,7 +21,7 @@ The ClinicOS database schema is designed to model the complete lifecycle of a Ge
     |         |
     |         +---(1:1)--- [ vital_signs ] (BP, Pulse, Temp, SpO2, BMI)
     |         |
-    |         +---(1:0..1) [ intake_questionnaires ] (Voice transcript, symptoms, allergies)
+    |         +---(1:0..1) [ intake_questionnaires ] (MCQ question columns q1, q2, q3... as 0, 1, 2, 3...)
     |         |
     |         +---(1:N)--- [ external_reports ] (DICOM scans, ECG traces, Lab PDFs)
     |         |
@@ -42,6 +42,7 @@ The ClinicOS database schema is designed to model the complete lifecycle of a Ge
 [ patients ] (Demographics & Master UHID Directory)
     |
     +---< [ visits ]
+    +---< [ intake_questionnaires ]
     +---< [ external_reports ]
 ```
 
@@ -157,23 +158,45 @@ The ClinicOS database schema is designed to model the complete lifecycle of a Ge
 ---
 
 ### Table 5: `intake_questionnaires`
-**Purpose**: Stores voice speech-to-text transcriptions, onset duration, symptom severity, and screened drug allergies.
+**Purpose**: Stores clinical screening questionnaire responses structured as standardized MCQ question response indices (`q1`, `q2`, `q3`... mapped to integer choices `0, 1, 2, 3...`), supporting flexible intake anamnesis while clinical questions are being designed.
+
+> [!NOTE]
+> **Dynamic & Unfinalized Questionnaire Architecture**:
+> Because the specific clinical questionnaire is not yet designed, the database models responses using generic question columns (`q1, q2, q3, q4... q20`). Each column stores a numerical value (`0, 1, 2, 3...`) corresponding to the zero-indexed MCQ option selected (e.g., `0` for Option A / Absent, `1` for Option B / Mild, `2` for Option C / Moderate, `3` for Option D / Severe). This decouples the database schema from clinical wording, allowing any specialty survey to be loaded dynamically without schema migrations.
 
 | Column | Data Type | Nullable | Default | Key | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `id` | `INT AUTO_INCREMENT` | NO | — | **PK** | Unique questionnaire entry ID |
-| `visit_id` | `INT` | NO | — | **FK, UQ** | Foreign key to `visits(id)` (1:1 with visit) |
-| `voice_audio_url` | `VARCHAR(500)` | YES | NULL | — | Storage path / URI to recorded intake audio |
-| `transcript_text` | `TEXT` | YES | NULL | — | Speech-to-Text transcribed verbal patient statements |
-| `primary_symptom` | `VARCHAR(255)` | YES | NULL | — | Structured chief symptom summary |
-| `duration_days` | `INT` | YES | NULL | — | Onset duration in elapsed days |
-| `severity_scale` | `INT` | YES | NULL | — | Patient-reported symptom severity (1 to 10 scale) |
-| `known_allergies` | `TEXT` | YES | NULL | — | Comma-delimited known drug allergies (e.g. `Penicillin, NSAIDs`) |
-| `onset_notes` | `TEXT` | YES | NULL | — | Additional qualitative anamnesis notes |
-| `created_at` | `DATETIME` | NO | `CURRENT_TIMESTAMP` | — | Form completion timestamp |
+| `visit_id` | `INT` | NO | — | **FK, UQ** | Foreign key to `visits(id)` (1:1 per visit encounter) |
+| `patient_id` | `INT` | NO | — | **FK** | Foreign key to `patients(id)` |
+| `q1` | `INT` | YES | NULL | — | MCQ response index for Question 1 (0 = Option 0, 1 = Option 1, 2 = Option 2, etc.) |
+| `q2` | `INT` | YES | NULL | — | MCQ response index for Question 2 (0 = Option 0, 1 = Option 1, etc.) |
+| `q3` | `INT` | YES | NULL | — | MCQ response index for Question 3 (0 = Option 0, 1 = Option 1, etc.) |
+| `q4` | `INT` | YES | NULL | — | MCQ response index for Question 4 (0 = Option 0, 1 = Option 1, etc.) |
+| `q5` | `INT` | YES | NULL | — | MCQ response index for Question 5 (0 = Option 0, 1 = Option 1, etc.) |
+| `q6` | `INT` | YES | NULL | — | MCQ response index for Question 6 (0 = Option 0, 1 = Option 1, etc.) |
+| `q7` | `INT` | YES | NULL | — | MCQ response index for Question 7 (0 = Option 0, 1 = Option 1, etc.) |
+| `q8` | `INT` | YES | NULL | — | MCQ response index for Question 8 (0 = Option 0, 1 = Option 1, etc.) |
+| `q9` | `INT` | YES | NULL | — | MCQ response index for Question 9 (0 = Option 0, 1 = Option 1, etc.) |
+| `q10` | `INT` | YES | NULL | — | MCQ response index for Question 10 (0 = Option 0, 1 = Option 1, etc.) |
+| `q11` | `INT` | YES | NULL | — | MCQ response index for Question 11 (0 = Option 0, 1 = Option 1, etc.) |
+| `q12` | `INT` | YES | NULL | — | MCQ response index for Question 12 (0 = Option 0, 1 = Option 1, etc.) |
+| `q13` | `INT` | YES | NULL | — | MCQ response index for Question 13 (0 = Option 0, 1 = Option 1, etc.) |
+| `q14` | `INT` | YES | NULL | — | MCQ response index for Question 14 (0 = Option 0, 1 = Option 1, etc.) |
+| `q15` | `INT` | YES | NULL | — | MCQ response index for Question 15 (0 = Option 0, 1 = Option 1, etc.) |
+| `q16` | `INT` | YES | NULL | — | MCQ response index for Question 16 (0 = Option 0, 1 = Option 1, etc.) |
+| `q17` | `INT` | YES | NULL | — | MCQ response index for Question 17 (0 = Option 0, 1 = Option 1, etc.) |
+| `q18` | `INT` | YES | NULL | — | MCQ response index for Question 18 (0 = Option 0, 1 = Option 1, etc.) |
+| `q19` | `INT` | YES | NULL | — | MCQ response index for Question 19 (0 = Option 0, 1 = Option 1, etc.) |
+| `q20` | `INT` | YES | NULL | — | MCQ response index for Question 20 (0 = Option 0, 1 = Option 1, etc.) |
+| `voice_notes` | `TEXT` | YES | NULL | — | Optional speech-to-text dictated verbal observations from intake |
+| `created_at` | `DATETIME` | NO | `CURRENT_TIMESTAMP` | — | Questionnaire submission timestamp |
+| `updated_at` | `DATETIME` | NO | `CURRENT_TIMESTAMP` | — | Last modification timestamp |
 
-- **Foreign Keys**: `fk_iq_visit`: `FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE CASCADE ON UPDATE CASCADE`.
-- **Indexes**: `UNIQUE KEY uq_iq_visit (visit_id)`.
+- **Foreign Keys**: 
+  - `fk_iq_visit`: `FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE CASCADE ON UPDATE CASCADE`.
+  - `fk_iq_patient`: `FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE ON UPDATE CASCADE`.
+- **Indexes**: `UNIQUE KEY uq_iq_visit (visit_id)`, `INDEX idx_iq_patient (patient_id)`.
 
 ---
 
@@ -434,19 +457,37 @@ CREATE TABLE vital_signs (
     CONSTRAINT fk_vitals_visit FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 5. INTAKE QUESTIONNAIRES
+-- 5. INTAKE QUESTIONNAIRES (Generic MCQ Response Matrix: q1, q2, q3... -> 0, 1, 2, 3...)
 CREATE TABLE intake_questionnaires (
     id INT AUTO_INCREMENT PRIMARY KEY,
     visit_id INT NOT NULL UNIQUE,
-    voice_audio_url VARCHAR(500) NULL,
-    transcript_text TEXT NULL,
-    primary_symptom VARCHAR(255) NULL,
-    duration_days INT NULL,
-    severity_scale INT NULL,
-    known_allergies TEXT NULL,
-    onset_notes TEXT NULL,
+    patient_id INT NOT NULL,
+    q1 INT NULL,
+    q2 INT NULL,
+    q3 INT NULL,
+    q4 INT NULL,
+    q5 INT NULL,
+    q6 INT NULL,
+    q7 INT NULL,
+    q8 INT NULL,
+    q9 INT NULL,
+    q10 INT NULL,
+    q11 INT NULL,
+    q12 INT NULL,
+    q13 INT NULL,
+    q14 INT NULL,
+    q15 INT NULL,
+    q16 INT NULL,
+    q17 INT NULL,
+    q18 INT NULL,
+    q19 INT NULL,
+    q20 INT NULL,
+    voice_notes TEXT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_iq_visit FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE CASCADE ON UPDATE CASCADE
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_iq_visit FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_iq_patient FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_iq_patient (patient_id)
 ) ENGINE=InnoDB;
 
 -- 6. EXTERNAL REPORTS

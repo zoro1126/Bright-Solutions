@@ -82,41 +82,40 @@ Development proceeds **one feature at a time**. Each feature is self-contained w
 - [ ] BMI dynamically updates as soon as height or weight input changes.
 - [ ] Quick preset button ("Fill Normal Vitals") for rapid receptionist triage during peak hours.
 - [ ] Voice mic button on textarea fields allows hands-free data capture.
-- [ ] On submit: generates unique UHID (`UHID-YYYY-XXXXX`), assigns next queue token (`Q-104`), and launches FEAT-02 (Voice Intake) or returns to queue with toast alert.
+- [ ] On submit: generates unique UHID (`UHID-YYYY-XXXXX`), assigns next queue token (`Q-104`), and launches FEAT-02 (MCQ Intake Questionnaire) or returns to queue with toast alert.
 
 ---
 
-### FEAT-02: Voice-Enabled Intake Questionnaire (Web Speech STT)
+### FEAT-02: Standardized Intake Questionnaire (MCQ Grid & Voice-Assisted)
 - **Primary Actor**: Receptionist (assisting patient)
-- **User Story**: *As a Receptionist, I want to conduct a rapid symptom intake using voice-to-text dictation and structured chips, so that chief complaints and duration are captured without keyboard typing.*
+- **User Story**: *As a Receptionist, I want to record preliminary clinical screening questions using standardized MCQ radio cards and voice-assisted input, storing numerical option indices (0, 1, 2, 3...), so that the doctor receives structured questionnaire responses linked to the encounter.*
+
+> [!NOTE]
+> **Dynamic & Unfinalized Questionnaire Architecture**:
+> Because the specific clinical questions are not yet finalized, the intake questionnaire is modeled as a database table with columns `q1, q2, q3, q4... q20`. Each column stores an integer (`0, 1, 2, 3...`) corresponding to the zero-indexed MCQ option selected (`0` for Option A, `1` for Option B, etc.). This ensures the application can render any clinical screening survey dynamically without altering the database schema.
 
 #### 1. UI / UX Design
-- **Component**: `QuestionnaireModal.jsx`.
-- **Speech-to-Text Integration**:
-  - Web Speech API (`webkitSpeechRecognition` / `SpeechRecognition`) with pulsing microphone indicator (`SpeechMicButton.jsx`).
-  - Real-time live transcript preview in textarea with interim results.
-  - Fallback simulated transcript toggle if browser microphone permission is denied or running headless.
-- **Structured Sections (Guided 4-Step Stepper)**:
-  1. **Chief Complaint & Onset**:
-     - Quick chips: *Acute Fever & Chills*, *Persistent Dry Cough*, *Severe Migraine / Headache*, *Abdominal Cramps*, *Chest Discomfort / Palpitations*, *Joint Pain & Stiffness*.
-     - Duration selector: `< 24 Hours`, `2 - 3 Days`, `1 - 2 Weeks`, `1 - 3 Months`, `Chronic (> 6 Months)`.
-     - Severity rating: 1 to 10 visual scale with color gradient (Green 1-3, Amber 4-6, Red 7-10).
-  2. **Associated Symptoms**: Multi-select pills (Nausea, Shortness of breath, Dizziness, Fatigue, Loss of appetite, Rash).
-  3. **Known Drug Allergies**:
-     - Checkbox: *No Known Drug Allergies (NKDA)*.
-     - Multi-select flags: *Penicillin*, *Sulfa Drugs*, *NSAIDs / Aspirin*, *Cephalosporins*, *Paracetamol*, *Other (free-text)*.
-  4. **Onset Notes & Voice Summary**:
-     - Full transcript box with voice dictation and auto-extracted complaint chips.
+- **Component**: `QuestionnaireModal.jsx` / `QuestionnairePage.jsx`.
+- **MCQ Question Architecture**:
+  - Structured survey cards for questions $Q_1, Q_2, \dots, Q_{20}$.
+  - Each question offers mutually exclusive radio options mapped to zero-indexed numerical codes:
+    - Option 0 = Index 0 (e.g. None / Absent / Normal)
+    - Option 1 = Index 1 (e.g. Mild / < 3 days / Controlled)
+    - Option 2 = Index 2 (e.g. Moderate / 3-7 days / Uncontrolled)
+    - Option 3 = Index 3 (e.g. Severe / > 1 week / Acute)
+- **Voice Assistance Integration**:
+  - Web Speech API microphone toggle to dictate qualitative voice notes or voice-command option selection.
+  - Dictated speech stored in `voice_notes` column.
 
 #### 2. Data Bindings
-- Writes to `intake_questionnaires` table (`primary_symptom`, `duration_days`, `severity_scale`, `known_allergies`, `transcript_text`, `voice_audio_url`).
+- Writes to `intake_questionnaires` table (`q1` through `q20` as `INT`, plus `voice_notes` as `TEXT`).
+- Linked via foreign key `visit_id` to `visits(id)` and `patient_id` to `patients(id)`.
 
 #### 3. Acceptance Criteria
-- [ ] Microphone button activates browser speech recognition and streams text live into the active field.
-- [ ] Selecting *NKDA* unchecks other allergy chips; selecting a specific allergy unchecks *NKDA*.
-- [ ] Questionnaire response is linked to the active `visit_id`.
-- [ ] Progress indicator clearly displays Step 1 of 4 through Step 4 of 4.
-- [ ] Submitting updates patient queue status to `INTAKE_COMPLETED` with an audible confirmation and visual badge.
+- [ ] Each question $Q_1, Q_2, Q_3...$ stores an integer value corresponding to the chosen option index (`0, 1, 2, 3...`).
+- [ ] Microphone button enables dictation into `voice_notes`.
+- [ ] Questionnaire response is strictly linked to active `visit_id` (1:1 relation) and `patient_id`.
+- [ ] Submitting updates questionnaire record in database via `POST /api/visits/{id}/questionnaire`.
 
 ---
 
@@ -269,7 +268,7 @@ No black-box or non-deterministic hallucinations; purely verified clinical guide
    - If Temperature between $99.5^\circ\text{F} - 101.4^\circ\text{F}$: **INFO** — *Low-grade Fever.*
 
 5. **Drug Allergy Contraindication Screening**:
-   - Cross-references patient `intake_questionnaires.known_allergies` against the active prescription items:
+   - Cross-references patient allergy data (from intake screening MCQ responses or patient profile) against the active prescription items:
      - Example: Patient allergic to *Penicillin* + Doctor prescribes *Amoxicillin* $\rightarrow$ **CRITICAL SAFETY BLOCK** — *Severe Penicillin Cross-Allergy Detected!*
      - Example: Patient allergic to *Aspirin / NSAIDs* + Doctor prescribes *Ibuprofen* $\rightarrow$ **CRITICAL SAFETY BLOCK** — *NSAID Cross-Reactivity Risk!*
 

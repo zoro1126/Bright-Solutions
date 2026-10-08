@@ -20,7 +20,7 @@ The application is structured into four role-based portals with shared authentic
        +---> [ RECEPTIONIST PORTAL ]
        |        +-- P-REC-01: Receptionist Operations Dashboard (/receptionist/dashboard)
        |        +-- P-REC-02: Patient Registration & Triage Vitals (/receptionist/intake)
-       |        +-- P-REC-03: Voice-Enabled Intake Questionnaire (/receptionist/voice-intake)
+       |        +-- P-REC-03: Clinical Intake Questionnaire (/receptionist/intake/questionnaire)
        |        +-- P-REC-04: External Diagnostic Reports Ingestion (/receptionist/reports)
        |        +-- P-REC-05: Live OPD Patient Queue & Token Roster (/receptionist/queue)
        |
@@ -199,19 +199,53 @@ To guarantee a **breathable, distraction-free environment** across all roles:
 
 ---
 
-### P-REC-03: Voice-Enabled Intake Questionnaire Page
-- **Route**: `/receptionist/voice-intake`
+### P-REC-03: Clinical Intake Questionnaire Page (MCQ & Voice-Assisted)
+- **Route**: `/receptionist/intake/questionnaire`
 - **Role**: `RECEPTIONIST`
-- **Primary Objective**: Speech-to-text intake of symptoms, history, and allergies to eliminate manual typing fatigue.
+- **Primary Objective**: Structured anamnesis intake via standardized Multiple-Choice Questions ($Q_1, Q_2, Q_3 \dots Q_{20}$), where each selected option is stored as an integer index (`0, 1, 2, 3...`) in dedicated DB columns (`q1, q2, q3...`), with optional voice-to-text dictation.
+
+> [!NOTE]
+> **Dynamic & Unfinalized Questionnaire Architecture**:
+> Because the specific clinical questions are not yet finalized, the UI renders questions dynamically into a standardized card grid where selecting any radio option records its numerical index (`0, 1, 2, 3...`) into corresponding database columns (`q1, q2, q3...`). This avoids hardcoding question fields and allows future clinical updates without modifying database tables.
+
+#### Breathable Layout Wireframe (ASCII)
+```
++--------------------------------------------------------------------------+
+|  Token #Q-102: Ramesh Patel (UHID-2026-00002)   [ Progress: 8/12 ] [ 🎤 ] |
++--------------------------------------------------------------------------+
+|                                                                          |
+|  +----------------------------------+ +--------------------------------+ |
+|  | Q1: Primary Symptom Severity     | | Q2: Onset Duration             | |
+|  | (o) 0 - None / Asymptomatic      | | (o) 0 - Today (< 24 hrs)       | |
+|  | ( ) 1 - Mild discomfort          | | ( ) 1 - 2 to 3 days            | |
+|  | ( ) 2 - Moderate impairment      | | ( ) 2 - 1 to 2 weeks           | |
+|  | ( ) 3 - Severe acute distress    | | ( ) 3 - Chronic (> 1 month)    | |
+|  +----------------------------------+ +--------------------------------+ |
+|                                                                          |
+|  +----------------------------------+ +--------------------------------+ |
+|  | Q3: Associated Fever             | | Q4: Known Drug Allergy Flag    | |
+|  | (o) 0 - No fever                 | | (o) 0 - NKDA (No Known)        | |
+|  | ( ) 1 - Low grade (<100°F)       | | ( ) 1 - Penicillin / Beta-lact | |
+|  | ( ) 2 - Moderate (100°-102°F)    | | ( ) 2 - Sulfa / Sulfonamides   | |
+|  | ( ) 3 - High grade (>102°F)      | | ( ) 3 - NSAIDs / Aspirin       | |
+|  +----------------------------------+ +--------------------------------+ |
+|                                                                          |
+|  [ Voice Notes / Clinical Observations: _________________________ ]      |
+|                                                                          |
+|  [ >>> Save Questionnaire & Proceed to Queue (Canary Yellow) ]          |
+|                                                                          |
++--------------------------------------------------------------------------+
+```
 
 #### Component Breakdown & Purpose
 
 | Component Name | Visual Styling & Placement | Clinical / Role Purpose | Interactions & Data Bindings |
 | :--- | :--- | :--- | :--- |
-| **`VoiceRecorderCard`** | Prominent microphone icon button with pulsing radiant yellow acoustic wave animation. | Allows the receptionist to simply click and let the patient describe their symptoms orally. | Uses browser Web Speech API (`webkitSpeechRecognition`); handles Start/Pause/Stop. |
-| **`LiveTranscriptStream`** | Clean white text container with large typography showing live transcript as words are spoken. | Provides visual verification that speech is being accurately transcribed. | Live text updates in real-time; fully editable by receptionist. |
-| **`SymptomTagExtractor`** | Chips container highlighting auto-detected clinical terms (e.g., `Fever`, `Dry Cough`, `Dizziness`). | Extracts structured clinical keywords from unstructured speech for the doctor's quick review. | Auto-generated from dictionary matching on transcript text. |
-| **`AllergyWarningInput`** | High-contrast red-bordered card for documenting drug allergies (e.g., `Penicillin`, `Sulfa`). | Critical safety checkpoint to prevent doctor from prescribing contraindicated medications. | Direct binding to `intake_questionnaires.drug_allergies`. |
+| **`ActiveTokenHeader`** | Top banner showing Patient Name, UHID, and active token badge (`#Q-102`). | Ensures screening responses are strictly bound to the correct encounter. | Binds to active `visit_id` and `patient_id`. |
+| **`McqQuestionGrid`** | Breathable 2-column card grid rendering Questions ($Q_1$ through $Q_{20}$). Each card displays question title and numbered radio option chips (`0`, `1`, `2`, `3`). | Standardizes preliminary screening data into integer columns (`q1`, `q2`...) so clinical rules can evaluate numerical codes deterministically. | Radio selection updates integer index state (`0 = Option 0`, `1 = Option 1`, etc.). |
+| **`VoiceAssistantWidget`** | Compact microphone button with radiant yellow audio visualizer pulse. | Enables hands-free dictation: staff can voice-select options (e.g. "Question 2, Option 1") or dictate qualitative observations. | Uses Web Speech API; appends qualitative text into `intake_questionnaires.voice_notes`. |
+| **`QuestionnaireProgressBar`** | Clean linear progress indicator at the top showing answered vs remaining questions (e.g., `8/12 Answered`). | Gives receptionist instant visual pacing during fast walk-in intake. | Computed from non-null `q` fields. |
+| **`SaveQuestionnaireCTA`** | Full-width radiant Canary Yellow button with CheckCircle icon. | Submits the completed numerical response payload to backend. | Submits via `POST /api/visits/{id}/questionnaire`. |
 
 ---
 
@@ -310,6 +344,7 @@ To guarantee a **breathable, distraction-free environment** across all roles:
 | **`PatientSummaryHeader`** | Clean white bar showing UHID, Name, Age, Gender, Blood Group, and verified phone number. | Verifies patient identity and biological baseline before starting clinical examination. | Data binding from `GET /api/doctor/patients/{id}/dossier`. |
 | **`AllergiesBanner`** | Prominent warning banner with Red/Yellow chip tags (e.g., `⚠️ PENICILLIN (Severe Urticaria)`). | High-visibility safeguard against accidental prescription of dangerous allergens. | Highlighted in high-contrast red badge. |
 | **`TodayVitalsPillStrip`** | 6-card horizontal strip: BP (`138/88`), Pulse (`76`), Temp (`98.4°F`), SpO2 (`98%`), BMI (`25.5`), Resp (`16`). | Provides immediate review of the patient's current hemodynamic status. | Binds to `vital_signs` table. |
+| **`IntakeQuestionnaireReviewCard`** | Collapsible card displaying recorded MCQ screening responses ($Q_1 \dots Q_{20}$) with numerical choices (`0, 1, 2, 3...`) mapped to answer labels, alongside dictated voice notes. | Gives physician immediate visibility into screening anamnesis captured at front desk. | Binds to `GET /api/visits/{id}/questionnaire`. |
 | **`PastVisitsTimeline`** | Vertical timeline listing past visit dates, attending doctors, diagnoses, and conclusion notes. | Provides longitudinal context so the doctor understands what was tried and discussed in previous visits. | Chronological array from patient history. |
 
 ---
