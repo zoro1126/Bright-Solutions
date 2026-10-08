@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { ROUTES } from '../routes';
 
 const AuthContext = createContext(null);
 
@@ -26,14 +24,22 @@ export function AuthProvider({ children }) {
   });
 
   useEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
     if (darkMode) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
+      body?.classList.add('dark');
       localStorage.setItem('bright_theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
+      body?.classList.remove('dark');
       localStorage.setItem('bright_theme', 'light');
     }
   }, [darkMode]);
+
+  const toggleTheme = () => {
+    setDarkMode((prev) => !prev);
+  };
 
   const loginUser = async (username, password) => {
     const res = await api.login(username, password);
@@ -69,6 +75,7 @@ export function AuthProvider({ children }) {
         logout,
         darkMode,
         setDarkMode,
+        toggleTheme,
       }}
     >
       {children}
