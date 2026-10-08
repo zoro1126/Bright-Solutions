@@ -1,12 +1,21 @@
-// Central Design Tokens for Bright Solutions (Single source of truth)
+// Central Design Tokens for Bright Solutions (Aligned with Medlink Warm Amber Layout Language)
 export const tokens = {
   colors: {
     primary: {
-      yellow: '#FFE500',
-      yellowHover: '#FACC15',
-      yellowPressed: '#EAB308',
-      yellowWash: 'rgba(255, 229, 0, 0.12)',
-      contrastText: '#051A30',
+      amber: '#FFC21A',
+      amberHover: '#F5A300',
+      amberPressed: '#E08A00',
+      amberHighlight: '#FFE500',
+      contrastText: '#0A2540',
+    },
+    surfaces: {
+      canvas: '#FFFDF8',
+      container: '#FAF6EC',
+      card: '#FFFFFF',
+      hairline: '#EAE4D3',
+      strip: '#FFF7E0',
+      stripBorder: '#FFEDB8',
+      badgeTint: '#FFE08A',
     },
     navy: {
       950: '#051A30',
@@ -18,26 +27,29 @@ export const tokens = {
       300: '#94A3B8',
       200: '#CBD5E1',
       100: '#E2E8F0',
-      50: '#F6F7FA',
+      50: '#FAF6EC',
     },
-    gold: {
+    ochre: {
       base: '#B89C14',
       dark: '#8A740C',
-      light: '#FEF9C3',
+      light: '#FFF7E0',
     },
     alert: {
       red: '#DC2626',
-      redRing: 'rgba(220, 38, 38, 0.25)',
-      redSurface: '#FEF2F2',
-      redBorder: '#FECACA',
+      redSurface: '#FEE2E2',
+      redText: '#B91C1C',
     },
-    clinical: {
-      normal: { fill: '#10B981', text: '#065F46', bg: '#ECFDF5', border: '#A7F3D0' },
-      elevated: { fill: '#F59E0B', text: '#92400E', bg: '#FFFBEB', border: '#FDE68A' },
-      stage1: { fill: '#EA580C', text: '#9A3412', bg: '#FFF7ED', border: '#FED7AA' },
-      stage2: { fill: '#DC2626', text: '#991B1B', bg: '#FEF2F2', border: '#FECACA' },
-      crisis: { fill: '#991B1B', text: '#7F1D1D', bg: '#450A0A', border: '#DC2626' },
-      info: { fill: '#0284C7', text: '#075985', bg: '#F0F9FF', border: '#BAE6FD' },
+    semantic: {
+      completed: { bg: '#E6F7ED', text: '#047857', border: '#A7F3D0' },
+      scheduled: { bg: '#FFF7E0', text: '#8A740C', border: '#FFEDB8' },
+      waiting: { bg: '#E0F2FE', text: '#0369A1', border: '#BAE6FD' },
+      crisis: { bg: '#FEE2E2', text: '#B91C1C', border: '#FECACA' },
+    },
+    chart: {
+      series1: '#0A2540', // Navy
+      series2: '#FFC21A', // Amber
+      series3: '#B89C14', // Ochre
+      series4: '#E7E2D6', // Warm light gray
     }
   },
   typography: {
@@ -45,18 +57,16 @@ export const tokens = {
     fontMono: '"JetBrains Mono", monospace',
   },
   radii: {
-    sm: '6px',
-    md: '10px',
-    lg: '14px',
-    xl: '18px',
-    '2xl': '22px',
-    full: '9999px'
+    container: '32px',
+    card: '24px',
+    pill: '9999px',
+    md: '12px',
+    lg: '16px',
+    xl: '20px',
   },
   shadows: {
-    card: '0 1px 3px 0 rgba(10, 37, 64, 0.04), 0 1px 2px -1px rgba(10, 37, 64, 0.04)',
-    elevated: '0 4px 6px -1px rgba(10, 37, 64, 0.06), 0 2px 4px -2px rgba(10, 37, 64, 0.04)',
-    drawer: '0 20px 25px -5px rgba(10, 37, 64, 0.14), 0 8px 10px -6px rgba(10, 37, 64, 0.08)',
-    yellowGlow: '0 0 0 3px rgba(255, 229, 0, 0.45)',
-    criticalGlow: '0 0 0 4px rgba(220, 38, 38, 0.28)',
+    flat: 'none',
+    card: '0 1px 2px 0 rgba(10, 37, 64, 0.02)',
+    amberGlow: '0 0 0 3px rgba(255, 194, 26, 0.4)',
   }
 };

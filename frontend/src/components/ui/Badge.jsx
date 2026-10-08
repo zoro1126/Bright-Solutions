@@ -2,45 +2,53 @@ import React from 'react';
 
 export function Badge({
   children,
-  variant = 'neutral', // 'yellow' | 'neutral' | 'normal' | 'elevated' | 'stage1' | 'stage2' | 'crisis' | 'info' | 'critical'
-  size = 'md',        // 'sm' | 'md'
+  variant = 'neutral', // 'brand' | 'amber' | 'canary' | 'neutral' | 'completed' | 'scheduled' | 'waiting' | 'canceled' | 'crisis' | 'emerald' | 'ochre' | 'red' | 'navy'
+  size = 'sm',        // 'xs' | 'sm' | 'md'
   pulsing = false,
   className = '',
   icon: Icon,
 }) {
   const sizeClasses = {
-    sm: "text-[11px] px-2 py-0.5 rounded-md gap-1",
-    md: "text-xs px-2.5 py-1 rounded-lg gap-1.5",
+    xs: "text-[10px] px-2 py-0.5 rounded-full gap-1 font-semibold",
+    sm: "text-[11px] px-2.5 py-0.5 rounded-full gap-1.5 font-semibold",
+    md: "text-xs px-3 py-1 rounded-full gap-1.5 font-bold",
   };
 
   const variants = {
-    // Brand Canary Yellow Fill with Dark Navy Text
-    yellow: "bg-[#FFE500] text-[#051A30] font-bold border border-[#EAB308]/50",
-    // Neutral Slate
-    neutral: "bg-[#E2E8F0] dark:bg-[#1B456E] text-[#0A2540] dark:text-[#E2E8F0] font-medium border border-[#CBD5E1] dark:border-[#335C85]",
-    // Functional Clinical Semantic Chips (Strictly not brand colors)
-    normal: "bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0] font-semibold",
-    elevated: "bg-[#FFFBEB] text-[#92400E] border border-[#FDE68A] font-semibold",
-    stage1: "bg-[#FFF7ED] text-[#9A3412] border border-[#FED7AA] font-semibold",
-    stage2: "bg-[#FEF2F2] text-[#991B1B] border border-[#FECACA] font-semibold",
-    crisis: "bg-[#450A0A] text-white border border-[#DC2626] font-bold animate-pulse",
-    critical: "bg-[#FEF2F2] text-[#DC2626] border border-[#DC2626] font-bold ring-2 ring-[#DC2626]/20",
-    info: "bg-[#F0F9FF] text-[#075985] border border-[#BAE6FD] font-semibold",
+    // Brand Warm Amber Fill
+    brand: "bg-[#FFC21A] text-[#0A2540] border border-[#FFC21A]",
+    canary: "bg-[#FFC21A] text-[#0A2540] border border-[#FFC21A]",
+    amber: "bg-[#FFF7E0] text-[#8A740C] border border-[#FFEDB8]",
+    
+    // Reference Soft Status Pills
+    completed: "bg-[#E6F7ED] text-[#047857] border border-[#A7F3D0]",
+    emerald: "bg-[#E6F7ED] text-[#047857] border border-[#A7F3D0]",
+    scheduled: "bg-[#FFF7E0] text-[#8A740C] border border-[#FFEDB8]",
+    ochre: "bg-[#FFF7E0] text-[#8A740C] border border-[#FFEDB8]",
+    waiting: "bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]",
+    sky: "bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]",
+    canceled: "bg-[#FEE2E2] text-[#B91C1C] border border-[#FECACA]",
+    red: "bg-[#FEE2E2] text-[#B91C1C] border border-[#FECACA]",
+    crisis: "bg-[#7F1D1D] text-white border border-[#991B1B] font-bold animate-pulse",
+
+    // Neutral
+    neutral: "bg-[#FAF6EC] dark:bg-[#1B456E] text-[#0A2540] dark:text-[#E2E8F0] border border-[#EAE4D3] dark:border-[#335C85]",
+    navy: "bg-[#0A2540] text-white border border-[#0A2540]",
   };
 
   return (
     <span
-      className={`inline-flex items-center tracking-tight select-none font-mono ${
-        sizeClasses[size] || sizeClasses.md
+      className={`inline-flex items-center tracking-tight select-none ${
+        sizeClasses[size] || sizeClasses.sm
       } ${variants[variant] || variants.neutral} ${className}`}
     >
       {pulsing && (
-        <span className="relative flex h-2 w-2 mr-0.5">
+        <span className="relative flex h-1.5 w-1.5 mr-1">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-current" />
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-current" />
         </span>
       )}
-      {Icon && <Icon className="w-3.5 h-3.5" />}
+      {Icon && <Icon className="w-3 h-3" />}
       <span>{children}</span>
     </span>
   );

@@ -5,7 +5,8 @@ import {
   Search,
   Moon,
   Sun,
-  Activity,
+  Bell,
+  Settings,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -14,6 +15,16 @@ import {
   Stethoscope,
   Receipt,
   UserCheck,
+  UserPlus,
+  Plus,
+  ChevronDown,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  FileText,
+  Activity,
+  ArrowUpRight
 } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { NAVIGATION_CONFIG } from './navigationConfig';
@@ -33,10 +44,46 @@ export function AppLayout({ children }) {
   const navItems = NAVIGATION_CONFIG[role] || NAVIGATION_CONFIG.RECEPTIONIST;
 
   const roleLabels = {
-    RECEPTIONIST: { label: 'Receptionist Desk', color: 'bg-[#38BDF8] text-[#051A30]', icon: UserCheck, defaultRoute: ROUTES.RECEPTIONIST.DASHBOARD },
-    DOCTOR: { label: 'Physician Cockpit', color: 'bg-[#FFE500] text-[#051A30]', icon: Stethoscope, defaultRoute: ROUTES.DOCTOR.DASHBOARD },
-    CASHIER: { label: 'Cashier Finance', color: 'bg-[#34D399] text-[#051A30]', icon: Receipt, defaultRoute: ROUTES.CASHIER.DASHBOARD },
-    ADMIN: { label: 'Admin Governance', color: 'bg-[#C084FC] text-[#051A30]', icon: Shield, defaultRoute: ROUTES.ADMIN.DASHBOARD },
+    RECEPTIONIST: {
+      label: 'Reception Desk',
+      sublabel: 'Head Receptionist',
+      defaultRoute: ROUTES.RECEPTIONIST.DASHBOARD,
+      promoAction: 'Register Patient',
+      promoTitle: 'New Walk-In Intake',
+      promoDesc: 'Capture vitals and print queue token slip.',
+      promoRoute: ROUTES.RECEPTIONIST.INTAKE,
+      icon: UserCheck
+    },
+    DOCTOR: {
+      label: 'Physician Cockpit',
+      sublabel: 'Attending Physician',
+      defaultRoute: ROUTES.DOCTOR.DASHBOARD,
+      promoAction: 'Call Next Patient',
+      promoTitle: 'Waiting Lounge Queue',
+      promoDesc: '3 patients waiting in OPD lounge.',
+      promoRoute: '/doctor/consultation/102',
+      icon: Stethoscope
+    },
+    CASHIER: {
+      label: 'Cashier Finance',
+      sublabel: 'Billing Counter 01',
+      defaultRoute: ROUTES.CASHIER.DASHBOARD,
+      promoAction: 'Open Next Bill',
+      promoTitle: 'Unbilled Invoices',
+      promoDesc: 'Reconcile signed consultation orders.',
+      promoRoute: '/cashier/billing/102',
+      icon: Receipt
+    },
+    ADMIN: {
+      label: 'Admin Governance',
+      sublabel: 'Executive Administrator',
+      defaultRoute: ROUTES.ADMIN.DASHBOARD,
+      promoAction: 'Provision Staff',
+      promoTitle: 'Clinic Operations',
+      promoDesc: 'Manage duty rosters and accounts.',
+      promoRoute: ROUTES.ADMIN.STAFF,
+      icon: Shield
+    },
   };
 
   const currentRoleInfo = roleLabels[role] || roleLabels.RECEPTIONIST;
@@ -47,34 +94,81 @@ export function AppLayout({ children }) {
     navigate(targetRoute);
   }
 
-  // Derive breadcrumbs
-  const pathParts = location.pathname.split('/').filter(Boolean);
-  const breadcrumb = pathParts.length > 0
-    ? pathParts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' / ')
-    : 'Clinical Workspace';
+  // Derive human friendly title from path
+  const getPageTitleAndGreeting = () => {
+    const path = location.pathname;
+    if (path.includes('/doctor/dashboard')) {
+      return { title: 'Dashboard', greeting: `Hello ${user?.full_name || 'Dr. Vikram'}, welcome back!` };
+    }
+    if (path.includes('/receptionist/dashboard')) {
+      return { title: 'Reception Dashboard', greeting: `Hello ${user?.full_name || 'Anita'}, walk-ins ready today!` };
+    }
+    if (path.includes('/cashier/dashboard')) {
+      return { title: 'Billing Dashboard', greeting: `Hello ${user?.full_name || 'Rahul'}, shift collections active!` };
+    }
+    if (path.includes('/admin/dashboard')) {
+      return { title: 'Executive Governance', greeting: 'Clinic governance & real-time analytics.' };
+    }
+    if (path.includes('/intake/questionnaire') || path.includes('/voice-intake')) {
+      return { title: 'Clinical Intake Questionnaire', greeting: 'Structured MCQ anamnesis and voice dictation.' };
+    }
+    if (path.includes('/intake')) {
+      return { title: 'Patient Registration & Vitals', greeting: 'Demographic intake and real-time hemodynamic triage.' };
+    }
+    if (path.includes('/reports')) {
+      return { title: 'Diagnostic Scans Ingestion', greeting: 'Archive DICOM imaging, ECG strips, and lab blood panels.' };
+    }
+    if (path.includes('/queue')) {
+      return { title: 'Live Patient Queue & Token Roster', greeting: 'Manage waiting lounge queue and reprint token slips.' };
+    }
+    if (path.includes('/doctor/patient')) {
+      return { title: 'Patient Longitudinal Dossier', greeting: 'Longitudinal record, chronic history, and today vitals.' };
+    }
+    if (path.includes('/doctor/viewer')) {
+      return { title: 'Diagnostic Media Visualizer', greeting: 'High-res DICOM axial imaging, ECG waveform, and lab panel.' };
+    }
+    if (path.includes('/doctor/consultation')) {
+      return { title: 'Consultation & CDSS Studio', greeting: 'Differential diagnosis, deterministic safety engine, and e-Rx.' };
+    }
+    if (path.includes('/cashier/billing')) {
+      return { title: 'Itemized Invoice & Copay', greeting: 'Review ledger tariffs, scan fees, and insurance copay.' };
+    }
+    if (path.includes('/cashier/receipt')) {
+      return { title: 'Payment Tender & Official Receipt', greeting: 'Multi-mode settlement and 80mm printable tax invoice.' };
+    }
+    if (path.includes('/admin/staff')) {
+      return { title: 'Staff Provisioning & Roster', greeting: 'Manage staff credentials, active shifts, and access levels.' };
+    }
+    if (path.includes('/admin/audit-logs')) {
+      return { title: 'Clinical & Billing Audit Trail', greeting: 'Immutable, tamper-evident medical-legal quality ledger.' };
+    }
+    return { title: 'Clinical Dashboard', greeting: 'Bright Solutions Hospital Operating System' };
+  };
+
+  const { title: pageTitle, greeting: pageGreeting } = getPageTitleAndGreeting();
 
   return (
-    <div className="min-h-screen bg-[#F6F7FA] dark:bg-[#051A30] text-[#051A30] dark:text-white flex overflow-hidden font-sans">
-      {/* --- DESKTOP SIDEBAR --- */}
+    <div className="min-h-screen bg-[#FFFDF8] dark:bg-[#051A30] text-[#0A2540] dark:text-white flex overflow-hidden font-sans">
+      {/* --- DESKTOP LIGHT SIDEBAR --- */}
       <aside
-        className={`hidden md:flex flex-col bg-[#0A2540] border-r border-[#1B456E] text-white transition-all duration-300 relative z-30 shrink-0 ${
+        className={`hidden md:flex flex-col bg-white dark:bg-[#0A2540] border-r border-[#EAE4D3] dark:border-[#1B456E] transition-all duration-300 relative z-30 shrink-0 ${
           collapsed ? 'w-20' : 'w-64'
         }`}
       >
-        {/* Brand Header */}
-        <div className="h-16 px-5 flex items-center justify-between border-b border-[#1B456E] shrink-0">
+        {/* Brand Header with Sun Mark */}
+        <div className="h-20 px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 rounded-xl bg-[#FFE500] flex items-center justify-center font-extrabold text-[#051A30] text-sm shrink-0 shadow-sm font-mono">
-              B
+            {/* Sun Mark Icon with warm amber gradient */}
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#E08A00] via-[#FFC21A] to-[#FFE500] flex items-center justify-center text-[#0A2540] shrink-0 shadow-[0_2px_8px_rgba(255,194,26,0.35)]">
+              <Sun className="w-5 h-5 text-[#0A2540] stroke-[2.5]" />
             </div>
             {!collapsed && (
               <div className="truncate">
-                <div className="text-sm font-black tracking-tight flex items-center gap-1.5">
-                  <span>{BRAND_CONFIG.name}</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FFE500]" />
+                <div className="text-base font-extrabold tracking-tight text-[#0A2540] dark:text-white">
+                  Bright Solutions
                 </div>
-                <div className="text-[10px] text-[#94A3B8] font-mono tracking-wider">
-                  {BRAND_CONFIG.systemName}
+                <div className="text-[10px] text-[#8A740C] dark:text-[#FFE08A] font-semibold tracking-wider uppercase">
+                  Clinical OS
                 </div>
               </div>
             )}
@@ -83,30 +177,15 @@ export function AppLayout({ children }) {
           <button
             type="button"
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1B456E] transition-colors focus:outline-none"
+            className="p-1 rounded-xl text-[#94A3B8] hover:text-[#0A2540] dark:hover:text-white hover:bg-[#FAF6EC] dark:hover:bg-[#0F355A] transition-colors focus:outline-none"
             title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
         </div>
 
-        {/* Active Role Indicator Pill */}
-        {!collapsed && (
-          <div className="px-5 py-3 border-b border-[#1B456E]/60 bg-[#071D33]/60 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFE500] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FFE500]" />
-              </span>
-              <span className="text-[11px] font-bold font-mono tracking-wide text-[#E2E8F0]">
-                {currentRoleInfo.label}
-              </span>
-            </div>
-          </div>
-        )}
-
         {/* Navigation Menu Items */}
-        <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
+        <nav className="flex-1 py-4 px-4 space-y-1.5 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
             const Icon = item.icon;
@@ -115,23 +194,20 @@ export function AppLayout({ children }) {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
+                className={`relative flex items-center gap-3.5 px-4 py-3 rounded-2xl text-xs font-semibold transition-all group ${
                   isActive
-                    ? 'text-[#051A30]'
-                    : 'text-[#CBD5E1] hover:text-white hover:bg-[#1B456E]/40'
+                    ? 'bg-[#FFC21A] text-[#0A2540] shadow-xs font-bold'
+                    : 'text-[#64748B] dark:text-[#CBD5E1] hover:text-[#0A2540] dark:hover:text-white hover:bg-[#FAF6EC] dark:hover:bg-[#0F355A]'
                 }`}
                 title={collapsed ? item.label : undefined}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeNav"
-                    className="absolute inset-0 bg-[#FFE500] rounded-xl shadow-sm"
-                    transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                  />
-                )}
-                <Icon className={`w-4 h-4 shrink-0 relative z-10 ${isActive ? 'text-[#051A30]' : 'text-[#94A3B8] group-hover:text-white'}`} />
+                <Icon
+                  className={`w-4 h-4 shrink-0 transition-transform ${
+                    isActive ? 'text-[#0A2540] stroke-[2.5]' : 'text-[#64748B] dark:text-[#94A3B8] group-hover:scale-110'
+                  }`}
+                />
                 {!collapsed && (
-                  <span className="relative z-10 truncate tracking-tight">
+                  <span className="truncate tracking-tight font-sans">
                     {item.label}
                   </span>
                 )}
@@ -140,12 +216,40 @@ export function AppLayout({ children }) {
           })}
         </nav>
 
-        {/* Quick Role Switcher Dock at Sidebar Bottom */}
-        <div className="p-3 border-t border-[#1B456E] bg-[#071D33] shrink-0 space-y-3">
+        {/* Bottom Contextual Quick-Action Card & Role Switcher */}
+        <div className="p-4 border-t border-[#EAE4D3] dark:border-[#1B456E] bg-white dark:bg-[#0A2540] shrink-0 space-y-3">
+          {/* Quick Action Promo-Style Card */}
+          {!collapsed && (
+            <div className="p-4 rounded-3xl bg-[#FAF6EC] dark:bg-[#071D33] border border-[#FFEDB8] dark:border-[#1B456E] text-[#0A2540] dark:text-white space-y-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-xl bg-[#FFC21A] text-[#0A2540] flex items-center justify-center font-bold">
+                  <Activity className="w-3.5 h-3.5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-[#0A2540] dark:text-white leading-none">
+                    {currentRoleInfo.promoTitle}
+                  </h4>
+                  <p className="text-[10px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 line-clamp-1">
+                    {currentRoleInfo.promoDesc}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate(currentRoleInfo.promoRoute)}
+                className="w-full py-2 px-3 rounded-full bg-[#0A2540] hover:bg-[#0F355A] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+              >
+                <span>{currentRoleInfo.promoAction}</span>
+                <ArrowUpRight className="w-3 h-3 text-[#FFC21A]" />
+              </button>
+            </div>
+          )}
+
+          {/* Role Switcher Pills (All 4 roles) */}
           {!collapsed && (
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] font-mono mb-2">
-                Switch Role Portal
+              <div className="text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] font-mono mb-1.5 px-1">
+                Portal Switcher
               </div>
               <div className="grid grid-cols-2 gap-1.5">
                 {[
@@ -160,10 +264,10 @@ export function AppLayout({ children }) {
                       key={r}
                       type="button"
                       onClick={() => handleRoleSwitch(r)}
-                      className={`px-2 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all text-left truncate ${
+                      className={`px-2.5 py-1.5 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-all truncate ${
                         isCurrent
-                          ? 'bg-[#FFE500] text-[#051A30] font-bold shadow-xs'
-                          : 'bg-[#0F355A] text-[#CBD5E1] hover:bg-[#1B456E] hover:text-white'
+                          ? 'bg-[#FFC21A] text-[#0A2540] font-bold shadow-xs'
+                          : 'bg-[#FAF6EC] dark:bg-[#0F355A] text-[#64748B] dark:text-[#CBD5E1] hover:text-[#0A2540]'
                       }`}
                     >
                       <RIcon className="w-3 h-3 shrink-0" />
@@ -175,108 +279,121 @@ export function AppLayout({ children }) {
             </div>
           )}
 
-          {/* User Profile & Logout */}
-          <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <Avatar name={user?.full_name || 'Staff User'} role={role} size="sm" />
-              {!collapsed && (
-                <div className="truncate">
-                  <div className="text-xs font-bold text-white truncate">
-                    {user?.full_name || 'Staff'}
-                  </div>
-                  <div className="text-[10px] text-[#94A3B8] font-mono truncate">
-                    {user?.username}
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* Sign Out Row */}
+          <div className="flex items-center justify-between pt-1 border-t border-[#FAF6EC] dark:border-[#1B456E]">
             <button
               type="button"
               onClick={logout}
-              className="p-1.5 rounded-lg text-[#64748B] hover:text-[#DC2626] hover:bg-[#1B456E] transition-colors"
-              title="Logout session"
+              className="flex items-center gap-2 text-xs font-semibold text-[#64748B] dark:text-[#94A3B8] hover:text-[#DC2626] transition-colors py-1 px-1"
             >
               <LogOut className="w-4 h-4" />
+              {!collapsed && <span>Sign Out</span>}
             </button>
           </div>
         </div>
       </aside>
 
       {/* --- MAIN VIEWPORT WRAPPER --- */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#FFFDF8] dark:bg-[#051A30]">
         {/* TOP BAR / HEADER */}
-        <header className="h-16 bg-white dark:bg-[#0A2540] border-b border-[#E2E8F0] dark:border-[#1B456E] px-4 sm:px-6 flex items-center justify-between z-20 shrink-0 shadow-[0_1px_2px_0_rgba(10,37,64,0.02)]">
-          {/* Left: Mobile hamburger & Breadcrumbs */}
-          <div className="flex items-center gap-3">
+        <header className="h-20 px-6 sm:px-8 flex items-center justify-between z-20 shrink-0">
+          {/* Left: Page Title & Greeting */}
+          <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 rounded-xl text-[#0A2540] dark:text-white hover:bg-[#F6F7FA] dark:hover:bg-[#0F355A]"
+              className="md:hidden p-2 rounded-xl text-[#0A2540] dark:text-white hover:bg-[#FAF6EC] dark:hover:bg-[#0F355A]"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2 text-xs font-mono">
-              <span className="font-bold text-[#0A2540] dark:text-white">
-                {currentRoleInfo.label}
-              </span>
-              <span className="text-[#94A3B8]">/</span>
-              <span className="text-[#64748B] dark:text-[#CBD5E1] truncate max-w-[200px] sm:max-w-md">
-                {breadcrumb}
-              </span>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-[#0A2540] dark:text-white font-sans">
+                {pageTitle}
+              </h1>
+              <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-0.5 font-medium">
+                {pageGreeting}
+              </p>
             </div>
           </div>
 
-          {/* Right: Search, API Status, Dark Mode Toggle */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Command Palette Trigger */}
+          {/* Right: Rounded Pill Search, Circular Buttons, User Avatar */}
+          <div className="flex items-center gap-3">
+            {/* Rounded Pill Search */}
+            <div
+              onClick={() => setCmdOpen(true)}
+              className="hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-full bg-white dark:bg-[#0A2540] border border-[#EAE4D3] dark:border-[#1B456E] text-xs text-[#94A3B8] hover:border-[#FFC21A] cursor-pointer shadow-[0_1px_2px_0_rgba(10,37,64,0.02)] transition-all w-56 lg:w-72"
+            >
+              <Search className="w-3.5 h-3.5 text-[#64748B]" />
+              <span className="flex-1 text-[#64748B] dark:text-[#CBD5E1]">Search anything</span>
+              <kbd className="text-[10px] bg-[#FAF6EC] dark:bg-[#0F355A] text-[#64748B] px-1.5 py-0.5 rounded-md font-mono border border-[#EAE4D3]/60">
+                ⌘K
+              </kbd>
+            </div>
+
+            {/* Circular Bell Button */}
             <button
               type="button"
               onClick={() => setCmdOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#F6F7FA] dark:bg-[#0F355A] hover:bg-[#E2E8F0] dark:hover:bg-[#1B456E] text-xs text-[#64748B] dark:text-[#CBD5E1] border border-[#CBD5E1]/60 dark:border-[#1B456E] transition-colors focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
+              className="w-10 h-10 rounded-full bg-white dark:bg-[#0A2540] border border-[#EAE4D3] dark:border-[#1B456E] flex items-center justify-center text-[#0A2540] dark:text-white hover:bg-[#FAF6EC] dark:hover:bg-[#0F355A] transition-colors relative shadow-xs"
+              title="Notifications"
             >
-              <Search className="w-3.5 h-3.5 text-[#0A2540] dark:text-[#FFE500]" />
-              <span className="hidden sm:inline">Search patients & actions</span>
-              <kbd className="hidden sm:inline px-1.5 py-0.5 rounded text-[10px] bg-white dark:bg-[#0A2540] font-mono text-[#64748B] border border-[#CBD5E1]">
-                Ctrl K
-              </kbd>
+              <Bell className="w-4 h-4" />
+              <span className="w-2 h-2 rounded-full bg-[#FFC21A] absolute top-2.5 right-2.5 ring-2 ring-white dark:ring-[#0A2540]" />
             </button>
 
-            {/* Small "FastAPI Online" pulse dot */}
-            <div
-              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#ECFDF5] dark:bg-[#0F355A] border border-[#A7F3D0] dark:border-[#1B456E] text-[11px] font-mono text-[#065F46] dark:text-[#34D399]"
-              title="FastAPI Backend Online"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]" />
-              </span>
-              <span className="font-semibold">FastAPI Online</span>
-            </div>
-
-            {/* Dark / Light Mode Toggle */}
+            {/* Circular Theme / Settings Button */}
             <button
               type="button"
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 rounded-xl text-[#64748B] hover:text-[#0A2540] dark:hover:text-white hover:bg-[#F6F7FA] dark:hover:bg-[#0F355A] transition-colors"
+              className="w-10 h-10 rounded-full bg-white dark:bg-[#0A2540] border border-[#EAE4D3] dark:border-[#1B456E] flex items-center justify-center text-[#0A2540] dark:text-white hover:bg-[#FAF6EC] dark:hover:bg-[#0F355A] transition-colors shadow-xs"
               title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
-              {darkMode ? <Sun className="w-4 h-4 text-[#FFE500]" /> : <Moon className="w-4 h-4" />}
+              {darkMode ? <Sun className="w-4 h-4 text-[#FFC21A]" /> : <Moon className="w-4 h-4" />}
             </button>
+
+            {/* User Profile Block (Avatar, Name, Role) */}
+            <div className="flex items-center gap-3 pl-2 border-l border-[#EAE4D3] dark:border-[#1B456E]">
+              <div className="w-10 h-10 rounded-full bg-[#0A2540] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#FFEDB8]/80">
+                {user?.full_name?.charAt(0) || 'U'}
+              </div>
+              <div className="hidden lg:block text-left">
+                <div className="text-xs font-bold text-[#0A2540] dark:text-white leading-tight">
+                  {user?.full_name || 'Dr. Vikram Kulkarni'}
+                </div>
+                <div className="text-[11px] text-[#8A740C] dark:text-[#FFE08A] font-medium leading-tight">
+                  {currentRoleInfo.sublabel}
+                </div>
+              </div>
+            </div>
           </div>
         </header>
 
-        {/* MAIN SCROLLABLE CONTENT */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.18 }}
-            className="max-w-7xl mx-auto space-y-6"
-          >
-            {children || <Outlet />}
-          </motion.div>
+        {/* MAIN SCROLLABLE CONTENT IN ONE LARGE ROUNDED CONTAINER (~32px radius, #FAF6EC) */}
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="w-full max-w-[1520px] mx-auto rounded-[32px] bg-[#FAF6EC] dark:bg-[#071D33] border border-[#EAE4D3] dark:border-[#1B456E] p-5 sm:p-7 lg:p-8 min-h-[calc(100vh-130px)] flex flex-col justify-between">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.16 }}
+              className="flex-1 space-y-6"
+            >
+              {children || <Outlet />}
+            </motion.div>
+
+            {/* Standard Reference Footer Line */}
+            <footer className="mt-8 pt-4 border-t border-[#EAE4D3] dark:border-[#1B456E] flex flex-col sm:flex-row sm:items-center justify-between text-xs text-[#94A3B8] gap-3">
+              <div>
+                Copyright © 2026 Bright Solutions Clinical Suite. All rights reserved.
+              </div>
+              <div className="flex items-center gap-4">
+                <a href="#privacy" className="hover:text-[#0A2540] dark:hover:text-white transition-colors">Privacy Policy</a>
+                <a href="#terms" className="hover:text-[#0A2540] dark:hover:text-white transition-colors">Term and conditions</a>
+                <a href="#contact" className="hover:text-[#0A2540] dark:hover:text-white transition-colors">Contact</a>
+              </div>
+            </footer>
+          </div>
         </main>
       </div>
 
