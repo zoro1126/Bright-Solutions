@@ -170,6 +170,28 @@ def init_db():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             """)
 
+            # 7. Deterministic Insights Table (Clinical Decision Support Rule Flags)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS deterministic_insights (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                visit_id INT NOT NULL,
+                rule_code VARCHAR(50) NOT NULL,
+                severity_level ENUM('INFO', 'WARNING', 'CRITICAL') NOT NULL,
+                category ENUM('VITALS', 'DRUG_SAFETY', 'CONTRAINDICATION', 'GUIDELINE') NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                description TEXT NOT NULL,
+                recommendation TEXT NULL,
+                is_reviewed TINYINT(1) NOT NULL DEFAULT 0,
+                is_signed TINYINT(1) NOT NULL DEFAULT 0,
+                doctor_override_notes TEXT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_di_visit FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE CASCADE ON UPDATE CASCADE,
+                INDEX idx_di_visit (visit_id),
+                INDEX idx_di_severity (severity_level),
+                INDEX idx_di_rule (rule_code)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            """)
+
             # Seed default users if table is empty
             cur.execute("SELECT COUNT(*) AS cnt FROM users;")
             row = cur.fetchone()
