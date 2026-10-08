@@ -245,6 +245,59 @@ def init_db():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             """)
 
+            # 11. Bills Table (Financial Invoicing Header)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS bills (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                visit_id INT NOT NULL UNIQUE,
+                cashier_id INT NULL,
+                gross_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                discount_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                insurance_covered DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                net_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                payment_status ENUM('PENDING', 'PARTIAL', 'PAID', 'WAIVED') NOT NULL DEFAULT 'PENDING',
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                CONSTRAINT fk_bill_visit FOREIGN KEY (visit_id) REFERENCES visits(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+                CONSTRAINT fk_bill_cashier FOREIGN KEY (cashier_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
+                INDEX idx_bill_status (payment_status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            """)
+
+            # 12. Bill Items Table (Itemized Tariff Breakdown)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS bill_items (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                bill_id INT NOT NULL,
+                service_code VARCHAR(50) NOT NULL,
+                item_type ENUM('CONSULTATION', 'DIAGNOSTIC', 'MEDICATION', 'PROCEDURE') NOT NULL DEFAULT 'CONSULTATION',
+                description VARCHAR(255) NOT NULL,
+                unit_price DECIMAL(10, 2) NOT NULL,
+                quantity INT NOT NULL DEFAULT 1,
+                total_price DECIMAL(10, 2) NOT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_bi_bill FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE ON UPDATE CASCADE,
+                INDEX idx_bi_bill (bill_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            """)
+
+            # 13. Payments Ledger Table
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS payments (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                bill_id INT NOT NULL,
+                payment_mode ENUM('CASH', 'UPI', 'CARD', 'NETBANKING', 'INSURANCE_DIRECT') NOT NULL,
+                transaction_ref VARCHAR(100) NOT NULL,
+                amount_paid DECIMAL(10, 2) NOT NULL,
+                payment_status ENUM('SUCCESS', 'PENDING', 'FAILED') NOT NULL DEFAULT 'SUCCESS',
+                payment_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_payment_bill FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+                INDEX idx_payment_bill (bill_id),
+                INDEX idx_payment_ref (transaction_ref)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            """)
+
             # Seed default users if table is empty
             cur.execute("SELECT COUNT(*) AS cnt FROM users;")
             row = cur.fetchone()
