@@ -58,6 +58,14 @@ class PatientRegistrationRequest(BaseModel):
     policy_number: Optional[str] = None
     vitals: Optional[VitalSignsInput] = None
 
+class QuestionnaireInput(BaseModel):
+    patient_id: int = Field(..., description="Patient Master ID")
+    answers: Dict[str, Optional[int]] = Field(
+        default_factory=dict,
+        description="Key-value mapping of questions (q1..q20) to chosen integer MCQ option index (0, 1, 2, 3...)"
+    )
+    voice_notes: Optional[str] = Field(None, description="Optional dictated voice notes from triage intake")
+
 class LoginRequest(BaseModel):
     username: str
     password: str
@@ -538,3 +546,108 @@ def register_patient_and_triage(req: PatientRegistrationRequest):
         raise HTTPException(status_code=500, detail=f"Database error: {str(err)}")
     finally:
         conn.close()
+
+# ============================================================================
+# API ROUTES (FEATURE 2: INTAKE MCQ QUESTIONNAIRE & VOICE NOTES)
+# ============================================================================
+
+@app.post("/api/visits/{visit_id}/questionnaire", tags=["Questionnaire"], status_code=status.HTTP_200_OK)
+def save_visit_questionnaire(visit_id: int, req: QuestionnaireInput):
+    """
+    FEAT-02: Records standardized clinical intake MCQ questionnaire responses (q1..q20)
+    and optional voice notes. Upserts if a questionnaire already exists for this visit encounter.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # 1. Verify visit encounter exists
+            cur.execute("SELECT id, patient_id FROM visits WHERE id = %s;", (visit_id,))
+            visit = cur.fetchone()
+            if not visit:
+                raise HTTPException(status_code=404, detail=f"Visit encounter with ID {visit_id} not found.")
+
+            # 2. Extract valid q1..q20 answers
+            valid_keys = [f"q{i}" for i in range(1, 21)]
+            filtered_answers = {
+                k: req.answers[k] for k in valid_keys if k in req.answers and req.answers[k] is not None
+            }
+
+            # 3. Build dynamic UPSERT query
+            cols = ["visit_id", "patient_id", "voice_notes"] + valid_keys
+            vals = [visit_id, req.patient_id, req.voice_notes] + [filtered_answers.get(k) for k in valid_keys]
+            
+            update_clauses = ["patient_id = VALUES(patient_id)", "voice_notes = VALUES(voice_notes)"]
+            for k in valid_keys:
+                update_clauses.append(f"{k} = VALUES({k})")
+
+            placeholders = ", ".join(["%s"] * len(cols))
+            update_str = ", ".join(update_clauses)
+            
+            upsert_query = f"""
+                INSERT INTO intake_questionnaires ({", ".join(cols)})
+                VALUES ({placeholders})
+                ON DUPLICATE KEY UPDATE {update_str};
+            """
+            cur.execute(upsert_query, vals)
+
+            # 4. Fetch the saved record
+            cur.execute("SELECT id, updated_at, created_at FROM intake_questionnaires WHERE visit_id = %s;", (visit_id,))
+            row = cur.fetchone()
+            q_id = row["id"] if row else cur.lastrowid
+            ts = (row["updated_at"] if row and row["updated_at"] else (row["created_at"] if row else datetime.now()))
+
+            return {
+                "message": "Intake questionnaire MCQ responses recorded successfully",
+                "visit_id": visit_id,
+                "questionnaire_id": q_id,
+                "recorded_answers": filtered_answers,
+                "updated_at": ts.isoformat() if hasattr(ts, "isoformat") else str(ts)
+            }
+    except pymysql.MySQLError as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(err)}")
+    finally:
+        conn.close()
+
+@app.get("/api/visits/{visit_id}/questionnaire", tags=["Questionnaire"])
+def get_visit_questionnaire(visit_id: int):
+    """
+    FEAT-02: Returns saved clinical intake MCQ questionnaire responses (q1..q20)
+    and voice notes for physician consultation review.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # 1. Verify visit encounter exists
+            cur.execute("SELECT id, patient_id FROM visits WHERE id = %s;", (visit_id,))
+            visit = cur.fetchone()
+            if not visit:
+                raise HTTPException(status_code=404, detail=f"Visit encounter with ID {visit_id} not found.")
+
+            # 2. Query intake_questionnaires
+            cur.execute("SELECT * FROM intake_questionnaires WHERE visit_id = %s;", (visit_id,))
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(
+                    status_code=404, 
+                    detail=f"No questionnaire responses recorded for visit encounter {visit_id}."
+                )
+
+            # 3. Extract non-null question responses
+            answers = {}
+            for i in range(1, 21):
+                key = f"q{i}"
+                if row.get(key) is not None:
+                    answers[key] = row[key]
+
+            ts = row["updated_at"] or row["created_at"]
+            return {
+                "visit_id": row["visit_id"],
+                "patient_id": row["patient_id"],
+                "questionnaire_id": row["id"],
+                "answers": answers,
+                "voice_notes": row["voice_notes"],
+                "recorded_at": ts.isoformat() if hasattr(ts, "isoformat") else str(ts)
+            }
+    finally:
+        conn.close()
+
