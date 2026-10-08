@@ -84,6 +84,21 @@ class DoctorSignOffRequest(BaseModel):
     doctor_override_notes: Optional[str] = Field(None, description="Clinical justification overriding any active CRITICAL safety alerts")
     override_reasons: Optional[str] = Field(None, description="Alias for doctor_override_notes")
 
+class PrescriptionItemInput(BaseModel):
+    drug_id: int = Field(..., description="Foreign key to drug_formulary(id)")
+    dosage: Optional[str] = Field("1 tab", description="Dosage quantity e.g. 1 tab, 5ml, 2 puffs")
+    frequency: Optional[str] = Field("1-0-1", description="Schedule e.g. OD, BD, TDS, 1-0-1, SOS")
+    duration_days: Optional[int] = Field(5, description="Duration in calendar days")
+    meal_timing: Optional[str] = Field("AFTER_MEALS", description="BEFORE_MEALS, AFTER_MEALS, WITH_MEALS, BEDTIME")
+    special_instructions: Optional[str] = Field(None, description="Patient-specific precautions")
+    instructions: Optional[str] = Field(None, description="Alias for special_instructions")
+
+class PrescriptionCreateRequest(BaseModel):
+    doctor_id: Optional[int] = Field(None, description="Attending physician user ID")
+    general_instructions: Optional[str] = Field(None, description="Dietary and lifestyle advice")
+    status: Optional[str] = Field("FINALIZED", description="DRAFT, FINALIZED")
+    items: List[PrescriptionItemInput] = Field(..., min_items=1, description="List of prescribed medications")
+
 
 class LoginRequest(BaseModel):
     username: str
@@ -1314,6 +1329,203 @@ def sign_off_doctor_encounter(visit_id: int, req: DoctorSignOffRequest):
         raise HTTPException(status_code=500, detail=f"Database error: {str(err)}")
     finally:
         conn.close()
+
+# ============================================================================
+# API ROUTES (FEATURE 8 / PR-BE-07: FORMULARY SEARCH & E-PRESCRIPTIONS)
+# ============================================================================
+
+@app.get("/api/drugs/formulary", tags=["Formulary & E-Prescriptions"])
+def search_drug_formulary(
+    q: Optional[str] = Query(None, description="Search term for drug brand or generic molecule name"),
+    dosage_form: Optional[str] = Query(None, description="Filter by preparation form: TABLET, CAPSULE, SYRUP, etc."),
+    limit: int = Query(50, ge=1, le=200, description="Max search results to return")
+):
+    """
+    FEAT-08: Autocomplete lookup from approved clinic medication formulary.
+    Zero-heavy overhead query with substring index matching.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            query = """
+                SELECT id, brand_name, generic_name, dosage_form, strength, standard_dosage, contraindications, is_active
+                FROM drug_formulary
+                WHERE is_active = 1
+            """
+            params = []
+            if q and q.strip():
+                clean_q = f"%{q.strip()}%"
+                query += " AND (brand_name LIKE %s OR generic_name LIKE %s)"
+                params.extend([clean_q, clean_q])
+            if dosage_form and dosage_form.strip():
+                query += " AND dosage_form = %s"
+                params.append(dosage_form.strip().upper())
+
+            query += " ORDER BY brand_name ASC LIMIT %s;"
+            params.append(limit)
+
+            cur.execute(query, tuple(params))
+            drugs = cur.fetchall()
+
+            return {
+                "query": q,
+                "dosage_form": dosage_form,
+                "count": len(drugs),
+                "drugs": drugs
+            }
+    finally:
+        conn.close()
+
+@app.post("/api/doctor/visits/{visit_id}/prescriptions", tags=["Formulary & E-Prescriptions"], status_code=status.HTTP_201_CREATED)
+def create_visit_prescription(visit_id: int, req: PrescriptionCreateRequest):
+    """
+    FEAT-08: Creates or updates an e-prescription encounter record with line items from drug_formulary.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # 1. Verify visit exists
+            cur.execute("SELECT id, patient_id, doctor_id, status FROM visits WHERE id = %s;", (visit_id,))
+            visit = cur.fetchone()
+            if not visit:
+                raise HTTPException(status_code=404, detail=f"Visit encounter with ID {visit_id} not found.")
+
+            if visit["status"] == "CANCELLED":
+                raise HTTPException(status_code=400, detail="Cannot author prescription for a cancelled visit encounter.")
+
+            attending_doctor_id = req.doctor_id or visit["doctor_id"]
+
+            # 2. Check and upsert prescription record
+            cur.execute("SELECT id, status FROM prescriptions WHERE visit_id = %s;", (visit_id,))
+            existing_rx = cur.fetchone()
+
+            rx_status = (req.status or "FINALIZED").upper()
+            if rx_status not in ("DRAFT", "FINALIZED", "DISPENSED", "CANCELLED"):
+                rx_status = "FINALIZED"
+
+            if existing_rx:
+                rx_id = existing_rx["id"]
+                cur.execute("""
+                    UPDATE prescriptions 
+                    SET doctor_id = %s, general_instructions = %s, status = %s, updated_at = NOW()
+                    WHERE id = %s;
+                """, (attending_doctor_id, req.general_instructions, rx_status, rx_id))
+                # Remove existing line items for clean replacement
+                cur.execute("DELETE FROM prescription_items WHERE prescription_id = %s;", (rx_id,))
+            else:
+                cur.execute("""
+                    INSERT INTO prescriptions (visit_id, doctor_id, general_instructions, status)
+                    VALUES (%s, %s, %s, %s);
+                """, (visit_id, attending_doctor_id, req.general_instructions, rx_status))
+                rx_id = cur.lastrowid
+
+            # 3. Insert prescription line items
+            persisted_items = []
+            for item in req.items:
+                cur.execute("SELECT id, brand_name, generic_name, dosage_form, strength FROM drug_formulary WHERE id = %s;", (item.drug_id,))
+                drug = cur.fetchone()
+                if not drug:
+                    raise HTTPException(status_code=404, detail=f"Drug with ID {item.drug_id} does not exist in formulary master.")
+
+                spec_instr = item.special_instructions or item.instructions
+                cur.execute("""
+                    INSERT INTO prescription_items 
+                    (prescription_id, drug_id, dosage, frequency, duration_days, meal_timing, special_instructions)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s);
+                """, (
+                    rx_id,
+                    item.drug_id,
+                    item.dosage or "1 tab",
+                    item.frequency or "1-0-1",
+                    item.duration_days or 5,
+                    item.meal_timing or "AFTER_MEALS",
+                    spec_instr
+                ))
+                persisted_items.append({
+                    "item_id": cur.lastrowid,
+                    "drug_id": item.drug_id,
+                    "brand_name": drug["brand_name"],
+                    "generic_name": drug["generic_name"],
+                    "dosage_form": drug["dosage_form"],
+                    "strength": drug["strength"],
+                    "dosage": item.dosage or "1 tab",
+                    "frequency": item.frequency or "1-0-1",
+                    "duration_days": item.duration_days or 5,
+                    "meal_timing": item.meal_timing or "AFTER_MEALS",
+                    "special_instructions": spec_instr
+                })
+
+            return {
+                "message": "E-Prescription saved successfully",
+                "prescription_id": rx_id,
+                "visit_id": visit_id,
+                "doctor_id": attending_doctor_id,
+                "status": rx_status,
+                "general_instructions": req.general_instructions,
+                "items_count": len(persisted_items),
+                "items": persisted_items
+            }
+    except HTTPException:
+        raise
+    except pymysql.MySQLError as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(err)}")
+    finally:
+        conn.close()
+
+@app.get("/api/doctor/visits/{visit_id}/prescriptions", tags=["Formulary & E-Prescriptions"])
+def get_visit_prescription(visit_id: int):
+    """
+    FEAT-08: Fetches the e-prescription for a visit encounter with joined formulary medication details.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT p.id, p.visit_id, p.doctor_id, u.full_name AS doctor_name, 
+                       p.issue_date, p.general_instructions, p.status, p.created_at, p.updated_at
+                FROM prescriptions p
+                LEFT JOIN users u ON u.id = p.doctor_id
+                WHERE p.visit_id = %s;
+            """, (visit_id,))
+            rx = cur.fetchone()
+            if not rx:
+                return {
+                    "visit_id": visit_id,
+                    "prescription": None,
+                    "items": []
+                }
+
+            cur.execute("""
+                SELECT pi.id AS item_id, pi.drug_id, df.brand_name, df.generic_name, 
+                       df.dosage_form, df.strength, pi.dosage, pi.frequency, 
+                       pi.duration_days, pi.meal_timing, pi.special_instructions, pi.created_at
+                FROM prescription_items pi
+                JOIN drug_formulary df ON df.id = pi.drug_id
+                WHERE pi.prescription_id = %s
+                ORDER BY pi.id ASC;
+            """, (rx["id"],))
+            items = cur.fetchall()
+
+            if rx.get("issue_date") and hasattr(rx["issue_date"], "isoformat"):
+                rx["issue_date"] = rx["issue_date"].isoformat()
+            if rx.get("created_at") and hasattr(rx["created_at"], "isoformat"):
+                rx["created_at"] = rx["created_at"].isoformat()
+            if rx.get("updated_at") and hasattr(rx["updated_at"], "isoformat"):
+                rx["updated_at"] = rx["updated_at"].isoformat()
+
+            for item in items:
+                if item.get("created_at") and hasattr(item["created_at"], "isoformat"):
+                    item["created_at"] = item["created_at"].isoformat()
+
+            return {
+                "visit_id": visit_id,
+                "prescription": rx,
+                "items_count": len(items),
+                "items": items
+            }
+    finally:
+        conn.close()
+
 
 
 
