@@ -8,6 +8,8 @@ node_modules/
 frontend/node_modules/
 frontend_legacy/node_modules/
 frontend_legacy/package-lock.json
+package.json
+package-lock.json
 dist/
 **/dist/
 build/
