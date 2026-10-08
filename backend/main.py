@@ -77,6 +77,13 @@ class InsightReviewRequest(BaseModel):
     is_reviewed: Optional[bool] = Field(True, description="Mark alert as acknowledged/reviewed")
     doctor_override_notes: Optional[str] = Field(None, description="Clinical justification when overriding a Critical safety alert")
 
+class DoctorSignOffRequest(BaseModel):
+    conclusion_notes: str = Field(..., min_length=3, description="Doctor final diagnosis, clinical findings, and disposition impression")
+    diagnosis: Optional[str] = Field(None, description="Optional formal primary diagnosis")
+    doctor_id: Optional[int] = Field(None, description="Attending physician user ID signing the encounter")
+    doctor_override_notes: Optional[str] = Field(None, description="Clinical justification overriding any active CRITICAL safety alerts")
+    override_reasons: Optional[str] = Field(None, description="Alias for doctor_override_notes")
+
 
 class LoginRequest(BaseModel):
     username: str
@@ -1065,6 +1072,249 @@ def review_doctor_insight(insight_id: int, req: InsightReviewRequest):
             }
     finally:
         conn.close()
+
+# ============================================================================
+# API ROUTES (FEATURE 8 / PR-BE-05: DOCTOR ENCOUNTER SIGN-OFF & TRANSITION)
+# ============================================================================
+
+@app.get("/api/doctor/queue", tags=["Doctor Consultation"])
+def get_doctor_queue(doctor_id: Optional[int] = Query(None, description="Filter queue by attending doctor ID")):
+    """
+    FEAT-04 / 5.1: Returns waiting patients in OPD queue (TRIAGED or IN_CONSULTATION),
+    prioritized by active consultation state and arrival token.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            doctor_name = "All Physicians"
+            if doctor_id:
+                cur.execute("SELECT full_name FROM users WHERE id = %s;", (doctor_id,))
+                doc = cur.fetchone()
+                if doc:
+                    doctor_name = doc["full_name"]
+
+            query = """
+                SELECT 
+                    v.id AS visit_id,
+                    v.queue_token,
+                    v.patient_id,
+                    p.uhid,
+                    CONCAT(p.first_name, ' ', p.last_name) AS full_name,
+                    TIMESTAMPDIFF(YEAR, p.dob, CURDATE()) AS age,
+                    p.gender,
+                    v.chief_complaint,
+                    v.status,
+                    v.visit_date,
+                    v.created_at,
+                    vs.systolic_bp,
+                    vs.diastolic_bp,
+                    vs.bp_stage,
+                    vs.pulse_rate,
+                    vs.spo2_pct,
+                    vs.temperature_f,
+                    vs.bmi
+                FROM visits v
+                JOIN patients p ON p.id = v.patient_id
+                LEFT JOIN vital_signs vs ON vs.visit_id = v.id
+                WHERE v.status IN ('TRIAGED', 'IN_CONSULTATION')
+            """
+            params = []
+            if doctor_id:
+                query += " AND v.doctor_id = %s"
+                params.append(doctor_id)
+
+            query += """
+                ORDER BY 
+                    FIELD(v.status, 'IN_CONSULTATION', 'TRIAGED'),
+                    v.id ASC;
+            """
+            cur.execute(query, tuple(params))
+            rows = cur.fetchall()
+
+            queue_items = []
+            for r in rows:
+                bp_str = f"{r['systolic_bp']}/{r['diastolic_bp']}" if (r.get("systolic_bp") and r.get("diastolic_bp")) else None
+                triage_summary = {
+                    "bp": bp_str,
+                    "bp_stage": r.get("bp_stage"),
+                    "pulse": r.get("pulse_rate"),
+                    "spo2": r.get("spo2_pct"),
+                    "temperature_f": float(r["temperature_f"]) if r.get("temperature_f") is not None else None,
+                    "bmi": float(r["bmi"]) if r.get("bmi") is not None else None
+                }
+                visit_date_val = r["visit_date"].isoformat() if hasattr(r.get("visit_date"), "isoformat") else str(r.get("visit_date"))
+                queue_items.append({
+                    "visit_id": r["visit_id"],
+                    "queue_token": r["queue_token"],
+                    "patient_id": r["patient_id"],
+                    "uhid": r["uhid"],
+                    "full_name": r["full_name"],
+                    "age": r["age"],
+                    "gender": r["gender"],
+                    "chief_complaint": r["chief_complaint"],
+                    "status": r["status"],
+                    "visit_date": visit_date_val,
+                    "triage_summary": triage_summary
+                })
+
+            return {
+                "doctor_id": doctor_id,
+                "doctor_name": doctor_name,
+                "waiting_count": len(queue_items),
+                "queue": queue_items
+            }
+    finally:
+        conn.close()
+
+@app.post("/api/doctor/queue/{visit_id}/call", tags=["Doctor Consultation"])
+def call_patient_to_consultation(visit_id: int):
+    """
+    FEAT-04 / 5.2: Transitions visit status from TRIAGED to IN_CONSULTATION when doctor calls the patient.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, status FROM visits WHERE id = %s;", (visit_id,))
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail=f"Visit encounter with ID {visit_id} not found.")
+
+            if row["status"] in ("READY_FOR_BILLING", "COMPLETED", "CANCELLED"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot call patient into consultation. Encounter is already in '{row['status']}' state."
+                )
+
+            if row["status"] != "IN_CONSULTATION":
+                cur.execute("UPDATE visits SET status = 'IN_CONSULTATION' WHERE id = %s;", (visit_id,))
+
+            return {
+                "message": "Patient called into consultation room",
+                "visit_id": visit_id,
+                "status": "IN_CONSULTATION",
+                "consultation_started_at": datetime.now().isoformat()
+            }
+    finally:
+        conn.close()
+
+@app.post("/api/doctor/visits/{visit_id}/sign-off", tags=["Doctor Consultation"])
+def sign_off_doctor_encounter(visit_id: int, req: DoctorSignOffRequest):
+    """
+    FEAT-08 / PR-BE-05: Submits the clinical conclusion notes, enforces required doctor override notes
+    if unreviewed CRITICAL CDSS safety alerts are active, digitally signs all encounter insights,
+    records attending physician ID & timestamp, and transitions status to READY_FOR_BILLING.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # 1. Verify visit encounter
+            cur.execute("SELECT id, patient_id, doctor_id, status, conclusion_signed_at FROM visits WHERE id = %s;", (visit_id,))
+            visit = cur.fetchone()
+            if not visit:
+                raise HTTPException(status_code=404, detail=f"Visit encounter with ID {visit_id} not found.")
+
+            current_status = visit["status"]
+            if current_status in ("READY_FOR_BILLING", "COMPLETED"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Encounter is already signed off and locked (Status: {current_status})."
+                )
+            if current_status == "CANCELLED":
+                raise HTTPException(status_code=400, detail="Cannot sign off a cancelled encounter.")
+
+            # 2. Validate conclusion notes
+            notes = req.conclusion_notes.strip()
+            if len(notes) < 3:
+                raise HTTPException(status_code=422, detail="Conclusion clinical notes are required to sign off encounter.")
+
+            final_notes = notes
+            if req.diagnosis and req.diagnosis.strip():
+                final_notes = f"Diagnosis: {req.diagnosis.strip()}\n\nClinical Notes: {notes}"
+
+            # 3. Verify attending doctor
+            attending_doctor_id = req.doctor_id or visit["doctor_id"]
+            if req.doctor_id:
+                cur.execute("SELECT id FROM users WHERE id = %s;", (req.doctor_id,))
+                if not cur.fetchone():
+                    raise HTTPException(status_code=404, detail=f"Attending physician with ID {req.doctor_id} not found.")
+
+            # 4. Check CDSS deterministic safety alerts
+            cur.execute("""
+                SELECT id, rule_code, severity_level, title, is_reviewed, doctor_override_notes
+                FROM deterministic_insights
+                WHERE visit_id = %s;
+            """, (visit_id,))
+            insights = cur.fetchall()
+
+            # If no insights were evaluated yet, evaluate them automatically to prevent safety bypass
+            if not insights:
+                insights = evaluate_cdss_for_visit(cur, visit_id)
+
+            critical_alerts = [i for i in insights if i.get("severity_level") == "CRITICAL"]
+            unreviewed_critical = [
+                i for i in critical_alerts 
+                if not i.get("is_reviewed") and not (i.get("doctor_override_notes") and str(i.get("doctor_override_notes")).strip())
+            ]
+
+            override_text = (req.doctor_override_notes or req.override_reasons or "").strip()
+
+            if unreviewed_critical:
+                if not override_text:
+                    alert_names = ", ".join([f"[{a['rule_code']}] {a['title']}" for a in unreviewed_critical])
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            f"Sign-off blocked: Unreviewed CRITICAL safety alert(s) detected: {alert_names}. "
+                            "You must supply 'doctor_override_notes' justifying clinical override before finalizing."
+                        )
+                    )
+                else:
+                    # Apply override notes and mark reviewed
+                    cur.execute("""
+                        UPDATE deterministic_insights
+                        SET is_reviewed = 1,
+                            doctor_override_notes = %s
+                        WHERE visit_id = %s 
+                          AND severity_level = 'CRITICAL' 
+                          AND (is_reviewed = 0 OR doctor_override_notes IS NULL OR doctor_override_notes = '');
+                    """, (override_text, visit_id))
+
+            # Mark all active insights as digitally signed
+            cur.execute("""
+                UPDATE deterministic_insights
+                SET is_signed = 1
+                WHERE visit_id = %s;
+            """, (visit_id,))
+
+            # 5. Lock and transition encounter to READY_FOR_BILLING
+            now_dt = datetime.now()
+            cur.execute("""
+                UPDATE visits
+                SET status = 'READY_FOR_BILLING',
+                    conclusion_notes = %s,
+                    conclusion_signed_at = %s,
+                    doctor_id = %s
+                WHERE id = %s;
+            """, (final_notes, now_dt, attending_doctor_id, visit_id))
+
+            return {
+                "message": "Consultation signed off and locked successfully",
+                "visit_id": visit_id,
+                "status": "READY_FOR_BILLING",
+                "doctor_id": attending_doctor_id,
+                "conclusion_notes": final_notes,
+                "signed_at": now_dt.isoformat(),
+                "next_station": "CASHIER_BILLING_DESK",
+                "critical_alerts_count": len(critical_alerts),
+                "critical_alerts_overridden": len(unreviewed_critical) if override_text else 0
+            }
+    except HTTPException:
+        raise
+    except pymysql.MySQLError as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(err)}")
+    finally:
+        conn.close()
+
 
 
 
