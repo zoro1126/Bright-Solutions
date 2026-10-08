@@ -99,6 +99,14 @@ class PrescriptionCreateRequest(BaseModel):
     status: Optional[str] = Field("FINALIZED", description="DRAFT, FINALIZED")
     items: List[PrescriptionItemInput] = Field(..., min_items=1, description="List of prescribed medications")
 
+class PaymentTenderRequest(BaseModel):
+    payment_mode: str = Field("CASH", description="CASH, UPI, CARD, NETBANKING, INSURANCE_DIRECT")
+    tendered_amount: Optional[float] = Field(None, description="Tendered payment amount")
+    amount_paid: Optional[float] = Field(None, description="Alias for tendered_amount")
+    transaction_reference: Optional[str] = Field(None, description="UPI reference or bank POS txn number")
+    notes: Optional[str] = Field(None, description="Cashier counter notes")
+    cashier_id: Optional[int] = Field(None, description="Settling cashier staff user ID")
+
 
 class LoginRequest(BaseModel):
     username: str
@@ -1525,6 +1533,268 @@ def get_visit_prescription(visit_id: int):
             }
     finally:
         conn.close()
+
+# ============================================================================
+# API ROUTES (FEATURE 9 & 10 / PR-BE-09: CASHIER QUEUE & PAYMENT TENDER)
+# ============================================================================
+
+@app.get("/api/cashier/queue", tags=["Cashier Billing & Payments"])
+def get_cashier_queue():
+    """
+    FEAT-09 / 6.1: Lists patient encounters currently in READY_FOR_BILLING status awaiting cashier clearance.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 
+                    v.id AS visit_id,
+                    v.queue_token,
+                    p.uhid,
+                    CONCAT(p.first_name, ' ', p.last_name) AS patient_name,
+                    u.full_name AS doctor_name,
+                    p.insurance_type AS insurance_category,
+                    v.conclusion_signed_at AS ready_since
+                FROM visits v
+                JOIN patients p ON p.id = v.patient_id
+                LEFT JOIN users u ON u.id = v.doctor_id
+                WHERE v.status = 'READY_FOR_BILLING'
+                ORDER BY v.conclusion_signed_at ASC, v.id ASC;
+            """)
+            rows = cur.fetchall()
+
+            queue_items = []
+            for r in rows:
+                ready_since_val = r["ready_since"].isoformat() if r.get("ready_since") and hasattr(r["ready_since"], "isoformat") else str(r.get("ready_since") or "")
+                queue_items.append({
+                    "visit_id": r["visit_id"],
+                    "queue_token": r["queue_token"],
+                    "uhid": r["uhid"],
+                    "patient_name": r["patient_name"],
+                    "doctor_name": r["doctor_name"] or "Assigned Physician",
+                    "insurance_category": r["insurance_category"] or "CASH",
+                    "ready_since": ready_since_val
+                })
+
+            return {
+                "pending_invoices_count": len(queue_items),
+                "billing_queue": queue_items
+            }
+    finally:
+        conn.close()
+
+@app.get("/api/bills/visit/{visit_id}", tags=["Cashier Billing & Payments"])
+def get_visit_bill(visit_id: int):
+    """
+    FEAT-09 / 6.2: Auto-aggregates and retrieves the itemized bill for a visit encounter:
+    - Physician Consultation Fee (₹500)
+    - Diagnostic Archive Tariffs (₹150 per external diagnostic scan)
+    - Prescribed Medicines from formulary (₹60 per prescribed line item)
+    Computes insurance coverage deductions and net copay payable.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # 1. Fetch visit and patient details
+            cur.execute("""
+                SELECT v.id, v.patient_id, v.doctor_id, v.status,
+                       p.uhid, CONCAT(p.first_name, ' ', p.last_name) AS patient_name,
+                       p.insurance_type, u.full_name AS doctor_name
+                FROM visits v
+                JOIN patients p ON p.id = v.patient_id
+                LEFT JOIN users u ON u.id = v.doctor_id
+                WHERE v.id = %s;
+            """, (visit_id,))
+            visit = cur.fetchone()
+            if not visit:
+                raise HTTPException(status_code=404, detail=f"Visit encounter with ID {visit_id} not found.")
+
+            # 2. Check if an existing bill exists
+            cur.execute("SELECT * FROM bills WHERE visit_id = %s;", (visit_id,))
+            bill = cur.fetchone()
+
+            # If bill doesn't exist, calculate aggregated line items
+            if not bill:
+                line_items_data = []
+
+                # Line 1: Consultation
+                doc_title = visit["doctor_name"] or "Consulting Physician"
+                line_items_data.append({
+                    "service_code": "CONS_GEN",
+                    "item_type": "CONSULTATION",
+                    "description": f"General Physician Consultation ({doc_title})",
+                    "quantity": 1,
+                    "unit_price": 500.00,
+                    "total_price": 500.00
+                })
+
+                # Line 2: Diagnostic reports review
+                cur.execute("SELECT id, report_type, modality FROM external_reports WHERE visit_id = %s;", (visit_id,))
+                reports = cur.fetchall()
+                for rep in reports:
+                    modality = rep.get("modality") or rep.get("report_type") or "Diagnostic"
+                    line_items_data.append({
+                        "service_code": "DIAG_ARCH",
+                        "item_type": "DIAGNOSTIC",
+                        "description": f"External Scan Archival & Review ({modality})",
+                        "quantity": 1,
+                        "unit_price": 150.00,
+                        "total_price": 150.00
+                    })
+
+                # Line 3: Prescribed medications
+                cur.execute("""
+                    SELECT pi.id, pi.dosage, pi.duration_days, df.brand_name, df.strength, df.dosage_form
+                    FROM prescription_items pi
+                    JOIN prescriptions p ON p.id = pi.prescription_id
+                    JOIN drug_formulary df ON df.id = pi.drug_id
+                    WHERE p.visit_id = %s;
+                """, (visit_id,))
+                rx_items = cur.fetchall()
+                for idx, rxi in enumerate(rx_items, start=1):
+                    line_items_data.append({
+                        "service_code": f"PHARM_{idx:02d}",
+                        "item_type": "MEDICATION",
+                        "description": f"{rxi['brand_name']} {rxi['strength']} ({rxi['dosage_form']})",
+                        "quantity": 1,
+                        "unit_price": 60.00,
+                        "total_price": 60.00
+                    })
+
+                subtotal = sum(item["total_price"] for item in line_items_data)
+                discount = 0.00
+                ins_covered = 0.00
+                if (visit.get("insurance_type") or "").upper() == "INSURANCE":
+                    ins_covered = round(subtotal * 0.8, 2)  # 80% coverage
+                net_amount = max(0.00, round(subtotal - discount - ins_covered, 2))
+
+                # Persist new bill
+                cur.execute("""
+                    INSERT INTO bills (visit_id, gross_amount, discount_amount, insurance_covered, net_amount, payment_status)
+                    VALUES (%s, %s, %s, %s, %s, 'PENDING');
+                """, (visit_id, subtotal, discount, ins_covered, net_amount))
+                bill_id = cur.lastrowid
+
+                for li in line_items_data:
+                    cur.execute("""
+                        INSERT INTO bill_items (bill_id, service_code, item_type, description, unit_price, quantity, total_price)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s);
+                    """, (bill_id, li["service_code"], li["item_type"], li["description"], li["unit_price"], li["quantity"], li["total_price"]))
+
+                # Refresh bill record
+                cur.execute("SELECT * FROM bills WHERE id = %s;", (bill_id,))
+                bill = cur.fetchone()
+
+            # 3. Fetch line items
+            cur.execute("""
+                SELECT id, service_code, item_type, description, unit_price, quantity, total_price
+                FROM bill_items
+                WHERE bill_id = %s
+                ORDER BY id ASC;
+            """, (bill["id"],))
+            items = cur.fetchall()
+
+            formatted_items = []
+            for it in items:
+                formatted_items.append({
+                    "item_code": it["service_code"],
+                    "item_type": it["item_type"],
+                    "description": it["description"],
+                    "quantity": it["quantity"],
+                    "unit_rate": float(it["unit_price"]),
+                    "total_amount": float(it["total_price"])
+                })
+
+            return {
+                "visit_id": visit_id,
+                "bill_id": bill["id"],
+                "uhid": visit["uhid"],
+                "patient_name": visit["patient_name"],
+                "currency": "INR",
+                "line_items": formatted_items,
+                "subtotal": float(bill["gross_amount"]),
+                "tax_gst": 0.00,
+                "discount": float(bill["discount_amount"]),
+                "insurance_copay_deduction": float(bill["insurance_covered"]),
+                "net_payable": float(bill["net_amount"]),
+                "patient_payable": float(bill["net_amount"]),
+                "bill_status": bill["payment_status"]
+            }
+    finally:
+        conn.close()
+
+@app.post("/api/bills/{bill_id}/payments", tags=["Cashier Billing & Payments"], status_code=status.HTTP_201_CREATED)
+def process_bill_payment(bill_id: int, req: PaymentTenderRequest):
+    """
+    FEAT-11 & 12 / 6.3: Processes multi-mode payment tender (Cash, UPI QR, Card),
+    marks bill as PAID, transitions visit encounter to COMPLETED, and issues receipt serial.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            # 1. Fetch bill
+            cur.execute("SELECT id, visit_id, cashier_id, gross_amount, net_amount, payment_status FROM bills WHERE id = %s;", (bill_id,))
+            bill = cur.fetchone()
+            if not bill:
+                raise HTTPException(status_code=404, detail=f"Bill with ID {bill_id} not found.")
+
+            if bill["payment_status"] == "PAID":
+                raise HTTPException(status_code=400, detail="Bill is already settled and paid.")
+
+            # 2. Compute tender amount
+            tendered = float(req.tendered_amount or req.amount_paid or bill["net_amount"])
+            mode = (req.payment_mode or "CASH").upper()
+            if mode not in ("CASH", "UPI", "CARD", "NETBANKING", "INSURANCE_DIRECT"):
+                mode = "CASH"
+
+            txn_ref = req.transaction_reference or f"TXN-{datetime.now().strftime('%Y%m%d%H%M%S')}-{bill_id}"
+            now_dt = datetime.now()
+
+            # Default cashier if none provided
+            settling_cashier_id = req.cashier_id or bill["cashier_id"] or 5
+
+            # 3. Record in payments table
+            cur.execute("""
+                INSERT INTO payments (bill_id, payment_mode, transaction_ref, amount_paid, payment_status, payment_time)
+                VALUES (%s, %s, %s, %s, 'SUCCESS', %s);
+            """, (bill_id, mode, txn_ref, tendered, now_dt))
+            payment_id = cur.lastrowid
+
+            # 4. Mark bill as PAID
+            cur.execute("""
+                UPDATE bills 
+                SET payment_status = 'PAID', cashier_id = %s, updated_at = %s
+                WHERE id = %s;
+            """, (settling_cashier_id, now_dt, bill_id))
+
+            # 5. Transition visit to COMPLETED
+            cur.execute("""
+                UPDATE visits 
+                SET status = 'COMPLETED', updated_at = %s
+                WHERE id = %s;
+            """, (now_dt, bill["visit_id"]))
+
+            receipt_num = f"REC-2026-{bill_id:05d}"
+
+            return {
+                "message": "Payment recorded and encounter closed successfully",
+                "payment_id": payment_id,
+                "receipt_number": receipt_num,
+                "bill_id": bill_id,
+                "visit_id": bill["visit_id"],
+                "paid_amount": tendered,
+                "payment_mode": mode,
+                "payment_timestamp": now_dt.isoformat(),
+                "visit_status": "COMPLETED",
+                "receipt_pdf_url": f"/api/bills/{bill_id}/receipt"
+            }
+    except HTTPException:
+        raise
+    except pymysql.MySQLError as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(err)}")
+    finally:
+        conn.close()
+
 
 
 
