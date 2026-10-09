@@ -64,8 +64,9 @@ export default function App() {
             <Route element={<AppLayout />}>
               {/* Receptionist Portal */}
               <Route path={ROUTES.RECEPTIONIST.DASHBOARD} element={<ReceptionistDashboardPage />} />
-              <Route path={ROUTES.RECEPTIONIST.INTAKE} element={<PatientRegistrationPage />} />
+              <Route path={ROUTES.RECEPTIONIST.INTAKE} element={<Navigate to={`${ROUTES.RECEPTIONIST.DASHBOARD}?register=true`} replace />} />
               <Route path={ROUTES.RECEPTIONIST.QUESTIONNAIRE} element={<IntakeQuestionnairePage />} />
+              <Route path="/receptionist/intake/questionnaire" element={<Navigate to={ROUTES.RECEPTIONIST.QUESTIONNAIRE} replace />} />
               <Route path={ROUTES.RECEPTIONIST.VOICE_INTAKE_ALIAS} element={<IntakeQuestionnairePage />} />
               <Route path={ROUTES.RECEPTIONIST.REPORTS} element={<DiagnosticReportsPage />} />
               <Route path={ROUTES.RECEPTIONIST.QUEUE} element={<PatientQueuePage />} />

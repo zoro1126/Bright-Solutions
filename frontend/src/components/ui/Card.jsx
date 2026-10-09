@@ -7,7 +7,7 @@ export function Card({
   onClick,
   ...props
 }) {
-  const base = "rounded-3xl transition-all duration-150 overflow-hidden";
+  const base = "rounded-2xl transition-all duration-150 overflow-hidden";
 
   const variants = {
     // Clean White Surface on Warm Tinted Container (#FAF6EC)

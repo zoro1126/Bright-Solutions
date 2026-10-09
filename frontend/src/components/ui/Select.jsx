@@ -22,7 +22,7 @@ export function Select({
 
       <select
         id={selectId}
-        className={`w-full bg-white dark:bg-[#0A2540] text-[#051A30] dark:text-white text-sm rounded-xl border border-[#CBD5E1] dark:border-[#1B456E] py-2 px-3 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#FFE500] focus:border-[#0A2540] disabled:bg-[#F6F7FA] disabled:opacity-60 cursor-pointer ${
+        className={`w-full bg-white dark:bg-[#0A2540] text-[#051A30] dark:text-white text-sm rounded-xl border border-[#CBD5E1] dark:border-[#1B456E] py-2 px-3 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#FFC21A] focus:border-[#0A2540] disabled:bg-[#F6F7FA] disabled:opacity-60 cursor-pointer ${
           error ? 'border-[#DC2626] focus:ring-[#DC2626]' : ''
         } ${className}`}
         {...props}

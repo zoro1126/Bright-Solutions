@@ -108,7 +108,7 @@ export default function ItemizedBillingPage() {
       <Card className="p-4 bg-white dark:bg-navy-900 border border-navy-100 dark:border-navy-800 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-navy-900 text-canary-400 font-bold flex items-center justify-center font-mono text-base">
+            <div className="w-11 h-11 rounded-xl bg-[#0A2540] text-[#FFC21A] dark:bg-[#071D33] dark:text-[#FFC21A] border border-[#1B456E] font-bold flex items-center justify-center font-mono text-base shadow-xs">
               Q-102
             </div>
             <div>

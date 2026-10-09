@@ -17,9 +17,9 @@ export function Stepper({ steps = [], currentStep = 0, onStepClick }) {
               <div
                 className={`w-8 h-8 rounded-xl font-mono text-xs font-bold flex items-center justify-center transition-all ${
                   isDone
-                    ? 'bg-[#FFE500] text-[#051A30] shadow-sm'
+                    ? 'bg-[#FFC21A] text-[#0A2540] shadow-sm'
                     : isCurrent
-                    ? 'bg-[#0A2540] text-white ring-2 ring-[#FFE500]'
+                    ? 'bg-[#0A2540] text-white ring-2 ring-[#FFC21A]'
                     : 'bg-[#E2E8F0] dark:bg-[#1B456E] text-[#64748B]'
                 }`}
               >
@@ -40,7 +40,7 @@ export function Stepper({ steps = [], currentStep = 0, onStepClick }) {
             {idx < steps.length - 1 && (
               <div
                 className={`flex-1 h-0.5 mx-3 transition-colors ${
-                  idx < currentStep ? 'bg-[#FFE500]' : 'bg-[#E2E8F0] dark:bg-[#1B456E]'
+                  idx < currentStep ? 'bg-[#FFC21A]' : 'bg-[#E2E8F0] dark:bg-[#1B456E]'
                 }`}
               />
             )}

@@ -26,7 +26,7 @@ export function SegmentedControl({
             {isSelected && (
               <motion.div
                 layoutId="segmentedControlActive"
-                className="absolute inset-0 bg-[#FFE500] rounded-lg shadow-sm"
+                className="absolute inset-0 bg-[#FFC21A] rounded-lg shadow-sm"
                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               />
             )}
@@ -72,7 +72,7 @@ export function Tabs({
               <span>{tab.label}</span>
               {tab.count !== undefined && (
                 <span className={`text-xs px-1.5 py-0.5 rounded-full font-mono ${
-                  isActive ? 'bg-[#FFE500] text-[#051A30]' : 'bg-[#E2E8F0] dark:bg-[#1B456E] text-[#64748B]'
+                  isActive ? 'bg-[#FFC21A] text-[#0A2540]' : 'bg-[#E2E8F0] dark:bg-[#1B456E] text-[#64748B]'
                 }`}>
                   {tab.count}
                 </span>
@@ -81,7 +81,7 @@ export function Tabs({
             {isActive && (
               <motion.div
                 layoutId="activeTabUnderline"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFE500]"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFC21A]"
                 transition={{ type: 'spring', stiffness: 450, damping: 35 }}
               />
             )}

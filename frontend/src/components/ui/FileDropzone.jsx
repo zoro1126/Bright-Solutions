@@ -34,8 +34,8 @@ export function FileDropzone({
         onClick={() => inputRef.current?.click()}
         className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-150 flex flex-col items-center justify-center ${
           isDragging
-            ? 'border-[#FFE500] bg-[#FFE500]/10 ring-4 ring-[#FFE500]/20'
-            : 'border-[#CBD5E1] dark:border-[#1B456E] hover:border-[#0A2540] dark:hover:border-[#FFE500] bg-white/60 dark:bg-[#0A2540]/60 hover:bg-[#F6F7FA]'
+            ? 'border-[#FFC21A] bg-[#FFC21A]/10 ring-4 ring-[#FFC21A]/20'
+            : 'border-[#CBD5E1] dark:border-[#1B456E] hover:border-[#0A2540] dark:hover:border-[#FFC21A] bg-white/60 dark:bg-[#0A2540]/60 hover:bg-[#F6F7FA]'
         }`}
       >
         <input
@@ -47,12 +47,12 @@ export function FileDropzone({
           accept={acceptedFormats.join(',')}
         />
 
-        <div className="p-3.5 rounded-2xl bg-[#0A2540] text-[#FFE500] mb-3 shadow-sm">
+        <div className="p-3.5 rounded-2xl bg-[#0A2540] text-[#FFC21A] mb-3 shadow-sm">
           <UploadCloud className="w-6 h-6" />
         </div>
 
         <p className="text-sm font-bold text-[#0A2540] dark:text-white">
-          Drag & drop diagnostic scans, or <span className="text-[#B89C14] underline">browse files</span>
+          Drag & drop diagnostic scans, or <span className="text-[#8A740C] dark:text-[#FFC21A] underline">browse files</span>
         </p>
         <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-1 font-mono">
           Supports DICOM (.dcm), 12-Lead ECG (.png/.pdf), Lab bloodwork (.pdf) up to {maxSizeMb}MB
@@ -68,7 +68,7 @@ export function FileDropzone({
               className="p-3 rounded-xl bg-white dark:bg-[#0F355A] border border-[#E2E8F0] dark:border-[#1B456E] flex items-center justify-between text-xs"
             >
               <div className="flex items-center gap-2.5 truncate">
-                <File className="w-4 h-4 text-[#0A2540] dark:text-[#FFE500] shrink-0" />
+                <File className="w-4 h-4 text-[#0A2540] dark:text-[#FFC21A] shrink-0" />
                 <span className="font-medium text-[#051A30] dark:text-white truncate">
                   {file.name}
                 </span>

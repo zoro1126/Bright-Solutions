@@ -61,7 +61,7 @@ export function Sheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 rounded-xl text-[#64748B] hover:text-[#0A2540] dark:hover:text-white hover:bg-[#F6F7FA] dark:hover:bg-[#0F355A] transition-colors focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
+                className="p-2 rounded-xl text-[#64748B] hover:text-[#0A2540] dark:hover:text-white hover:bg-[#F6F7FA] dark:hover:bg-[#0F355A] transition-colors focus:outline-none focus:ring-2 focus:ring-[#FFC21A]"
               >
                 <X className="w-5 h-5" />
               </button>

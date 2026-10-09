@@ -6,7 +6,7 @@ export const ROUTES = {
   RECEPTIONIST: {
     DASHBOARD: '/receptionist/dashboard',
     INTAKE: '/receptionist/intake',
-    QUESTIONNAIRE: '/receptionist/intake/questionnaire',
+    QUESTIONNAIRE: '/receptionist/questionnaire',
     VOICE_INTAKE_ALIAS: '/receptionist/voice-intake',
     REPORTS: '/receptionist/reports',
     QUEUE: '/receptionist/queue',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   UploadCloud, 
   FileText, 
@@ -12,14 +12,16 @@ import {
   ExternalLink,
   ShieldCheck,
   RefreshCw,
-  HardDrive
+  HardDrive,
+  Users,
+  ChevronRight
 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Input } from '../../components/ui/Input';
 import { useToast } from '../../components/ui/Toast';
 import { api } from '../../services/api';
+import { ROUTES } from '../../routes';
 
 const MODALITIES = [
   { id: 'DICOM', label: 'DICOM Imaging', icon: HardDrive, desc: 'CT, MRI, X-Ray slice sets (.dcm)' },
@@ -28,19 +30,18 @@ const MODALITIES = [
   { id: 'DISCHARGE', label: 'Discharge Summary', icon: ShieldCheck, desc: 'Previous hospital summaries (.pdf, .jpg)' },
 ];
 
-export default function DiagnosticReportsPage() {
-  const { addToast } = useToast();
-  const [selectedToken, setSelectedToken] = useState('Q-102');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedModality, setSelectedModality] = useState('DICOM');
-  const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [uploadQueue, setUploadQueue] = useState([]);
-  const [isDragOver, setIsDragOver] = useState(false);
-
-  // Active visit metadata mock
-  const activeEncounter = {
+const INITIAL_PATIENTS = [
+  {
+    visitId: 101,
+    token: 'Q-101',
+    uhid: 'UHID-2026-00001',
+    patientName: 'Ananya Sharma',
+    age: 52,
+    gender: 'FEMALE',
+    attendingDoctor: 'Dr. Vikram Kulkarni, MD',
+    reportsCount: 1,
+  },
+  {
     visitId: 102,
     token: 'Q-102',
     uhid: 'UHID-2026-00002',
@@ -48,10 +49,67 @@ export default function DiagnosticReportsPage() {
     age: 50,
     gender: 'MALE',
     attendingDoctor: 'Dr. Vikram Kulkarni, MD',
-  };
+    reportsCount: 2,
+  },
+  {
+    visitId: 103,
+    token: 'Q-103',
+    uhid: 'UHID-2026-00003',
+    patientName: 'Sunita Rao',
+    age: 62,
+    gender: 'FEMALE',
+    attendingDoctor: 'Dr. Ananya Roy, MBBS',
+    reportsCount: 0,
+  },
+];
+
+export default function DiagnosticReportsPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { addToast } = useToast();
+
+  const [patients, setPatients] = useState(INITIAL_PATIENTS);
+  const [selectedToken, setSelectedToken] = useState('Q-102');
+  const [patientSearch, setPatientSearch] = useState('');
+  const [selectedModality, setSelectedModality] = useState('DICOM');
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadQueue, setUploadQueue] = useState([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  // Sync with URL param
+  useEffect(() => {
+    const paramToken = searchParams.get('token');
+    if (paramToken) {
+      setSelectedToken(paramToken);
+      setPatients((prev) => {
+        if (!prev.find((p) => p.token === paramToken)) {
+          return [
+            {
+              visitId: Date.now(),
+              token: paramToken,
+              uhid: `UHID-2026-0000${Math.floor(Math.random() * 80) + 20}`,
+              patientName: 'Registered Walk-in Patient',
+              age: 45,
+              gender: 'MALE',
+              attendingDoctor: 'Dr. Vikram Kulkarni, MD',
+              reportsCount: 0,
+            },
+            ...prev,
+          ];
+        }
+        return prev;
+      });
+    }
+  }, [searchParams]);
+
+  const activeEncounter = patients.find((p) => p.token === selectedToken) || patients[0];
 
   useEffect(() => {
-    loadReports();
+    if (activeEncounter) {
+      loadReports();
+    }
   }, [selectedToken]);
 
   const loadReports = async () => {
@@ -60,7 +118,7 @@ export default function DiagnosticReportsPage() {
       const data = await api.getReports(activeEncounter.visitId);
       setReports(data?.reports || []);
     } catch {
-      // handled by fallback
+      // fallback handled
     } finally {
       setLoading(false);
     }
@@ -98,126 +156,178 @@ export default function DiagnosticReportsPage() {
       try {
         await api.uploadExternalReport(activeEncounter.visitId, formData);
         setUploadQueue((prev) =>
-          prev.map((it) => (it.id === item.id ? { ...it, status: 'completed', progress: 100 } : it))
+          prev.map((it) => (it.id === item.id ? { ...it, status: 'complete', progress: 100 } : it))
         );
         addToast({
-          type: 'success',
           title: 'Report Ingested',
-          message: `${item.name} archived for ${activeEncounter.patientName}.`,
+          message: `${item.name} uploaded for #${activeEncounter.token}.`,
+          type: 'success',
         });
         loadReports();
-      } catch {
+      } catch (err) {
         setUploadQueue((prev) =>
           prev.map((it) => (it.id === item.id ? { ...it, status: 'error' } : it))
         );
         addToast({
-          type: 'error',
           title: 'Upload Failed',
-          message: `Could not process ${item.name}.`,
+          message: err.message || 'File ingestion error.',
+          type: 'error',
         });
       }
     }
     setUploading(false);
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    if (e.dataTransfer.files) {
-      handleFilesChosen(e.dataTransfer.files);
-    }
-  };
+  const filteredPatients = patients.filter(
+    (p) =>
+      p.patientName.toLowerCase().includes(patientSearch.toLowerCase()) ||
+      p.token.toLowerCase().includes(patientSearch.toLowerCase()) ||
+      p.uhid.toLowerCase().includes(patientSearch.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
-      {/* Top Banner / Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-navy-100 dark:border-navy-800 pb-5">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#EAE4D3] dark:border-[#1B456E] pb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-ochre-600 dark:text-ochre-400">
-              P-REC-04 • Diagnostics Archival
+            <span className="text-[11px] font-bold uppercase font-mono tracking-wider text-[#8A740C] dark:text-[#FFC21A]">
+              P-REC-04 • Patient-List Based Diagnostic Ingestion
             </span>
-            <Badge variant="navy" size="xs">PACS & Document Bridge</Badge>
+            <Badge variant="brand" size="xs">Digital Records</Badge>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">
-            External Diagnostic Reports Ingestion
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0A2540] dark:text-white">
+            Diagnostic Reports & External Ingestion
           </h1>
-          <p className="text-sm text-navy-500 dark:text-navy-400 mt-1">
-            Digitize and bind prior patient scans, rhythm strips, and lab panels into the active encounter.
+          <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-0.5">
+            Attach multi-slice DICOM series, 12-lead ECG rhythm strips, and lab pathology panels to patient encounters.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadReports}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Sync Records
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={loadReports}
+          icon={RefreshCw}
+          className="self-start sm:self-auto"
+        >
+          Sync Records
+        </Button>
       </div>
 
-      {/* Active Patient Token Bar */}
-      <Card className="p-4 bg-gradient-to-r from-navy-900 to-navy-800 text-white border-0 shadow-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-canary-400/20 flex items-center justify-center border border-canary-400/30">
-              <span className="font-mono text-canary-400 font-bold text-lg">
-                {activeEncounter.token}
+      {/* Main 2-Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* LEFT COLUMN: Patient Queue Roster (4 cols) */}
+        <div className="lg:col-span-4 space-y-3">
+          <Card variant="surface" className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#0A2540] dark:text-white flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#8A740C] dark:text-[#FFC21A]" />
+                Registered Patients ({patients.length})
+              </h2>
+              <span className="text-[10px] font-mono text-[#64748B] dark:text-[#94A3B8]">
+                Diagnostic Intake
               </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-white tracking-tight">
-                  {activeEncounter.patientName}
-                </h3>
-                <span className="font-mono text-xs text-navy-300">
-                  ({activeEncounter.uhid})
-                </span>
-              </div>
-              <p className="text-xs text-navy-300 mt-0.5">
-                {activeEncounter.age}Y • {activeEncounter.gender} • Consulting with{' '}
-                <span className="text-canary-300 font-medium">{activeEncounter.attendingDoctor}</span>
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-2">
+            {/* Search */}
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-navy-400" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
               <input
                 type="text"
-                placeholder="Search other token..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1.5 bg-navy-800/80 border border-navy-700 rounded-lg text-xs font-mono text-white placeholder-navy-400 focus:outline-none focus:ring-1 focus:ring-canary-400"
+                placeholder="Search patient, token, UHID..."
+                value={patientSearch}
+                onChange={(e) => setPatientSearch(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-[#FAF6EC] dark:bg-[#071D33] border border-[#EAE4D3] dark:border-[#1B456E] rounded-xl text-xs text-[#0A2540] dark:text-white placeholder-[#64748B] focus:outline-none focus:ring-2 focus:ring-[#FFC21A]"
               />
             </div>
-            <Badge variant="canary" size="sm" className="font-mono">
+
+            {/* Patient Cards */}
+            <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
+              {filteredPatients.map((p) => {
+                const isSelected = p.token === activeEncounter?.token;
+
+                return (
+                  <button
+                    key={p.token}
+                    type="button"
+                    onClick={() => setSelectedToken(p.token)}
+                    className={`w-full text-left p-3.5 rounded-2xl transition-all border flex items-start justify-between gap-3 ${
+                      isSelected
+                        ? 'bg-[#FAF6EC] dark:bg-[#0F355A] border-[#FFC21A] ring-1 ring-[#FFC21A] shadow-sm'
+                        : 'bg-white dark:bg-[#0A2540] border-[#EAE4D3] dark:border-[#1B456E] hover:border-[#FFC21A]/60'
+                    }`}
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center font-mono text-xs font-bold px-2 py-0.5 rounded-lg bg-[#0A2540] text-[#FFC21A] dark:bg-[#071D33] dark:text-[#FFC21A] border border-[#1B456E]">
+                          #{p.token}
+                        </span>
+                        <span className="text-xs font-bold text-[#0A2540] dark:text-white truncate">
+                          {p.patientName}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-[#64748B] dark:text-[#94A3B8] font-mono">
+                        {p.age}y / {p.gender?.[0]} • {p.uhid}
+                      </div>
+                      <div className="text-[10px] text-[#8A740C] dark:text-[#FFE08A] font-medium truncate">
+                        {p.attendingDoctor}
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 flex flex-col items-end gap-1.5">
+                      <Badge variant={p.reportsCount > 0 ? 'completed' : 'neutral'} size="xs">
+                        {p.reportsCount > 0 ? `${p.reportsCount} Files` : 'No Scans'}
+                      </Badge>
+                      <ChevronRight className={`w-3.5 h-3.5 ${isSelected ? 'text-[#0A2540] dark:text-white' : 'text-[#94A3B8]'}`} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
+
+        {/* RIGHT COLUMN: Active Patient Diagnostic Ingestion Studio (8 cols) */}
+        <div className="lg:col-span-8 space-y-5">
+          {/* Active Patient Hero Context */}
+          <Card variant="dark" className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center justify-center font-mono font-bold text-base px-3 py-1.5 rounded-xl bg-[#0F355A] text-[#FFC21A] border border-[#1B456E]">
+                #{activeEncounter.token}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-base text-white">
+                    {activeEncounter.patientName}
+                  </span>
+                  <span className="text-xs text-[#94A3B8] font-mono">
+                    ({activeEncounter.age}y / {activeEncounter.gender})
+                  </span>
+                </div>
+                <div className="text-xs text-[#CBD5E1] font-mono mt-0.5">
+                  {activeEncounter.uhid} • Attending: {activeEncounter.attendingDoctor}
+                </div>
+              </div>
+            </div>
+
+            <Badge variant="brand" size="sm" className="font-mono">
               ACTIVE ENCOUNTER
             </Badge>
-          </div>
-        </div>
-      </Card>
+          </Card>
 
-      {/* Ingestion Studio Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Dropzone & Modality Selector (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
-          <Card className="p-5 space-y-5">
+          {/* Diagnostic Modality Selector */}
+          <Card variant="surface" className="p-5 space-y-4">
             <div>
-              <h2 className="text-base font-bold text-navy-900 dark:text-white">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#0A2540] dark:text-white">
                 1. Select Diagnostic Modality
               </h2>
-              <p className="text-xs text-navy-500 dark:text-navy-400 mt-0.5">
+              <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 font-mono">
                 Classifying the scan configures the physician's interactive canvas viewer.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {MODALITIES.map((mod) => {
                 const Icon = mod.icon;
                 const isSelected = selectedModality === mod.id;
@@ -226,194 +336,154 @@ export default function DiagnosticReportsPage() {
                     key={mod.id}
                     type="button"
                     onClick={() => setSelectedModality(mod.id)}
-                    className={`p-3.5 rounded-xl text-left border transition-all ${
+                    className={`p-3.5 rounded-2xl text-left border transition-all ${
                       isSelected
-                        ? 'border-canary-400 bg-canary-400/10 shadow-sm dark:bg-canary-400/5'
-                        : 'border-navy-100 dark:border-navy-800 bg-white dark:bg-navy-900 hover:border-navy-300 dark:hover:border-navy-700'
+                        ? 'border-[#FFC21A] bg-[#FAF6EC] dark:bg-[#0F355A] shadow-xs ring-1 ring-[#FFC21A]'
+                        : 'border-[#EAE4D3] dark:border-[#1B456E] bg-white dark:bg-[#0A2540] hover:border-[#FFC21A]/60'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <div className={`p-2 rounded-lg ${isSelected ? 'bg-canary-400 text-navy-950 font-bold' : 'bg-navy-50 dark:bg-navy-800 text-navy-600 dark:text-navy-300'}`}>
+                      <div className={`p-2 rounded-xl ${isSelected ? 'bg-[#FFC21A] text-[#0A2540] font-bold' : 'bg-[#FAF6EC] dark:bg-[#071D33] text-[#64748B] dark:text-[#CBD5E1]'}`}>
                         <Icon className="w-4 h-4" />
                       </div>
                       {isSelected && (
-                        <div className="w-2 h-2 rounded-full bg-canary-500 animate-pulse" />
+                        <div className="w-2 h-2 rounded-full bg-[#FFC21A] animate-pulse" />
                       )}
                     </div>
-                    <div className="font-semibold text-xs text-navy-900 dark:text-white">
+                    <div className="font-bold text-xs text-[#0A2540] dark:text-white">
                       {mod.label}
                     </div>
-                    <div className="text-[11px] text-navy-500 dark:text-navy-400 mt-0.5 line-clamp-1">
+                    <div className="text-[10px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 line-clamp-1">
                       {mod.desc}
                     </div>
                   </button>
                 );
               })}
             </div>
+          </Card>
 
-            <div className="pt-2">
-              <h2 className="text-base font-bold text-navy-900 dark:text-white mb-2">
-                2. Ingest Scan Media
-              </h2>
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDragOver(true);
-                }}
-                onDragLeave={() => setIsDragOver(false)}
-                onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer ${
-                  isDragOver
-                    ? 'border-canary-400 bg-canary-400/10 scale-[0.99]'
-                    : 'border-navy-200 dark:border-navy-700 hover:border-canary-400/60 bg-navy-50/50 dark:bg-navy-900/50'
-                }`}
-                onClick={() => document.getElementById('file-upload-input').click()}
-              >
-                <input
-                  id="file-upload-input"
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => handleFilesChosen(e.target.files)}
-                />
-                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-canary-400/20 text-navy-900 dark:text-canary-400 flex items-center justify-center">
-                  <UploadCloud className="w-7 h-7 text-ochre-600 dark:text-canary-400" />
-                </div>
-                <p className="text-sm font-bold text-navy-900 dark:text-white">
-                  Drag and drop files here, or <span className="text-ochre-600 dark:text-canary-400 underline">browse storage</span>
-                </p>
-                <p className="text-xs text-navy-500 dark:text-navy-400 mt-1.5 font-mono">
-                  Supported formats: .DCM, .DICOM, .PDF, .PNG, .JPG (Max 50MB per file)
-                </p>
+          {/* Upload Dropzone */}
+          <Card variant="surface" className="p-5 space-y-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#0A2540] dark:text-white">
+              2. Upload Media for #{activeEncounter.token}
+            </h2>
+
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragOver(true);
+              }}
+              onDragLeave={() => setIsDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragOver(false);
+                handleFilesChosen(e.dataTransfer.files);
+              }}
+              className={`p-8 rounded-3xl border-2 border-dashed text-center transition-all ${
+                isDragOver
+                  ? 'border-[#FFC21A] bg-[#FAF6EC] dark:bg-[#0F355A]'
+                  : 'border-[#CBD5E1] dark:border-[#1B456E] bg-[#FAF6EC]/60 dark:bg-[#071D33]/60 hover:border-[#FFC21A]'
+              }`}
+            >
+              <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-[#0A2540] text-[#FFC21A] flex items-center justify-center">
+                <UploadCloud className="w-6 h-6 stroke-[2.5]" />
+              </div>
+              <div className="text-xs font-bold text-[#0A2540] dark:text-white">
+                Drag and drop DICOM / PDF files here, or{' '}
+                <label className="text-[#8A740C] dark:text-[#FFC21A] underline cursor-pointer hover:opacity-80">
+                  browse local disk
+                  <input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handleFilesChosen(e.target.files)}
+                  />
+                </label>
+              </div>
+              <div className="text-[11px] text-[#64748B] dark:text-[#94A3B8] font-mono mt-1">
+                Supports .dcm, .pdf, .jpg, .png up to 100MB per study set
               </div>
             </div>
 
-            {/* Ingestion Queue Activity */}
+            {/* Upload Queue Stream */}
             {uploadQueue.length > 0 && (
-              <div className="space-y-2 pt-3 border-t border-navy-100 dark:border-navy-800">
-                <span className="text-xs font-bold text-navy-700 dark:text-navy-300">
-                  Recent Ingestion Queue
-                </span>
-                <div className="space-y-2">
-                  {uploadQueue.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-navy-50 dark:bg-navy-800/60 border border-navy-100 dark:border-navy-700"
-                    >
-                      <div className="flex items-center gap-3">
-                        <FileUp className="w-4 h-4 text-ochre-500" />
-                        <div>
-                          <p className="text-xs font-semibold text-navy-900 dark:text-white">
-                            {item.name}
-                          </p>
-                          <p className="text-[10px] font-mono text-navy-500">
-                            {item.size} • Modality: {item.modality}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {item.status === 'completed' ? (
-                          <Badge variant="emerald" size="xs" className="flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Ingested
-                          </Badge>
-                        ) : item.status === 'uploading' ? (
-                          <span className="text-xs font-mono text-ochre-600 dark:text-canary-400">
-                            {item.progress}%
-                          </span>
-                        ) : (
-                          <Badge variant="red" size="xs">Failed</Badge>
-                        )}
+              <div className="space-y-2 pt-2">
+                <div className="text-xs font-bold text-[#0A2540] dark:text-white">
+                  Ingestion Progress
+                </div>
+                {uploadQueue.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 rounded-xl bg-[#FAF6EC] dark:bg-[#071D33] border border-[#EAE4D3] dark:border-[#1B456E] flex items-center justify-between text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FileUp className="w-4 h-4 text-[#8A740C] dark:text-[#FFC21A]" />
+                      <div>
+                        <div className="font-bold text-[#0A2540] dark:text-white">{item.name}</div>
+                        <div className="text-[10px] text-[#64748B] font-mono">{item.size} • {item.modality}</div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <div>
+                      {item.status === 'complete' ? (
+                        <Badge variant="completed" size="xs">Ingested</Badge>
+                      ) : (
+                        <Badge variant="brand" size="xs">Uploading...</Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </Card>
-        </div>
 
-        {/* Right Column: Existing Archived Scans for this Patient (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          <Card className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-base font-bold text-navy-900 dark:text-white">
-                  Archived Reports ({reports.length})
-                </h2>
-                <p className="text-xs text-navy-500 dark:text-navy-400">
-                  Attached to encounter #{activeEncounter.token}
-                </p>
-              </div>
-              <Badge variant="ochre" size="xs">VERIFIED</Badge>
+          {/* Existing Reports List */}
+          <Card variant="surface" className="p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#0A2540] dark:text-white">
+                Uploaded Records for #{activeEncounter.token} ({reports.length})
+              </h2>
+              <span className="text-[10px] font-mono text-[#64748B] dark:text-[#94A3B8]">
+                Ready for Physician Review
+              </span>
             </div>
 
-            <div className="space-y-3">
-              {reports.map((rep) => (
-                <div
-                  key={rep.id}
-                  className="p-4 rounded-xl border border-navy-100 dark:border-navy-800 bg-white dark:bg-navy-900 hover:border-canary-400/40 transition-all shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-navy-100 dark:bg-navy-800 text-navy-700 dark:text-navy-300 mt-0.5">
-                        {rep.type === 'DICOM' ? (
-                          <HardDrive className="w-4 h-4" />
-                        ) : rep.type === 'ECG' ? (
-                          <Activity className="w-4 h-4 text-red-500" />
-                        ) : (
-                          <FileText className="w-4 h-4 text-blue-500" />
-                        )}
+            {reports.length === 0 ? (
+              <div className="py-8 text-center text-xs text-[#64748B] dark:text-[#94A3B8] border border-dashed border-[#CBD5E1] dark:border-[#1B456E] rounded-2xl">
+                No diagnostic files currently linked to this visit. Upload files above.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {reports.map((rep) => (
+                  <div
+                    key={rep.report_id || rep.id}
+                    className="p-3.5 rounded-2xl border border-[#EAE4D3] dark:border-[#1B456E] bg-white dark:bg-[#0A2540] flex items-center justify-between shadow-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-[#0A2540] text-[#FFC21A] flex items-center justify-center font-bold">
+                        <FileText className="w-4 h-4" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-navy-900 dark:text-white leading-snug">
-                          {rep.title}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="navy" size="xs" className="font-mono">
-                            {rep.type}
-                          </Badge>
-                          <span className="text-[11px] font-mono text-navy-400">
-                            {rep.date}
-                          </span>
+                        <div className="text-xs font-bold text-[#0A2540] dark:text-white">
+                          {rep.file_name || rep.title || 'Diagnostic Report'}
                         </div>
-                        {rep.slices_count && (
-                          <p className="text-[10px] text-navy-500 font-mono mt-1">
-                            DICOM series: {rep.slices_count} axial slices loaded
-                          </p>
-                        )}
+                        <div className="text-[10px] text-[#64748B] dark:text-[#94A3B8] font-mono">
+                          {rep.report_type || 'DICOM'} • {rep.upload_date || 'Today'}
+                        </div>
                       </div>
                     </div>
 
                     <Button
                       variant="ghost"
                       size="xs"
-                      onClick={() =>
-                        addToast({
-                          type: 'info',
-                          title: 'Launch Viewer',
-                          message: `Opening ${rep.title} in physician workspace.`,
-                        })
-                      }
-                      className="text-navy-500 hover:text-navy-900 dark:hover:text-white"
+                      onClick={() => navigate(`/doctor/viewer/${activeEncounter.visitId}`)}
+                      icon={ExternalLink}
                     >
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      View
                     </Button>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-5 p-3 rounded-xl bg-canary-400/10 border border-canary-400/20 text-navy-900 dark:text-navy-100">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-ochre-600 dark:text-canary-400 shrink-0" />
-                <p className="text-xs font-semibold">
-                  Automatic Physician Sync
-                </p>
+                ))}
               </div>
-              <p className="text-[11px] text-navy-600 dark:text-navy-300 mt-1 leading-relaxed">
-                Ingested diagnostic media automatically syncs into Dr. Vikram Kulkarni's <strong>P-DOC-03 Diagnostic Viewer</strong> window.
-              </p>
-            </div>
+            )}
           </Card>
         </div>
       </div>

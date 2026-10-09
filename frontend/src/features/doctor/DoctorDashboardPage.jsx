@@ -110,22 +110,22 @@ export default function DoctorDashboardPage() {
   ];
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
       {/* --- MAIN CENTER CONTENT (8 or 9 cols on xl) --- */}
-      <div className="xl:col-span-8 2xl:col-span-9 space-y-6 min-w-0">
+      <div className="xl:col-span-8 2xl:col-span-9 space-y-4 min-w-0">
         {/* Next Patient Feature Card (Navy panel with warm amber CTA) */}
         {nextPatient && (
           <Card
             variant="dark"
-            className="p-6 bg-[#0A2540] text-white border-0 shadow-sm relative overflow-hidden"
+            className="p-4 sm:p-5 bg-[#0A2540] text-white border-0 shadow-sm relative overflow-hidden"
           >
             {/* Subtle radial warmth glow in corner */}
             <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-[#FFC21A]/10 to-transparent pointer-events-none" />
 
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="bg-[#FFC21A] text-[#0A2540] text-xs font-black font-mono px-3 py-1 rounded-full uppercase tracking-wider">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="bg-[#FFC21A] text-[#0A2540] text-[11px] font-black font-mono px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                     NEXT IN LINE • {nextPatient.queue_token}
                   </span>
                   <span className="font-mono text-xs text-[#94A3B8]">
@@ -137,7 +137,7 @@ export default function DoctorDashboardPage() {
                 </div>
 
                 <div>
-                  <h2 className="text-2xl font-bold tracking-tight text-white font-sans">
+                  <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white font-sans">
                     {nextPatient.full_name}
                   </h2>
                   <p className="text-xs text-[#CBD5E1] mt-0.5">
@@ -147,16 +147,16 @@ export default function DoctorDashboardPage() {
                 </div>
 
                 {/* Vitals Summary Strip */}
-                <div className="flex flex-wrap items-center gap-2.5 pt-1">
-                  <div className="px-3 py-1.5 rounded-xl bg-[#0F355A] border border-[#1B456E] flex items-center gap-2 text-xs font-mono">
-                    <Activity className="w-3.5 h-3.5 text-[#FFC21A]" />
+                <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                  <div className="px-2.5 py-1 rounded-lg bg-[#0F355A] border border-[#1B456E] flex items-center gap-1.5 text-xs font-mono">
+                    <Activity className="w-3 h-3 text-[#FFC21A]" />
                     <span>BP: <strong className="text-white">{nextPatient.triage_summary.bp}</strong> mmHg</span>
                   </div>
-                  <div className="px-3 py-1.5 rounded-xl bg-[#0F355A] border border-[#1B456E] flex items-center gap-2 text-xs font-mono">
-                    <Heart className="w-3.5 h-3.5 text-[#DC2626]" />
+                  <div className="px-2.5 py-1 rounded-lg bg-[#0F355A] border border-[#1B456E] flex items-center gap-1.5 text-xs font-mono">
+                    <Heart className="w-3 h-3 text-[#DC2626]" />
                     <span>Pulse: <strong className="text-white">{nextPatient.triage_summary.pulse}</strong> bpm</span>
                   </div>
-                  <div className="px-3 py-1.5 rounded-xl bg-[#0F355A] border border-[#1B456E] flex items-center gap-2 text-xs font-mono">
+                  <div className="px-2.5 py-1 rounded-lg bg-[#0F355A] border border-[#1B456E] flex items-center gap-1.5 text-xs font-mono">
                     <span>SpO2: <strong className="text-white">{nextPatient.triage_summary.spo2}%</strong></span>
                   </div>
                   <Badge variant={nextPatient.triage_summary.bp_stage?.includes('Stage 2') ? 'crisis' : 'scheduled'} size="xs">
@@ -166,24 +166,24 @@ export default function DoctorDashboardPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:shrink-0">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 lg:shrink-0">
                 <button
                   type="button"
                   onClick={() => navigate(`/doctor/patient/${nextPatient.patient_id}`)}
-                  className="px-5 py-2.5 rounded-full bg-[#0F355A] hover:bg-[#1B456E] text-white border border-[#1B456E] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                  className="px-4 py-2 rounded-full bg-[#0F355A] hover:bg-[#1B456E] text-white border border-[#1B456E] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
                 >
-                  <FileText className="w-4 h-4 text-[#FFC21A]" />
+                  <FileText className="w-3.5 h-3.5 text-[#FFC21A]" />
                   <span>View Dossier</span>
                 </button>
                 <Button
                   variant="primary"
-                  size="md"
+                  size="sm"
                   pill
                   loading={calling}
                   onClick={() => handleCallPatient(nextPatient.visit_id)}
-                  className="font-bold text-xs px-6 shadow-sm shadow-[#FFC21A]/20"
+                  className="font-bold text-xs px-5 shadow-sm shadow-[#FFC21A]/20"
                 >
-                  <PhoneCall className="w-4 h-4 mr-1.5 text-[#0A2540] stroke-[2.5]" />
+                  <PhoneCall className="w-3.5 h-3.5 mr-1.5 text-[#0A2540] stroke-[2.5]" />
                   Call into Room
                 </Button>
               </div>
@@ -192,7 +192,7 @@ export default function DoctorDashboardPage() {
         )}
 
         {/* 3 KPI Cards Row (Exact Reference Structure) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <StatCard
             title="Waiting in Lounge"
             value={`${queueList.length} Patients`}
@@ -217,7 +217,7 @@ export default function DoctorDashboardPage() {
         </div>
 
         {/* Charts Row: Grouped Bar Chart & Centered Donut */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
           {/* Grouped Bar Chart (7 cols) */}
           <div className="lg:col-span-7">
             <ChartWrapper
@@ -247,18 +247,18 @@ export default function DoctorDashboardPage() {
               <SimpleDonutChart
                 data={triageDonutData}
                 totalLabel="Total Triage"
-                size={160}
-                strokeWidth={20}
+                size={130}
+                strokeWidth={16}
               />
             </ChartWrapper>
           </div>
         </div>
 
         {/* Prioritized Patient Queue Table (Exact Reference Data Table) */}
-        <Card className="p-6 bg-white dark:bg-[#0A2540] border border-[#EAE4D3] dark:border-[#1B456E]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <Card className="p-4 sm:p-5 bg-white dark:bg-[#0A2540] border border-[#EAE4D3] dark:border-[#1B456E]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
             <div>
-              <h3 className="text-base font-bold text-[#0A2540] dark:text-white tracking-tight font-sans">
+              <h3 className="text-sm sm:text-base font-bold text-[#0A2540] dark:text-white tracking-tight font-sans">
                 Prioritized Patient Roster
               </h3>
               <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-0.5">
@@ -266,7 +266,7 @@ export default function DoctorDashboardPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="px-3 py-1 rounded-full bg-[#FAF6EC] dark:bg-[#0F355A] border border-[#EAE4D3] dark:border-[#1B456E] text-xs font-semibold text-[#0A2540] dark:text-[#E2E8F0]">
+              <div className="px-2.5 py-0.5 rounded-full bg-[#FAF6EC] dark:bg-[#0F355A] border border-[#EAE4D3] dark:border-[#1B456E] text-[11px] font-semibold text-[#0A2540] dark:text-[#E2E8F0]">
                 {queueList.length} Active in Queue
               </div>
             </div>
@@ -276,16 +276,16 @@ export default function DoctorDashboardPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#FAF6EC] dark:bg-[#0F355A] text-[#64748B] dark:text-[#94A3B8]">
-                  <th className="py-3 px-4 rounded-l-2xl text-xs font-semibold w-8">
+                  <th className="py-2.5 px-3 rounded-l-xl text-xs font-semibold w-8">
                     <input type="checkbox" className="rounded accent-[#FFC21A]" />
                   </th>
-                  <th className="py-3 px-4 text-xs font-semibold">Patient Name & UHID</th>
-                  <th className="py-3 px-4 text-xs font-semibold">Chief Complaint</th>
-                  <th className="py-3 px-4 text-xs font-semibold">Vitals (BP / Pulse)</th>
-                  <th className="py-3 px-4 text-xs font-semibold">AHA Stage</th>
-                  <th className="py-3 px-4 text-xs font-semibold">Wait Time</th>
-                  <th className="py-3 px-4 text-xs font-semibold">Status</th>
-                  <th className="py-3 px-4 rounded-r-2xl text-right text-xs font-semibold">Action</th>
+                  <th className="py-2.5 px-3 text-xs font-semibold">Patient Name & UHID</th>
+                  <th className="py-2.5 px-3 text-xs font-semibold">Chief Complaint</th>
+                  <th className="py-2.5 px-3 text-xs font-semibold">Vitals (BP / Pulse)</th>
+                  <th className="py-2.5 px-3 text-xs font-semibold">AHA Stage</th>
+                  <th className="py-2.5 px-3 text-xs font-semibold">Wait Time</th>
+                  <th className="py-2.5 px-3 text-xs font-semibold">Status</th>
+                  <th className="py-2.5 px-3 rounded-r-xl text-right text-xs font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#EAE4D3] dark:divide-[#1B456E] text-xs">
@@ -296,10 +296,10 @@ export default function DoctorDashboardPage() {
                       key={pt.visit_id}
                       className="hover:bg-[#FAF6EC]/60 dark:hover:bg-[#0F355A]/40 transition-colors"
                     >
-                      <td className="py-4 px-4">
+                      <td className="py-2.5 px-3">
                         <input type="checkbox" className="rounded accent-[#FFC21A]" />
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-2.5 px-3">
                         <div className="font-bold text-[#0A2540] dark:text-white font-sans">
                           {pt.full_name}
                         </div>
@@ -307,27 +307,27 @@ export default function DoctorDashboardPage() {
                           {pt.uhid} • {pt.age}Y/{pt.gender}
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-[#64748B] dark:text-[#CBD5E1] max-w-xs truncate">
+                      <td className="py-2.5 px-3 text-[#64748B] dark:text-[#CBD5E1] max-w-xs truncate">
                         {pt.chief_complaint}
                       </td>
-                      <td className="py-4 px-4 font-mono font-bold text-[#0A2540] dark:text-white">
+                      <td className="py-2.5 px-3 font-mono font-bold text-[#0A2540] dark:text-white">
                         {pt.triage_summary.bp}{' '}
                         <span className="text-[10px] font-normal text-[#94A3B8]">({pt.triage_summary.pulse} bpm)</span>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-2.5 px-3">
                         <Badge variant={isCrisis ? 'crisis' : 'scheduled'} size="xs">
                           {pt.triage_summary.bp_stage}
                         </Badge>
                       </td>
-                      <td className="py-4 px-4 font-mono text-[#64748B] dark:text-[#CBD5E1]">
+                      <td className="py-2.5 px-3 font-mono text-[#64748B] dark:text-[#CBD5E1]">
                         {pt.wait_duration}
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-2.5 px-3">
                         <Badge variant="waiting" size="xs">
                           {pt.status}
                         </Badge>
                       </td>
-                      <td className="py-4 px-4 text-right">
+                      <td className="py-2.5 px-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <Button
                             variant="primary"
@@ -357,11 +357,11 @@ export default function DoctorDashboardPage() {
       </div>
 
       {/* --- RIGHT RAIL ON DASHBOARD (Exact Medlink Reference) --- */}
-      <div className="xl:col-span-4 2xl:col-span-3 space-y-6">
+      <div className="xl:col-span-4 2xl:col-span-3 space-y-4">
         {/* Doctors' Schedule / Roster Widget */}
-        <Card className="p-6 bg-white dark:bg-[#0A2540] border border-[#EAE4D3] dark:border-[#1B456E]">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-[#0A2540] dark:text-white tracking-tight">
+        <Card className="p-4 sm:p-5 bg-white dark:bg-[#0A2540] border border-[#EAE4D3] dark:border-[#1B456E]">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm sm:text-base font-bold text-[#0A2540] dark:text-white tracking-tight">
               Doctors' Schedule
             </h3>
             <button type="button" className="text-[#94A3B8] hover:text-[#0A2540]">
@@ -370,34 +370,34 @@ export default function DoctorDashboardPage() {
           </div>
 
           {/* 3-Number Summary Row */}
-          <div className="grid grid-cols-3 gap-2 py-3 px-3 rounded-2xl bg-[#FAF6EC] dark:bg-[#0F355A] text-center mb-4">
+          <div className="grid grid-cols-3 gap-2 py-2 px-2.5 rounded-xl bg-[#FAF6EC] dark:bg-[#0F355A] text-center mb-3">
             <div>
-              <div className="text-lg font-extrabold text-[#0A2540] dark:text-white font-sans tabular-nums">3</div>
+              <div className="text-base font-extrabold text-[#0A2540] dark:text-white font-sans tabular-nums">3</div>
               <div className="text-[10px] text-[#64748B] font-medium">All Doctor</div>
             </div>
             <div>
-              <div className="text-lg font-extrabold text-[#047857] font-sans tabular-nums">2</div>
+              <div className="text-base font-extrabold text-[#047857] font-sans tabular-nums">2</div>
               <div className="text-[10px] text-[#64748B] font-medium">Available</div>
             </div>
             <div>
-              <div className="text-lg font-extrabold text-[#DC2626] font-sans tabular-nums">1</div>
+              <div className="text-base font-extrabold text-[#DC2626] font-sans tabular-nums">1</div>
               <div className="text-[10px] text-[#64748B] font-medium">Unavailable</div>
             </div>
           </div>
 
           {/* Doctor List with Availability Pills */}
-          <div className="space-y-3.5">
+          <div className="space-y-2.5">
             {doctorsSchedule.map((doc, idx) => (
-              <div key={idx} className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-[#0A2540] text-white flex items-center justify-center font-bold text-xs shrink-0">
+              <div key={idx} className="flex items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-full bg-[#0A2540] text-white flex items-center justify-center font-bold text-xs shrink-0">
                     {doc.name.charAt(4)}
                   </div>
                   <div className="truncate">
                     <div className="text-xs font-bold text-[#0A2540] dark:text-white truncate">
                       {doc.name}
                     </div>
-                    <div className="text-[11px] text-[#64748B] truncate">
+                    <div className="text-[10px] text-[#64748B] truncate">
                       {doc.specialty}
                     </div>
                   </div>
@@ -412,9 +412,9 @@ export default function DoctorDashboardPage() {
         </Card>
 
         {/* Recent Activity Stream Widget */}
-        <Card className="p-6 bg-white dark:bg-[#0A2540] border border-[#EAE4D3] dark:border-[#1B456E]">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-[#0A2540] dark:text-white tracking-tight">
+        <Card className="p-4 sm:p-5 bg-white dark:bg-[#0A2540] border border-[#EAE4D3] dark:border-[#1B456E]">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm sm:text-base font-bold text-[#0A2540] dark:text-white tracking-tight">
               Recent Activity
             </h3>
             <button type="button" className="text-[#94A3B8] hover:text-[#0A2540]">
@@ -422,13 +422,13 @@ export default function DoctorDashboardPage() {
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {recentActivity.map((act, idx) => {
               const Icon = act.icon;
               return (
-                <div key={idx} className="flex items-start gap-3 text-xs">
-                  <div className="w-8 h-8 rounded-full bg-[#FAF6EC] dark:bg-[#0F355A] text-[#0A2540] dark:text-[#FFC21A] flex items-center justify-center shrink-0 mt-0.5">
-                    <Icon className="w-4 h-4" />
+                <div key={idx} className="flex items-start gap-2.5 text-xs">
+                  <div className="w-7 h-7 rounded-full bg-[#FAF6EC] dark:bg-[#0F355A] text-[#0A2540] dark:text-[#FFC21A] flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon className="w-3.5 h-3.5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[#0A2540] dark:text-[#E2E8F0] font-medium leading-snug">

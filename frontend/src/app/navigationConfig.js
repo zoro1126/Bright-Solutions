@@ -18,7 +18,6 @@ import { ROUTES } from '../routes';
 export const NAVIGATION_CONFIG = {
   RECEPTIONIST: [
     { label: 'Operations Command', path: ROUTES.RECEPTIONIST.DASHBOARD, icon: LayoutDashboard },
-    { label: 'Patient Registration', path: ROUTES.RECEPTIONIST.INTAKE, icon: UserPlus },
     { label: 'Intake Questionnaire', path: ROUTES.RECEPTIONIST.QUESTIONNAIRE, icon: ClipboardList },
     { label: 'Diagnostic Ingestion', path: ROUTES.RECEPTIONIST.REPORTS, icon: UploadCloud },
     { label: 'Live Token Queue', path: ROUTES.RECEPTIONIST.QUEUE, icon: Clock },

@@ -112,7 +112,7 @@ export function LoginPage() {
       >
         {/* Header Branding */}
         <div className="text-center max-w-md mx-auto mb-8 space-y-2">
-          <div className="w-12 h-12 mx-auto rounded-3xl bg-gradient-to-tr from-[#E08A00] via-[#FFC21A] to-[#FFE500] flex items-center justify-center text-[#0A2540] shadow-[0_2px_12px_rgba(255,194,26,0.35)]">
+          <div className="w-12 h-12 mx-auto rounded-3xl bg-gradient-to-tr from-[#E08A00] via-[#FFC21A] to-[#FFD24D] flex items-center justify-center text-[#0A2540] shadow-[0_2px_12px_rgba(255,194,26,0.35)]">
             <Sun className="w-6 h-6 stroke-[2.5]" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0A2540] dark:text-white">

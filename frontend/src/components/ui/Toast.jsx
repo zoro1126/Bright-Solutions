@@ -56,7 +56,7 @@ export function ToastProvider({ children }) {
                         t.onUndo();
                         removeToast(t.id);
                       }}
-                      className="mt-2 text-xs font-bold text-[#FFE500] hover:underline"
+                      className="mt-2 text-xs font-bold text-[#FFC21A] hover:underline"
                     >
                       Undo Action
                     </button>

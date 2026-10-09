@@ -44,7 +44,7 @@ export default function CashierDashboardPage() {
   const queue = queueData.billing_queue || [];
 
   const paymentModeData = [
-    { label: 'UPI QR', value: 55, color: '#FFE500' },
+    { label: 'UPI QR', value: 55, color: '#FFC21A' },
     { label: 'Cash Tender', value: 35, color: '#10B981' },
     { label: 'Card / POS', value: 10, color: '#3B82F6' },
   ];
@@ -58,39 +58,39 @@ export default function CashierDashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-navy-100 dark:border-navy-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-navy-100 dark:border-navy-800 pb-3">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-ochre-600 dark:text-ochre-400">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-ochre-600 dark:text-ochre-400">
               P-CSH-01 • Cashier Operations
             </span>
             <Badge variant="navy" size="xs">Billing Counter 01</Badge>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white">
             Cashier Billing Operations Dashboard
           </h1>
-          <p className="text-sm text-navy-500 dark:text-navy-400 mt-1">
+          <p className="text-xs text-navy-500 dark:text-navy-400 mt-0.5">
             Welcome, Rahul Verma. Reconcile signed consultation invoices and tender collections.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <Button
             variant="outline"
-            size="sm"
+            size="xs"
             onClick={loadQueue}
-            className="flex items-center gap-2"
+            className="flex items-center gap-1.5"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh Queue
           </Button>
         </div>
       </div>
 
       {/* KPI Bento Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           title="Gross Shift Collections"
           value="₹ 14,850"
@@ -122,7 +122,7 @@ export default function CashierDashboardPage() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
         <div className="lg:col-span-6">
           <SimpleDonutChart
             title="Revenue Split by Payment Mode"
@@ -136,19 +136,19 @@ export default function CashierDashboardPage() {
             title="Hourly Collections Intake (INR)"
             subtitle="Cashflow velocity across the morning OPD shift"
             data={hourlyRevenueData}
-            barColor="#FFE500"
+            barColor="#FFC21A"
           />
         </div>
       </div>
 
       {/* Pending Billing Queue Table */}
-      <Card className="p-5 space-y-4">
+      <Card className="p-3.5 sm:p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-navy-900 dark:text-white">
+            <h3 className="text-sm sm:text-base font-bold text-navy-900 dark:text-white">
               Pending Billing Queue (Signed Consultations Ready)
             </h3>
-            <p className="text-xs text-navy-500 dark:text-navy-400">
+            <p className="text-[11px] text-navy-500 dark:text-navy-400">
               Patients with signed doctor orders awaiting invoice itemization and tender capture.
             </p>
           </div>
@@ -160,14 +160,14 @@ export default function CashierDashboardPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-navy-100 dark:border-navy-800 bg-navy-50/50 dark:bg-navy-900/50 text-navy-500 font-semibold uppercase tracking-wider text-[11px]">
-                <th className="py-3 px-4">Token</th>
-                <th className="py-3 px-4">Patient Information</th>
-                <th className="py-3 px-4">Attending Doctor</th>
-                <th className="py-3 px-4">Payment Category</th>
-                <th className="py-3 px-4">Estimated Net</th>
-                <th className="py-3 px-4">Signed Since</th>
-                <th className="py-3 px-4 text-right">Action</th>
+              <tr className="border-b border-navy-100 dark:border-navy-800 bg-navy-50/50 dark:bg-navy-900/50 text-navy-500 font-semibold uppercase tracking-wider text-[10px]">
+                <th className="py-2 px-3">Token</th>
+                <th className="py-2 px-3">Patient Information</th>
+                <th className="py-2 px-3">Attending Doctor</th>
+                <th className="py-2 px-3">Payment Category</th>
+                <th className="py-2 px-3">Estimated Net</th>
+                <th className="py-2 px-3">Signed Since</th>
+                <th className="py-2 px-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-navy-100 dark:divide-navy-800">
@@ -176,12 +176,12 @@ export default function CashierDashboardPage() {
                   key={item.visit_id}
                   className="hover:bg-navy-50/50 dark:hover:bg-navy-800/40 transition-colors"
                 >
-                  <td className="py-3.5 px-4">
-                    <span className="font-mono font-bold text-xs px-2.5 py-1 rounded-lg bg-navy-900 text-canary-400">
-                      {item.queue_token}
+                  <td className="py-2 px-3">
+                    <span className="inline-flex items-center justify-center font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-[#0A2540] text-[#FFC21A] dark:bg-[#071D33] dark:text-[#FFC21A] border border-[#1B456E] shadow-xs">
+                      #{item.queue_token || item.token || `Q-${item.visit_id}`}
                     </span>
                   </td>
-                  <td className="py-3.5 px-4">
+                  <td className="py-2 px-3">
                     <div className="font-bold text-navy-900 dark:text-white">
                       {item.patient_name}
                     </div>
@@ -189,21 +189,21 @@ export default function CashierDashboardPage() {
                       {item.uhid}
                     </div>
                   </td>
-                  <td className="py-3.5 px-4 text-navy-700 dark:text-navy-300">
+                  <td className="py-2 px-3 text-navy-700 dark:text-navy-300">
                     {item.doctor_name}
                   </td>
-                  <td className="py-3.5 px-4">
+                  <td className="py-2 px-3">
                     <Badge variant={item.insurance_category === 'CASH' ? 'navy' : 'ochre'} size="xs">
                       {item.insurance_category}
                     </Badge>
                   </td>
-                  <td className="py-3.5 px-4 font-mono font-bold text-navy-900 dark:text-white text-sm">
+                  <td className="py-2 px-3 font-mono font-bold text-navy-900 dark:text-white text-xs sm:text-sm">
                     ₹ {item.subtotal.toFixed(2)}
                   </td>
-                  <td className="py-3.5 px-4 font-mono text-navy-500">
+                  <td className="py-2 px-3 font-mono text-navy-500">
                     {item.ready_since}
                   </td>
-                  <td className="py-3.5 px-4 text-right">
+                  <td className="py-2 px-3 text-right">
                     <Button
                       variant="primary"
                       size="xs"

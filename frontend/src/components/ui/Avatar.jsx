@@ -19,7 +19,7 @@ export function Avatar({ name = '', role = '', size = 'md' }) {
 
   return (
     <div
-      className={`${sizeClasses[size] || sizeClasses.md} rounded-xl bg-[#0A2540] border border-[#1B456E] text-[#FFE500] font-bold font-mono flex items-center justify-center shrink-0 select-none shadow-sm`}
+      className={`${sizeClasses[size] || sizeClasses.md} rounded-xl bg-[#0A2540] border border-[#1B456E] text-[#FFC21A] font-bold font-mono flex items-center justify-center shrink-0 select-none shadow-sm`}
       title={`${name} (${role})`}
     >
       {initials}

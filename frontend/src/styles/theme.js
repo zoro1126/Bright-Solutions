@@ -5,7 +5,7 @@ export const tokens = {
       amber: '#FFC21A',
       amberHover: '#F5A300',
       amberPressed: '#E08A00',
-      amberHighlight: '#FFE500',
+      amberHighlight: '#FFC21A',
       contrastText: '#0A2540',
     },
     surfaces: {

@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
   ]).map((d) => ({ label: d.doctor_name.replace('Dr. ', ''), value: d.patients_seen }));
 
   const diseasePrevalenceDonut = [
-    { label: 'Essential HTN', value: 35, color: '#FFE500' },
+    { label: 'Essential HTN', value: 35, color: '#FFC21A' },
     { label: 'Type 2 Diabetes', value: 25, color: '#3B82F6' },
     { label: 'Respiratory URI', value: 20, color: '#10B981' },
     { label: 'Dyspepsia', value: 12, color: '#F59E0B' },
@@ -72,33 +72,33 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Page Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-navy-100 dark:border-navy-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-navy-100 dark:border-navy-800 pb-3">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-ochre-600 dark:text-ochre-400">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-ochre-600 dark:text-ochre-400">
               P-ADM-01 • Institutional Governance
             </span>
             <Badge variant="navy" size="xs">Executive Center</Badge>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-navy-900 dark:text-white">
             Hospital Executive & Clinical Analytics
           </h1>
-          <p className="text-sm text-navy-500 dark:text-navy-400 mt-1">
+          <p className="text-xs text-navy-500 dark:text-navy-400 mt-0.5">
             High-altitude governance: footfall velocity, revenue realization, doctor utilization, and disease epidemiology.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant="emerald" size="sm" className="font-mono py-1 px-3">
+          <Badge variant="emerald" size="xs" className="font-mono py-0.5 px-2.5">
             ALL COUNTERS ONLINE
           </Badge>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           title="Today Patient Footfall"
           value={`${summary.today_footfall} Patients`}
@@ -130,13 +130,13 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Graph Row 1: Weekly Footfall & Doctor Utilization */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
         <div className="lg:col-span-6">
           <SimpleBarChart
             title="7-Day OPD Footfall Trend"
             subtitle="Walk-in volume distribution across days of the week"
             data={weeklyFootfallData}
-            barColor="#FFE500"
+            barColor="#FFC21A"
           />
         </div>
 
@@ -151,7 +151,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Graph Row 2: Disease Prevalence Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
         <div className="lg:col-span-6">
           <SimpleDonutChart
             title="Clinical Disease Epidemiology"
@@ -161,55 +161,55 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="lg:col-span-6">
-          <Card className="p-5 space-y-4">
+          <Card className="p-3.5 sm:p-4 space-y-3">
             <div>
-              <h3 className="text-base font-bold text-navy-900 dark:text-white">
+              <h3 className="text-sm sm:text-base font-bold text-navy-900 dark:text-white">
                 Quality & Compliance Benchmark
               </h3>
-              <p className="text-xs text-navy-500">
+              <p className="text-[11px] text-navy-500">
                 Key operational metrics monitored for NABH / JCI clinical accreditation.
               </p>
             </div>
 
-            <div className="space-y-3 pt-2">
-              <div className="p-3.5 rounded-xl bg-navy-50 dark:bg-navy-800/60 border border-navy-100 dark:border-navy-700 flex items-center justify-between">
+            <div className="space-y-2 pt-1">
+              <div className="p-2.5 rounded-xl bg-navy-50 dark:bg-navy-800/60 border border-navy-100 dark:border-navy-700 flex items-center justify-between">
                 <div>
                   <div className="font-bold text-xs text-navy-900 dark:text-white">
                     Triage Safety Evaluation Rate
                   </div>
-                  <div className="text-[11px] text-navy-500">
+                  <div className="text-[10px] text-navy-500">
                     Patients screened for BP & BMI before doctor consult
                   </div>
                 </div>
-                <span className="font-mono font-bold text-emerald-600 text-sm">
+                <span className="font-mono font-bold text-emerald-600 text-xs sm:text-sm">
                   100.0%
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-navy-50 dark:bg-navy-800/60 border border-navy-100 dark:border-navy-700 flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-navy-50 dark:bg-navy-800/60 border border-navy-100 dark:border-navy-700 flex items-center justify-between">
                 <div>
                   <div className="font-bold text-xs text-navy-900 dark:text-white">
                     Deterministic CDSS Alert Compliance
                   </div>
-                  <div className="text-[11px] text-navy-500">
+                  <div className="text-[10px] text-navy-500">
                     Zero unaddressed critical allergy contraindications
                   </div>
                 </div>
-                <span className="font-mono font-bold text-emerald-600 text-sm">
+                <span className="font-mono font-bold text-emerald-600 text-xs sm:text-sm">
                   99.8%
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-navy-50 dark:bg-navy-800/60 border border-navy-100 dark:border-navy-700 flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-navy-50 dark:bg-navy-800/60 border border-navy-100 dark:border-navy-700 flex items-center justify-between">
                 <div>
                   <div className="font-bold text-xs text-navy-900 dark:text-white">
                     Cashless Tender Penetration
                   </div>
-                  <div className="text-[11px] text-navy-500">
+                  <div className="text-[10px] text-navy-500">
                     UPI and card billing over physical currency
                   </div>
                 </div>
-                <span className="font-mono font-bold text-ochre-600 dark:text-canary-400 text-sm">
+                <span className="font-mono font-bold text-ochre-600 dark:text-canary-400 text-xs sm:text-sm">
                   65.2%
                 </span>
               </div>

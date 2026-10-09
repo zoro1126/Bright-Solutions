@@ -327,9 +327,9 @@ export function PatientRegistrationPage() {
 
       {/* Token Issued Confirmation Slip (Printable 80mm format) */}
       {issuedToken ? (
-        <Card variant="surface" className="p-8 max-w-xl mx-auto space-y-6 border-2 border-[#FFE500]">
+        <Card variant="surface" className="p-8 max-w-xl mx-auto space-y-6 border-2 border-[#FFC21A]">
           <div className="text-center space-y-2">
-            <div className="w-12 h-12 rounded-2xl bg-[#FFE500] text-[#051A30] mx-auto flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-2xl bg-[#FFC21A] text-[#0A2540] mx-auto flex items-center justify-center font-bold">
               <CheckCircle2 className="w-7 h-7" />
             </div>
             <h2 className="text-xl font-bold text-[#0A2540] dark:text-white">
@@ -343,7 +343,7 @@ export function PatientRegistrationPage() {
           <div className="p-5 rounded-2xl bg-[#F6F7FA] dark:bg-[#0F355A] border border-[#CBD5E1] dark:border-[#1B456E] space-y-3 font-mono text-xs">
             <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0] dark:border-[#1B456E]">
               <span className="text-[#64748B]">Queue Token:</span>
-              <span className="text-2xl font-black text-[#0A2540] dark:text-[#FFE500]">
+              <span className="text-2xl font-black text-[#0A2540] dark:text-[#FFC21A]">
                 #{issuedToken.token}
               </span>
             </div>
@@ -582,7 +582,7 @@ export function PatientRegistrationPage() {
                     className={`inline-flex items-center gap-1.5 text-xs font-bold font-mono px-2.5 py-1 rounded-lg border transition-all ${
                       isListening
                         ? 'bg-[#DC2626] text-white border-[#DC2626] animate-pulse'
-                        : 'bg-[#FFE500] text-[#051A30] border-[#EAB308]'
+                        : 'bg-[#FFC21A] text-[#0A2540] border-[#F5A300]'
                     }`}
                   >
                     {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
@@ -594,7 +594,7 @@ export function PatientRegistrationPage() {
                   value={form.chief_complaint}
                   onChange={(e) => setForm({ ...form, chief_complaint: e.target.value })}
                   placeholder="Primary presenting symptom or walk-in consultation reason..."
-                  className="w-full bg-white dark:bg-[#0A2540] text-sm rounded-xl border border-[#CBD5E1] dark:border-[#1B456E] p-3 focus:outline-none focus:ring-2 focus:ring-[#FFE500]"
+                  className="w-full bg-white dark:bg-[#0A2540] text-sm rounded-xl border border-[#CBD5E1] dark:border-[#1B456E] p-3 focus:outline-none focus:ring-2 focus:ring-[#FFC21A]"
                 />
               </div>
 

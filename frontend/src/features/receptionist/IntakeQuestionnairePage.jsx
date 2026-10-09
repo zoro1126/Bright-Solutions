@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Mic, MicOff, CheckCircle2, ArrowRight, Volume2 } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  Mic,
+  MicOff,
+  CheckCircle2,
+  ArrowRight,
+  Volume2,
+  Users,
+  Search,
+  UserCheck,
+  Clock,
+  ChevronRight,
+  ClipboardList
+} from 'lucide-react';
 import { api } from '../../services/api';
 import { Button, Card, Badge, useToast } from '../../components/ui';
 import { ROUTES } from '../../routes';
 
 // Standard 12-20 Clinical Screening Questions (extensible to Q20)
-// Option values are strictly stored as integer indices: 0, 1, 2, 3
 const CLINICAL_QUESTIONS = [
   {
     id: 'q1',
@@ -100,22 +111,22 @@ const CLINICAL_QUESTIONS = [
   },
   {
     id: 'q10',
-    title: 'Q10: Prior Hospitalization / Surgical History',
+    title: 'Q10: Current Chronic Medication Adherence',
     options: [
-      { index: 0, label: '0 — None in past 5 years' },
-      { index: 1, label: '1 — Minor day care procedure' },
-      { index: 2, label: '2 — Inpatient stay within 1 year' },
-      { index: 3, label: '3 — Multiple chronic admissions' },
+      { index: 0, label: '0 — Strict daily compliance' },
+      { index: 1, label: '1 — Occasional missed dose' },
+      { index: 2, label: '2 — Frequent non-adherence' },
+      { index: 3, label: '3 — Discontinued without advice' },
     ],
   },
   {
     id: 'q11',
-    title: 'Q11: Tobacco & Nicotine Exposure',
+    title: 'Q11: Tobacco / Smoking History',
     options: [
-      { index: 0, label: '0 — Non-smoker / Lifetime zero' },
+      { index: 0, label: '0 — Non-smoker (Never)' },
       { index: 1, label: '1 — Former smoker (> 1 yr quit)' },
-      { index: 2, label: '2 — Occasional social tobacco' },
-      { index: 3, label: '3 — Daily active smoker (> 10/day)' },
+      { index: 2, label: '2 — Light smoker (< 5/day)' },
+      { index: 3, label: '3 — Heavy active smoker' },
     ],
   },
   {
@@ -130,44 +141,124 @@ const CLINICAL_QUESTIONS = [
   },
 ];
 
-export function IntakeQuestionnairePage() {
-  const navigate = useNavigate();
-  const { addToast } = useToast();
-
-  // Selected answers: stored strictly as integer codes 0, 1, 2, 3
-  const [answers, setAnswers] = useState({
-    q1: 1,
-    q2: 1,
-    q3: 0,
-    q4: 0,
-  });
-
-  const [voiceNotes, setVoiceNotes] = useState(
-    'Patient reports mild morning headache onset 3 days ago. No prior drug allergies documented.'
-  );
-
-  const [isListening, setIsListening] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  // Active Patient Token Context
-  const activeEncounter = {
+const INITIAL_PATIENTS = [
+  {
+    visitId: 101,
+    token: 'Q-101',
+    uhid: 'UHID-2026-00001',
+    name: 'Ananya Sharma',
+    age: 52,
+    gender: 'FEMALE',
+    doctor: 'Dr. Vikram Kulkarni, MD',
+    stage: 'IN_CONSULTATION',
+    answers: { q1: 0, q2: 1, q3: 0, q4: 0, q5: 0, q6: 0, q7: 0, q8: 0, q9: 1, q10: 0, q11: 0, q12: 0 },
+    voiceNotes: 'Routine quarterly checkup. No acute symptoms reported.',
+    completed: true,
+  },
+  {
+    visitId: 102,
     token: 'Q-102',
     uhid: 'UHID-2026-00002',
     name: 'Ramesh Patel',
     age: 50,
     gender: 'MALE',
     doctor: 'Dr. Vikram Kulkarni, MD',
-  };
+    stage: 'TRIAGED',
+    answers: { q1: 1, q2: 1, q3: 0, q4: 0 },
+    voiceNotes: 'Patient reports mild morning headache onset 3 days ago. No prior drug allergies documented.',
+    completed: false,
+  },
+  {
+    visitId: 103,
+    token: 'Q-103',
+    uhid: 'UHID-2026-00003',
+    name: 'Sunita Rao',
+    age: 62,
+    gender: 'FEMALE',
+    doctor: 'Dr. Ananya Roy, MBBS',
+    stage: 'TRIAGED',
+    answers: {},
+    voiceNotes: '',
+    completed: false,
+  },
+];
 
-  const answeredCount = Object.keys(answers).length;
+export function IntakeQuestionnairePage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { addToast } = useToast();
+
+  const [patients, setPatients] = useState(INITIAL_PATIENTS);
+  const [selectedToken, setSelectedToken] = useState('Q-102');
+  const [patientSearch, setPatientSearch] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Auto-select token from URL params if provided
+  useEffect(() => {
+    const paramToken = searchParams.get('token');
+    if (paramToken) {
+      setSelectedToken(paramToken);
+      // If patient not in initial list, dynamically append
+      setPatients((prev) => {
+        if (!prev.find((p) => p.token === paramToken)) {
+          return [
+            {
+              visitId: Date.now(),
+              token: paramToken,
+              uhid: `UHID-2026-0000${Math.floor(Math.random() * 80) + 20}`,
+              name: 'Registered Walk-in Patient',
+              age: 45,
+              gender: 'MALE',
+              doctor: 'Dr. Vikram Kulkarni, MD',
+              stage: 'TRIAGED',
+              answers: {},
+              voiceNotes: '',
+              completed: false,
+            },
+            ...prev,
+          ];
+        }
+        return prev;
+      });
+    }
+  }, [searchParams]);
+
+  // Current active patient
+  const activePatient = patients.find((p) => p.token === selectedToken) || patients[0];
+  const activeAnswers = activePatient?.answers || {};
+  const activeVoiceNotes = activePatient?.voiceNotes || '';
+
+  const answeredCount = Object.keys(activeAnswers).length;
   const totalQuestions = CLINICAL_QUESTIONS.length;
   const progressPct = Math.round((answeredCount / totalQuestions) * 100);
 
   function handleOptionSelect(qId, index) {
-    setAnswers((prev) => ({
-      ...prev,
-      [qId]: index, // strictly integer index (0..3)
-    }));
+    setPatients((prev) =>
+      prev.map((p) => {
+        if (p.token === activePatient.token) {
+          return {
+            ...p,
+            answers: {
+              ...p.answers,
+              [qId]: index,
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }
+
+  function handleVoiceNotesChange(text) {
+    setPatients((prev) =>
+      prev.map((p) => {
+        if (p.token === activePatient.token) {
+          return { ...p, voiceNotes: text };
+        }
+        return p;
+      })
+    );
   }
 
   function toggleVoiceDictation() {
@@ -190,7 +281,7 @@ export function IntakeQuestionnairePage() {
       setIsListening(true);
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        setVoiceNotes((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        handleVoiceNotesChange(activeVoiceNotes ? `${activeVoiceNotes} ${transcript}` : transcript);
         setIsListening(false);
         addToast({ title: 'Dictated Note Added', message: `"${transcript}"`, type: 'success' });
       };
@@ -205,17 +296,22 @@ export function IntakeQuestionnairePage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.saveQuestionnaire(102, {
+      await api.saveQuestionnaire(activePatient.visitId || 102, {
         patient_id: 2,
-        answers,
-        voice_notes: voiceNotes,
+        answers: activeAnswers,
+        voice_notes: activeVoiceNotes,
       });
+
+      // Mark this patient as completed
+      setPatients((prev) =>
+        prev.map((p) => (p.token === activePatient.token ? { ...p, completed: true } : p))
+      );
+
       addToast({
-        title: 'Questionnaire Saved',
-        message: `Saved ${answeredCount}/${totalQuestions} numerical answers for #${activeEncounter.token}.`,
+        title: 'Intake Questionnaire Saved',
+        message: `Saved ${answeredCount}/${totalQuestions} answers for #${activePatient.token} (${activePatient.name}).`,
         type: 'success',
       });
-      navigate(ROUTES.RECEPTIONIST.QUEUE);
     } catch (err) {
       addToast({ title: 'Submission Error', message: err.message, type: 'error' });
     } finally {
@@ -223,145 +319,274 @@ export function IntakeQuestionnairePage() {
     }
   }
 
+  const filteredPatients = patients.filter(
+    (p) =>
+      p.name.toLowerCase().includes(patientSearch.toLowerCase()) ||
+      p.token.toLowerCase().includes(patientSearch.toLowerCase()) ||
+      p.uhid.toLowerCase().includes(patientSearch.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
-      {/* 1. ACTIVE TOKEN HEADER */}
-      <Card variant="dark" className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="px-3.5 py-2 rounded-xl bg-[#FFE500] text-[#051A30] font-black font-mono text-lg shrink-0 shadow-sm">
-            #{activeEncounter.token}
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EAE4D3] dark:border-[#1B456E] pb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[11px] font-bold uppercase font-mono tracking-wider text-[#8A740C] dark:text-[#FFC21A]">
+              P-REC-03 • Patient-List Based Anamnesis
+            </span>
+            <Badge variant="brand" size="xs">Live Intake</Badge>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold text-white tracking-tight">
-                {activeEncounter.name}
-              </h1>
-              <span className="text-xs font-mono text-[#94A3B8]">
-                ({activeEncounter.age}y / {activeEncounter.gender})
-              </span>
-            </div>
-            <div className="text-xs text-[#CBD5E1] font-mono mt-0.5">
-              {activeEncounter.uhid} • Attending: {activeEncounter.doctor}
-            </div>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0A2540] dark:text-white">
+            Standardized Intake Questionnaire
+          </h1>
+          <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-0.5">
+            Select any registered patient from the active roster to record symptoms and baseline risk factors.
+          </p>
         </div>
 
-        {/* Linear Progress Bar */}
-        <div className="w-full md:w-64 space-y-1.5 font-mono text-xs">
-          <div className="flex items-center justify-between text-[#CBD5E1]">
-            <span>Screening Progress</span>
-            <span className="font-bold text-[#FFE500]">{answeredCount}/{totalQuestions} Answered</span>
-          </div>
-          <div className="w-full h-2 rounded-full bg-[#1B456E] overflow-hidden">
-            <div
-              className="h-full bg-[#FFE500] transition-all duration-300"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-        </div>
-      </Card>
-
-      {/* 2. MCQ QUESTIONS GRID (2-Column Cards) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {CLINICAL_QUESTIONS.map((q) => {
-          const selectedIndex = answers[q.id];
-
-          return (
-            <Card key={q.id} variant="surface" className="p-5 flex flex-col justify-between space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="text-xs font-bold text-[#0A2540] dark:text-white tracking-tight">
-                  {q.title}
-                </h3>
-                {selectedIndex !== undefined && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#ECFDF5] text-[#065F46] font-bold border border-[#A7F3D0]">
-                    Val: {selectedIndex}
-                  </span>
-                )}
-              </div>
-
-              {/* Radio Option Chips mapped to integer indices (0, 1, 2, 3) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {q.options.map((opt) => {
-                  const isChecked = selectedIndex === opt.index;
-
-                  return (
-                    <button
-                      key={opt.index}
-                      type="button"
-                      onClick={() => handleOptionSelect(q.id, opt.index)}
-                      className={`p-2.5 rounded-xl text-left text-xs transition-all flex items-center justify-between border ${
-                        isChecked
-                          ? 'bg-[#FFE500] text-[#051A30] font-bold border-[#EAB308] shadow-xs'
-                          : 'bg-[#F6F7FA] dark:bg-[#0F355A] text-[#64748B] dark:text-[#CBD5E1] border-[#CBD5E1]/60 dark:border-[#1B456E] hover:border-[#0A2540] dark:hover:border-[#FFE500]'
-                      }`}
-                    >
-                      <span className="truncate">{opt.label}</span>
-                      <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
-                        isChecked ? 'border-[#051A30] bg-[#051A30]' : 'border-[#CBD5E1]'
-                      }`}>
-                        {isChecked && <span className="w-1.5 h-1.5 rounded-full bg-[#FFE500]" />}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </Card>
-          );
-        })}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(ROUTES.RECEPTIONIST.QUEUE)}
+          className="self-start sm:self-auto"
+        >
+          View Full Queue Roster
+        </Button>
       </div>
 
-      {/* 3. VOICE-ASSISTED CLINICAL OBSERVATIONS & NOTES */}
-      <Card variant="surface" className="p-6 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A2540] dark:text-white flex items-center gap-2">
-              <Volume2 className="w-4 h-4 text-[#B89C14]" />
-              Voice Dictation & Clinical Anamnesis Notes
-            </h3>
-            <p className="text-[11px] text-[#64748B] font-mono">
-              Dictated qualitative observations saved into intake_questionnaires.voice_notes
-            </p>
+      {/* Main 2-Column Layout: Left Patient List, Right Questionnaire */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* LEFT COLUMN: Patient Queue Roster (4 cols) */}
+        <div className="lg:col-span-4 space-y-3">
+          <Card variant="surface" className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#0A2540] dark:text-white flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#8A740C] dark:text-[#FFC21A]" />
+                Registered Patients ({patients.length})
+              </h2>
+              <span className="text-[10px] font-mono text-[#64748B] dark:text-[#94A3B8]">
+                OPD Lounge
+              </span>
+            </div>
+
+            {/* Patient Search */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
+              <input
+                type="text"
+                placeholder="Search patient, token, UHID..."
+                value={patientSearch}
+                onChange={(e) => setPatientSearch(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-[#FAF6EC] dark:bg-[#071D33] border border-[#EAE4D3] dark:border-[#1B456E] rounded-xl text-xs text-[#0A2540] dark:text-white placeholder-[#64748B] focus:outline-none focus:ring-2 focus:ring-[#FFC21A]"
+              />
+            </div>
+
+            {/* Patients Scrollable Roster */}
+            <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
+              {filteredPatients.map((p) => {
+                const isSelected = p.token === activePatient?.token;
+                const pAnswered = Object.keys(p.answers || {}).length;
+                const isDone = p.completed || pAnswered >= totalQuestions;
+
+                return (
+                  <button
+                    key={p.token}
+                    type="button"
+                    onClick={() => setSelectedToken(p.token)}
+                    className={`w-full text-left p-3.5 rounded-2xl transition-all border flex items-start justify-between gap-3 ${
+                      isSelected
+                        ? 'bg-[#FAF6EC] dark:bg-[#0F355A] border-[#FFC21A] ring-1 ring-[#FFC21A] shadow-sm'
+                        : 'bg-white dark:bg-[#0A2540] border-[#EAE4D3] dark:border-[#1B456E] hover:border-[#FFC21A]/60'
+                    }`}
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center font-mono text-xs font-bold px-2 py-0.5 rounded-lg bg-[#0A2540] text-[#FFC21A] dark:bg-[#071D33] dark:text-[#FFC21A] border border-[#1B456E]">
+                          #{p.token}
+                        </span>
+                        <span className="text-xs font-bold text-[#0A2540] dark:text-white truncate">
+                          {p.name}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-[#64748B] dark:text-[#94A3B8] font-mono">
+                        {p.age}y / {p.gender?.[0]} • {p.uhid}
+                      </div>
+                      <div className="text-[10px] text-[#8A740C] dark:text-[#FFE08A] font-medium truncate">
+                        {p.doctor}
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 flex flex-col items-end gap-1.5">
+                      {isDone ? (
+                        <Badge variant="completed" size="xs">
+                          {pAnswered}/{totalQuestions} Done
+                        </Badge>
+                      ) : pAnswered > 0 ? (
+                        <Badge variant="brand" size="xs">
+                          {pAnswered}/{totalQuestions} In Progress
+                        </Badge>
+                      ) : (
+                        <Badge variant="neutral" size="xs">
+                          Pending
+                        </Badge>
+                      )}
+                      <ChevronRight className={`w-3.5 h-3.5 ${isSelected ? 'text-[#0A2540] dark:text-white' : 'text-[#94A3B8]'}`} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
+
+        {/* RIGHT COLUMN: Active Patient Screening Form (8 cols) */}
+        <div className="lg:col-span-8 space-y-5">
+          {/* Active Patient Hero Context (Unified Warm Amber Theme) */}
+          <Card variant="dark" className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center justify-center font-mono font-bold text-base px-3 py-1.5 rounded-xl bg-[#0F355A] text-[#FFC21A] border border-[#1B456E]">
+                #{activePatient.token}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-base text-white">
+                    {activePatient.name}
+                  </span>
+                  <span className="text-xs text-[#94A3B8] font-mono">
+                    ({activePatient.age}y / {activePatient.gender})
+                  </span>
+                </div>
+                <div className="text-xs text-[#CBD5E1] font-mono mt-0.5">
+                  {activePatient.uhid} • Attending: {activePatient.doctor}
+                </div>
+              </div>
+            </div>
+
+            {/* Linear Progress Bar in Unified Warm Amber */}
+            <div className="w-full md:w-64 space-y-1.5 font-mono text-xs">
+              <div className="flex items-center justify-between text-[#CBD5E1]">
+                <span>Screening Progress</span>
+                <span className="font-bold text-[#FFC21A]">{answeredCount}/{totalQuestions} Answered</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-[#1B456E] overflow-hidden">
+                <div
+                  className="h-full bg-[#FFC21A] transition-all duration-300"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* MCQ QUESTIONS GRID (Unified Warm Amber Selected State) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {CLINICAL_QUESTIONS.map((q) => {
+              const selectedIndex = activeAnswers[q.id];
+
+              return (
+                <Card key={q.id} variant="surface" className="p-4 flex flex-col justify-between space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-xs font-bold text-[#0A2540] dark:text-white tracking-tight">
+                      {q.title}
+                    </h3>
+                    {selectedIndex !== undefined && (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-[#E6F7ED] text-[#047857] font-bold border border-[#A7F3D0]">
+                        Val: {selectedIndex}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Radio Option Chips mapped to unified warm amber (#FFC21A) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {q.options.map((opt) => {
+                      const isChecked = selectedIndex === opt.index;
+
+                      return (
+                        <button
+                          key={opt.index}
+                          type="button"
+                          onClick={() => handleOptionSelect(q.id, opt.index)}
+                          className={`p-2.5 rounded-xl text-left text-xs transition-all flex items-center justify-between border ${
+                            isChecked
+                              ? 'bg-[#FFC21A] text-[#0A2540] font-bold border-[#F5A300] shadow-xs'
+                              : 'bg-[#FAF6EC] dark:bg-[#071D33] text-[#64748B] dark:text-[#CBD5E1] border-[#EAE4D3] dark:border-[#1B456E] hover:border-[#0A2540] dark:hover:border-[#FFC21A]'
+                          }`}
+                        >
+                          <span className="truncate">{opt.label}</span>
+                          <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
+                            isChecked ? 'border-[#0A2540] bg-[#0A2540]' : 'border-[#CBD5E1] dark:border-[#1B456E]'
+                          }`}>
+                            {isChecked && <span className="w-1.5 h-1.5 rounded-full bg-[#FFC21A]" />}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
 
-          <button
-            type="button"
-            onClick={toggleVoiceDictation}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-all border ${
-              isListening
-                ? 'bg-[#DC2626] text-white border-[#DC2626] animate-pulse ring-4 ring-[#DC2626]/20'
-                : 'bg-[#FFE500] text-[#051A30] border-[#EAB308]'
-            }`}
-          >
-            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-            <span>{isListening ? 'Listening...' : 'Voice Dictate'}</span>
-          </button>
+          {/* Voice-Assisted Clinical Observations & Notes */}
+          <Card variant="surface" className="p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0A2540] dark:text-white flex items-center gap-2">
+                  <Volume2 className="w-4 h-4 text-[#8A740C] dark:text-[#FFC21A]" />
+                  Voice Dictation & Clinical Anamnesis Notes
+                </h3>
+                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] font-mono mt-0.5">
+                  Click the mic button to capture verbatim patient statements.
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                variant={isListening ? 'danger' : 'outline'}
+                size="sm"
+                icon={isListening ? MicOff : Mic}
+                onClick={toggleVoiceDictation}
+                className={isListening ? 'animate-pulse' : ''}
+              >
+                {isListening ? 'Stop Listening' : 'Dictate Speech'}
+              </Button>
+            </div>
+
+            <textarea
+              rows={3}
+              value={activeVoiceNotes}
+              onChange={(e) => handleVoiceNotesChange(e.target.value)}
+              placeholder="e.g. Patient reports pain radiating to left arm upon exertion. No previous adverse drug reactions."
+              className="w-full p-3 rounded-2xl border border-[#EAE4D3] dark:border-[#1B456E] bg-[#FAF6EC] dark:bg-[#071D33] text-xs text-[#0A2540] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#FFC21A] resize-none"
+            />
+          </Card>
+
+          {/* Submission Bar */}
+          <div className="flex items-center justify-between pt-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Switch to next uncompleted patient
+                const nextPatient = patients.find((p) => p.token !== activePatient.token && !p.completed);
+                if (nextPatient) setSelectedToken(nextPatient.token);
+              }}
+            >
+              Skip / Next Patient
+            </Button>
+
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleSubmit}
+              disabled={loading}
+              icon={CheckCircle2}
+              className="bg-[#FFC21A] hover:bg-[#F5A300] text-[#0A2540] font-bold shadow-sm"
+            >
+              {loading ? 'Saving Responses...' : `Save Screening for #${activePatient.token}`}
+            </Button>
+          </div>
         </div>
-
-        <textarea
-          rows={3}
-          value={voiceNotes}
-          onChange={(e) => setVoiceNotes(e.target.value)}
-          placeholder="Dictate or type qualitative anamnesis findings, patient-reported symptoms, or lifestyle flags..."
-          className="w-full bg-[#F6F7FA] dark:bg-[#0F355A] text-xs rounded-xl border border-[#CBD5E1] dark:border-[#1B456E] p-3 text-[#051A30] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFE500] font-sans leading-relaxed"
-        />
-
-        <div className="flex items-center justify-between pt-4 border-t border-[#F1F5F9] dark:border-[#1B456E]">
-          <Button variant="outline" onClick={() => navigate(ROUTES.RECEPTIONIST.QUEUE)}>
-            Skip / Return to Queue
-          </Button>
-
-          <Button
-            variant="primary"
-            size="lg"
-            loading={loading}
-            icon={CheckCircle2}
-            onClick={handleSubmit}
-            className="font-bold px-6"
-          >
-            Save Questionnaire & Transition to Doctor Queue
-          </Button>
-        </div>
-      </Card>
+      </div>
     </div>
   );
 }

@@ -3,11 +3,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Warm Amber Brand Palette */
+  /* Warm Amber Brand Palette (Unified #FFC21A Across Entire Site) */
   --color-amber-base: #FFC21A;
   --color-amber-hover: #F5A300;
   --color-amber-pressed: #E08A00;
-  --color-amber-highlight: #FFE500;
+  --color-amber-highlight: #FFC21A;
+  --color-canary-400: #FFC21A;
+  --color-canary-500: #F5A300;
+  --color-canary-300: #FFEDB8;
 
   /* Reference Tint Surfaces & Backgrounds */
   --color-canvas-warm: #FFFDF8;
