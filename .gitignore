@@ -60,6 +60,7 @@ scratch/
 # Operating System & IDE Artifacts
 .DS_Store
 Thumbs.db
+docs/trash/
 .idea/
 .vscode/
 *.sublime-project
