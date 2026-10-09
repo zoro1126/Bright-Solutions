@@ -147,6 +147,7 @@ To prevent git merge conflicts and ensure clean rebases:
 
 - 🗄️ **[DATABASE_SPEC.md](docs/DATABASE_SPEC.md)**: Full 13-table MySQL relational data dictionary, constraints, and DDL.
 - 🔌 **[API_SPEC.md](docs/API_SPEC.md)**: Exhaustive REST API contract with request/response schemas.
+- 🚀 **[BACKEND_DEVELOPER_GUIDE.md](docs/BACKEND_DEVELOPER_GUIDE.md)**: Router-Service-Repository architecture, request lifecycles, and complete endpoint reference.
 - 🎨 **[FRONTEND_PAGES_SPEC.md](docs/FRONTEND_PAGES_SPEC.md)**: Role-by-role page designs, component purposes, and ASCII wireframes.
 - 📋 **[FEATURE_SPEC.md](docs/FEATURE_SPEC.md)**: Detailed clinical features and acceptance criteria.
 - 🔨 **[BACKEND_PR_LIST.md](docs/BACKEND_PR_LIST.md)**: 10 atomic, committable PR tasks for FastAPI/MySQL.
