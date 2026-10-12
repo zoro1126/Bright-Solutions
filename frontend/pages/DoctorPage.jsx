@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { usePatients } from '../context/PatientContext';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
-// import DoctorDashboard from '../components/DoctorDashboard';
+import DoctorDashboard from '../components/DoctorDashboard';
 import { 
   Stethoscope, 
   Sparkles, 
@@ -34,11 +34,13 @@ import {
 } from 'lucide-react';
 import SpeechMicButton from '../components/SpeechMicButton';
 
-export default function DoctorPage({ currentRole = 'doctor', onSwitchRole, onSwitchToReception }) {
+export default function DoctorPage({ currentRole = 'doctor', onSwitchRole, onSwitchToReception, activeSubTab = 'workspace', onLogout }) {
   const { patients, selectedPatientId, setSelectedPatientId, updatePatient, addToast } = usePatients();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [doctorNav, setDoctorNav] = useState('workspace'); // default to workspace (dashboard commented out for now)
+  const [doctorNav, setDoctorNav] = useState(activeSubTab || 'workspace');
   const [activeTab, setActiveTab] = useState('insights'); // 'insights' | 'dicom' | 'history' | 'rx' | 'conclusion'
+  const [overrideNote, setOverrideNote] = useState('');
+  const [isCdssOverrideModalOpen, setIsCdssOverrideModalOpen] = useState(false);
 
   // Pop-up Modals State
   const [isDicomModalOpen, setIsDicomModalOpen] = useState(false);
@@ -243,11 +245,18 @@ TREATMENT & FOLLOW-UP PLAN:
   };
 
   const handleFinalizeVisit = () => {
+    // CDSS Safety Check: CRITICAL alert requires override note before sign-off
+    if (insights?.overallRisk === 'HIGH' && !overrideNote.trim()) {
+      setIsCdssOverrideModalOpen(true);
+      return;
+    }
+
     updatePatient(patient.id, { 
       status: 'COMPLETED',
       billingStatus: 'READY',
       prescriptions: prescriptions,
-      consultationConclusion: conclusionText
+      consultationConclusion: conclusionText,
+      cdssOverrideNote: overrideNote
     });
     addToast(`Consultation finalized for ${patient.fullName}. Transmitted to Cashier for billing!`, 'success');
     if (onSwitchRole) {
@@ -257,13 +266,27 @@ TREATMENT & FOLLOW-UP PLAN:
     }
   };
 
+  const handleDoctorNavChange = (tabId) => {
+    if (tabId === 'dossier') {
+      setActiveTab('history');
+      setDoctorNav('workspace');
+      return;
+    }
+    if (tabId === 'viewer') {
+      setActiveTab('dicom');
+      setDoctorNav('workspace');
+      return;
+    }
+    setDoctorNav(tabId);
+  };
+
   return (
     <div className="m3-app-shell">
       {/* Google M3 Sidebar Navigation Drawer */}
       <Sidebar 
         role="doctor"
         activeTab={doctorNav}
-        setActiveTab={setDoctorNav}
+        setActiveTab={handleDoctorNavChange}
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
       />
@@ -273,10 +296,10 @@ TREATMENT & FOLLOW-UP PLAN:
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           currentRole={currentRole}
           onRoleChange={onSwitchRole}
+          onLogout={onLogout}
         />
 
-        {/* Doctor Dashboard commented out as requested */}
-        {/* {doctorNav === 'dashboard' ? (
+        {doctorNav === 'dashboard' ? (
           <DoctorDashboard 
             onOpenWorkspace={(patientId, initialTab) => {
               if (patientId) setSelectedPatientId(patientId);
@@ -285,8 +308,9 @@ TREATMENT & FOLLOW-UP PLAN:
             }}
             onSwitchToReception={onSwitchToReception}
           />
-        ) : ( */}
+        ) : (
           <main className="page-container doctor-page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: '0', boxSizing: 'border-box' }}>
+
             {/* Active Patient Bar - Styled like Reception Stat-Cards */}
             <div className="m3-doctor-patient-banner">
         {/* Ambient Pastel Blob in Top-Right Corner */}
@@ -1233,8 +1257,164 @@ TREATMENT & FOLLOW-UP PLAN:
         </div>
       </div>
     </main>
-    {/* )} */}
+    )}
     </div>
+
+    {/* CDSS Critical Alert Override Justification Dialog */}
+    {isCdssOverrideModalOpen && (
+      <div className="m3-modal-backdrop" style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.55)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1100,
+        padding: 16
+      }}>
+        <div className="card m3-dialog" style={{ width: '100%', maxWidth: 520, padding: 24, position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                background: '#fee2e2',
+                color: '#dc2626',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#991b1b' }}>
+                  CDSS Critical Clinical Safety Alert
+                </h3>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  Regulatory Medical-Legal Override Requirement
+                </span>
+              </div>
+            </div>
+            <button className="icon-btn" onClick={() => setIsCdssOverrideModalOpen(false)}>
+              <X size={16} />
+            </button>
+          </div>
+
+          <div style={{
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: 'var(--radius-md)',
+            padding: '12px 14px',
+            fontSize: 12,
+            color: '#7f1d1d',
+            lineHeight: 1.45,
+            marginBottom: 14
+          }}>
+            <strong>High-Risk Alert Flagged:</strong> {patient.fullName} has an active High-Risk flag (e.g. recurrence / organ monitoring caution). You must provide a formal clinical justification note before locking this e-prescription and releasing the visit to Billing.
+          </div>
+
+          {/* Quick Rationale Presets */}
+          <div style={{ marginBottom: 12 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+              Quick Clinical Presets:
+            </span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {[
+                'Benefits outweigh risks; LFT/CBC repeat in 14 days',
+                'Patient informed & consented to therapy',
+                'Prior treatment tolerability confirmed'
+              ].map((pst, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setOverrideNote(pst)}
+                  className="m3-btn m3-btn-tonal"
+                  style={{ height: 26, fontSize: 10.5, padding: '0 8px' }}
+                >
+                  + {pst}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Override Text Input with Voice STT */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+              Physician Override Rationale Note (Required):
+            </label>
+            <div style={{ position: 'relative' }}>
+              <textarea
+                value={overrideNote}
+                onChange={(e) => setOverrideNote(e.target.value)}
+                placeholder="Enter clinical rationale, contraindication evaluation, or monitoring protocol..."
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '10px 38px 10px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-default)',
+                  background: 'var(--bg-surface)',
+                  color: 'var(--text-primary)',
+                  fontSize: 12,
+                  boxSizing: 'border-box',
+                  fontFamily: 'inherit',
+                  outline: 'none'
+                }}
+              />
+              <SpeechMicButton
+                onTranscript={(txt) => setOverrideNote(prev => prev ? `${prev} ${txt}` : txt)}
+                title="Dictate override note"
+                style={{ position: 'absolute', right: 8, top: 10 }}
+              />
+            </div>
+          </div>
+
+          {/* Modal Actions */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <button
+              className="m3-btn m3-btn-tonal"
+              onClick={() => setIsCdssOverrideModalOpen(false)}
+              style={{ height: 34, fontSize: 12 }}
+            >
+              Cancel
+            </button>
+            <button
+              className="m3-btn m3-btn-filled"
+              disabled={!overrideNote.trim()}
+              onClick={() => {
+                setIsCdssOverrideModalOpen(false);
+                updatePatient(patient.id, { 
+                  status: 'COMPLETED',
+                  billingStatus: 'READY',
+                  prescriptions: prescriptions,
+                  consultationConclusion: conclusionText,
+                  cdssOverrideNote: overrideNote
+                });
+                addToast(`CDSS override recorded & consultation transmitted to Cashier!`, 'success');
+                if (onSwitchRole) {
+                  setTimeout(() => onSwitchRole('cashier'), 900);
+                }
+              }}
+              style={{
+                height: 34,
+                fontSize: 12,
+                background: overrideNote.trim() ? 'linear-gradient(135deg, #059669, #10b981)' : 'var(--border-default)',
+                color: '#ffffff',
+                cursor: overrideNote.trim() ? 'pointer' : 'not-allowed'
+              }}
+            >
+              <CheckCircle2 size={15} />
+              <span>Sign, Override & Transmit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
 
     {/* Pop-up Modal 1: AI Clinical Insights & Staging Dossier */}
     {isInsightsModalOpen && (

@@ -14,7 +14,8 @@ import {
   Layers,
   Sliders,
   Sun,
-  LayoutDashboard
+  LayoutDashboard,
+  ShieldCheck
 } from 'lucide-react';
 import { usePatients } from '../context/PatientContext';
 
@@ -37,7 +38,19 @@ export default function Sidebar({
   let navItems = [];
   let sectionLabel = 'Main Navigation';
 
-  if (role === 'doctor') {
+  if (role === 'admin') {
+    brandTag = 'Admin OS';
+    BrandIcon = ShieldCheck;
+    staffName = 'Dr. Alok Mehta';
+    staffRole = 'Medical Superintendent';
+    staffAvatar = 'AM';
+    sectionLabel = 'Executive Governance';
+    navItems = [
+      { id: 'dashboard', label: 'Executive Analytics', icon: BarChart3 },
+      { id: 'staff', label: 'Staff Roster & Access', icon: Users },
+      { id: 'audit', label: 'Clinical Audit Trail', icon: FileText }
+    ];
+  } else if (role === 'doctor') {
     brandTag = 'Doctor Desk';
     BrandIcon = Stethoscope;
     staffName = 'Dr. Kiran Patel';
@@ -45,8 +58,10 @@ export default function Sidebar({
     staffAvatar = 'KP';
     sectionLabel = 'Clinical Navigation';
     navItems = [
-      // { id: 'dashboard', label: 'Doctor Dashboard', icon: LayoutDashboard },
-      { id: 'workspace', label: 'Clinical Workspace', icon: Stethoscope, badge: stats?.total || 5, badgeBg: '#fef3c7', badgeColor: '#b45309', active: true }
+      { id: 'dashboard', label: 'Clinical Dashboard', icon: LayoutDashboard },
+      { id: 'workspace', label: 'Consultation & e-Rx', icon: Stethoscope, badge: stats?.total || 5, badgeBg: '#fef3c7', badgeColor: '#b45309' },
+      { id: 'dossier', label: 'Patient Dossier', icon: FileText },
+      { id: 'viewer', label: 'Diagnostic Scans', icon: Layers }
     ];
   } else if (role === 'cashier') {
     brandTag = 'Cashier Desk';
@@ -55,20 +70,20 @@ export default function Sidebar({
     staffRole = 'Cashier • Counter B-02';
     staffAvatar = 'RV';
     sectionLabel = 'Billing Navigation';
-    // User requested: "Dont add menu options by yourself yet. I'll give details about the same to you soon."
     navItems = [
-      { id: 'billing', label: 'Cashier & Billing Desk', icon: Receipt, active: true }
+      { id: 'dashboard', label: 'Billing Dashboard', icon: BarChart3 },
+      { id: 'billing', label: 'Itemized Checkout', icon: Receipt },
+      { id: 'receipt', label: 'Settlement & Receipts', icon: Receipt }
     ];
   } else {
     // Receptionist
     navItems = [
-      { id: 'queue', label: 'Patient Queue', icon: Users, badge: stats?.total },
-      { id: 'register', label: 'New Patient', icon: UserPlus, action: onOpenRegister },
-      { id: 'pending', label: 'Pending Intake', icon: FileText, badge: stats?.pendingQuestionnaire, badgeColor: '#b45309', badgeBg: '#fef3c7' },
-      { id: 'insights', label: 'AI Insights Ready', icon: Sparkles, badge: stats?.insightsReady, badgeColor: '#15803d', badgeBg: '#dcfce7' },
-      { id: 'doctors', label: 'Doctor Stations', icon: Stethoscope },
-      { id: 'billing', label: 'Billing Handoff', icon: Receipt },
-      { id: 'reports', label: 'Desk Analytics', icon: BarChart3 }
+      { id: 'dashboard', label: 'Operations Dashboard', icon: LayoutDashboard },
+      { id: 'queue', label: 'Live Patient Queue', icon: Users, badge: stats?.total },
+      { id: 'register', label: 'New Patient Intake', icon: UserPlus, action: onOpenRegister },
+      { id: 'pending', label: 'Pending Intake MCQ', icon: FileText, badge: stats?.pendingQuestionnaire, badgeColor: '#b45309', badgeBg: '#fef3c7' },
+      { id: 'reports', label: 'Reports Ingestion', icon: Layers },
+      { id: 'insights', label: 'AI Insights Ready', icon: Sparkles, badge: stats?.insightsReady, badgeColor: '#15803d', badgeBg: '#dcfce7' }
     ];
   }
 

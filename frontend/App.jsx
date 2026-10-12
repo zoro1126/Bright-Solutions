@@ -1,39 +1,339 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { PatientProvider } from './context/PatientContext';
 import { WalkthroughProvider } from './context/WalkthroughContext';
 import ReceptionistPage from './pages/ReceptionistPage';
 import DoctorPage from './pages/DoctorPage';
 import CashierPage from './pages/CashierPage';
+import AdminPage from './pages/AdminPage';
+import LoginPage from './pages/LoginPage';
 import SpotlightTour from './components/SpotlightTour';
 
-function AppContent() {
-  const [currentRole, setCurrentRole] = useState('receptionist'); // 'receptionist' | 'doctor' | 'cashier'
+// Route Guard wrapper
+function ProtectedRoute({ allowedRole, children }) {
+  const currentRole = localStorage.getItem('bright_role');
+  const token = localStorage.getItem('auth_token');
+
+  if (!token && !currentRole) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // If role is strictly restricted and doesn't match, redirect to user's assigned role
+  if (allowedRole && currentRole && allowedRole !== currentRole) {
+    return <Navigate to={`/${currentRole}/dashboard`} replace />;
+  }
+
+  return children;
+}
+
+function RoleRouter() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [currentRole, setCurrentRole] = useState(() => {
+    return localStorage.getItem('bright_role') || 'receptionist';
+  });
+
+  const handleRoleChange = (role) => {
+    setCurrentRole(role);
+    localStorage.setItem('bright_role', role);
+    navigate(`/${role}/dashboard`);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('bright_user');
+    localStorage.removeItem('bright_role');
+    navigate('/login');
+  };
 
   return (
-    <WalkthroughProvider onSwitchRole={setCurrentRole} currentRole={currentRole}>
-      {currentRole === 'receptionist' && (
-        <ReceptionistPage 
-          currentRole={currentRole} 
-          onSwitchRole={setCurrentRole} 
+    <WalkthroughProvider onSwitchRole={handleRoleChange} currentRole={currentRole}>
+      <Routes>
+        {/* P-00 Staff Gateway & Role Login */}
+        <Route 
+          path="/login" 
+          element={
+            <LoginPage 
+              onLoginSuccess={(role) => {
+                setCurrentRole(role);
+                navigate(`/${role}/dashboard`);
+              }} 
+            />
+          } 
         />
-      )}
-      {currentRole === 'doctor' && (
-        <DoctorPage 
-          currentRole={currentRole} 
-          onSwitchRole={setCurrentRole} 
-          onSwitchToReception={() => setCurrentRole('receptionist')} 
+
+        {/* RECEPTIONIST PORTAL (P-REC-01 to P-REC-05) */}
+        <Route 
+          path="/receptionist" 
+          element={
+            <ProtectedRoute allowedRole="receptionist">
+              <ReceptionistPage 
+                currentRole="receptionist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="dashboard"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
         />
-      )}
-      {currentRole === 'cashier' && (
-        <CashierPage 
-          currentRole={currentRole} 
-          onSwitchRole={setCurrentRole} 
+        <Route 
+          path="/receptionist/dashboard" 
+          element={
+            <ProtectedRoute allowedRole="receptionist">
+              <ReceptionistPage 
+                currentRole="receptionist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="dashboard"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
         />
-      )}
+        <Route 
+          path="/receptionist/intake" 
+          element={
+            <ProtectedRoute allowedRole="receptionist">
+              <ReceptionistPage 
+                currentRole="receptionist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="intake"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/receptionist/intake/questionnaire" 
+          element={
+            <ProtectedRoute allowedRole="receptionist">
+              <ReceptionistPage 
+                currentRole="receptionist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="pending"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/receptionist/reports" 
+          element={
+            <ProtectedRoute allowedRole="receptionist">
+              <ReceptionistPage 
+                currentRole="receptionist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="reports"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/receptionist/queue" 
+          element={
+            <ProtectedRoute allowedRole="receptionist">
+              <ReceptionistPage 
+                currentRole="receptionist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="queue"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* DOCTOR PORTAL (P-DOC-01 to P-DOC-04) */}
+        <Route 
+          path="/doctor" 
+          element={
+            <ProtectedRoute allowedRole="doctor">
+              <DoctorPage 
+                currentRole="doctor" 
+                onSwitchRole={handleRoleChange} 
+                onSwitchToReception={() => handleRoleChange('receptionist')}
+                activeSubTab="dashboard"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/doctor/dashboard" 
+          element={
+            <ProtectedRoute allowedRole="doctor">
+              <DoctorPage 
+                currentRole="doctor" 
+                onSwitchRole={handleRoleChange} 
+                onSwitchToReception={() => handleRoleChange('receptionist')}
+                activeSubTab="dashboard"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/doctor/patient/:id" 
+          element={
+            <ProtectedRoute allowedRole="doctor">
+              <DoctorPage 
+                currentRole="doctor" 
+                onSwitchRole={handleRoleChange} 
+                onSwitchToReception={() => handleRoleChange('receptionist')}
+                activeSubTab="dossier"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/doctor/viewer/:visitId" 
+          element={
+            <ProtectedRoute allowedRole="doctor">
+              <DoctorPage 
+                currentRole="doctor" 
+                onSwitchRole={handleRoleChange} 
+                onSwitchToReception={() => handleRoleChange('receptionist')}
+                activeSubTab="viewer"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/doctor/consultation/:visitId" 
+          element={
+            <ProtectedRoute allowedRole="doctor">
+              <DoctorPage 
+                currentRole="doctor" 
+                onSwitchRole={handleRoleChange} 
+                onSwitchToReception={() => handleRoleChange('receptionist')}
+                activeSubTab="workspace"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* CASHIER PORTAL (P-CSH-01 to P-CSH-03) */}
+        <Route 
+          path="/cashier" 
+          element={
+            <ProtectedRoute allowedRole="cashier">
+              <CashierPage 
+                currentRole="cashier" 
+                onSwitchRole={handleRoleChange}
+                activeSubTab="dashboard"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/cashier/dashboard" 
+          element={
+            <ProtectedRoute allowedRole="cashier">
+              <CashierPage 
+                currentRole="cashier" 
+                onSwitchRole={handleRoleChange}
+                activeSubTab="dashboard"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/cashier/billing/:visitId" 
+          element={
+            <ProtectedRoute allowedRole="cashier">
+              <CashierPage 
+                currentRole="cashier" 
+                onSwitchRole={handleRoleChange}
+                activeSubTab="billing"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/cashier/receipt/:billId" 
+          element={
+            <ProtectedRoute allowedRole="cashier">
+              <CashierPage 
+                currentRole="cashier" 
+                onSwitchRole={handleRoleChange}
+                activeSubTab="receipt"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ADMIN PORTAL (P-ADM-01 to P-ADM-03) */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute allowedRole="admin">
+              <AdminPage 
+                currentRole="admin" 
+                onSwitchRole={handleRoleChange}
+                activeSubTab="dashboard"
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute allowedRole="admin">
+              <AdminPage 
+                currentRole="admin" 
+                onSwitchRole={handleRoleChange}
+                activeSubTab="dashboard"
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/staff" 
+          element={
+            <ProtectedRoute allowedRole="admin">
+              <AdminPage 
+                currentRole="admin" 
+                onSwitchRole={handleRoleChange}
+                activeSubTab="staff"
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/audit-logs" 
+          element={
+            <ProtectedRoute allowedRole="admin">
+              <AdminPage 
+                currentRole="admin" 
+                onSwitchRole={handleRoleChange}
+                activeSubTab="audit"
+              />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Default Fallback / Index */}
+        <Route 
+          path="*" 
+          element={
+            localStorage.getItem('auth_token') ? (
+              <Navigate to={`/${localStorage.getItem('bright_role') || 'receptionist'}/dashboard`} replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } 
+        />
+      </Routes>
 
       {/* Interactive Spotlight Demo Tour */}
-      <SpotlightTour onSwitchRole={setCurrentRole} currentRole={currentRole} />
+      <SpotlightTour onSwitchRole={handleRoleChange} currentRole={currentRole} />
     </WalkthroughProvider>
   );
 }
@@ -42,7 +342,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <PatientProvider>
-        <AppContent />
+        <BrowserRouter>
+          <RoleRouter />
+        </BrowserRouter>
       </PatientProvider>
     </ThemeProvider>
   );

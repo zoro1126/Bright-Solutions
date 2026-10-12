@@ -55,15 +55,17 @@ const PHARMACY_MEDICINES = [
   { id: 'rx-5', name: 'Sterile Oncology Port Needle & Infusion Line Kit', form: 'Sterile Kit', batch: 'SC-4401', exp: '10/2028', qty: 1, unitPrice: 1200, gstPct: 12, coveredByInsurance: true }
 ];
 
-export default function CashierPage({ currentRole = 'cashier', onSwitchRole }) {
+export default function CashierPage({ currentRole = 'cashier', onSwitchRole, activeSubTab = 'billing', onLogout }) {
   const { patients, selectedPatientId, setSelectedPatientId, updatePatient, addToast } = usePatients();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [cashierNav, setCashierNav] = useState(activeSubTab || 'billing'); // 'dashboard' | 'billing' | 'receipt'
   const [activeBillTab, setActiveBillTab] = useState('ALL'); // 'ALL' | 'MEDICINES' | 'PROCEDURES'
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showBillPopupModal, setShowBillPopupModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [cashierNotes, setCashierNotes] = useState('');
+  const [cashReceived, setCashReceived] = useState('');
   const [billingFilter, setBillingFilter] = useState('ALL'); // 'ALL' | 'READY' | 'PAID' | 'GOVT' | 'INSURANCE' | 'CASH'
 
   const getInitials = (name) => {
@@ -208,6 +210,8 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole }) {
       {/* Sidebar Navigation Drawer for Cashier */}
       <Sidebar 
         role="cashier"
+        activeTab={cashierNav}
+        setActiveTab={setCashierNav}
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
       />
@@ -217,9 +221,88 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole }) {
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           currentRole={currentRole}
           onRoleChange={onSwitchRole}
+          onLogout={onLogout}
         />
 
         <main className="page-container cashier-page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: '0', padding: '16px 20px', boxSizing: 'border-box' }}>
+          {/* Cashier Operations Dashboard KPIs (P-CSH-01) */}
+          {cashierNav === 'dashboard' && (
+            <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-card-accent-blob blob-green" />
+                  <div className="stat-squircle-badge badge-bg-green">
+                    <Receipt size={16} strokeWidth={2.4} />
+                  </div>
+                  <div className="stat-card-value">₹3.42L</div>
+                  <div className="stat-card-label">Gross Collections Today</div>
+                </div>
+
+                <div className="stat-card">
+                  <div className="stat-card-accent-blob blob-yellow" />
+                  <div className="stat-squircle-badge badge-bg-yellow">
+                    <Clock size={16} strokeWidth={2.4} />
+                  </div>
+                  <div className="stat-card-value">
+                    {patients.filter(p => p.billingStatus !== 'PAID').length}
+                  </div>
+                  <div className="stat-card-label">Unbilled Queue Count</div>
+                </div>
+
+                <div className="stat-card">
+                  <div className="stat-card-accent-blob blob-blue" />
+                  <div className="stat-squircle-badge badge-bg-blue">
+                    <CheckCircle2 size={16} strokeWidth={2.4} />
+                  </div>
+                  <div className="stat-card-value">
+                    {patients.filter(p => p.billingStatus === 'PAID').length + 18}
+                  </div>
+                  <div className="stat-card-label">Invoices Settled</div>
+                </div>
+
+                <div className="stat-card">
+                  <div className="stat-card-accent-blob blob-rose" />
+                  <div className="stat-squircle-badge badge-bg-rose">
+                    <Landmark size={16} strokeWidth={2.4} />
+                  </div>
+                  <div className="stat-card-value">100%</div>
+                  <div className="stat-card-label">PM-JAY Cashless Cleared</div>
+                </div>
+              </div>
+
+              {/* Payment Mode Tender Breakdown */}
+              <div className="card" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div>
+                    <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                      Payment Tender Settlement Breakdown & Register Reconciliation
+                    </h3>
+                    <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '2px 0 0' }}>
+                      Drawer balancing: track physical cash in register vs electronic UPI / TPA credits
+                    </p>
+                  </div>
+                  <span className="badge badge-ready">Register Reconciled</span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
+                  {[
+                    { tender: 'Cash Counter Drawer', amount: '₹48,200', count: '14 Slips', color: '#d97706', bg: '#fef3c7' },
+                    { tender: 'UPI QR Transfers', amount: '₹84,500', count: '28 Slips', color: '#0284c7', bg: '#eff6ff' },
+                    { tender: 'POS Card Swipes', amount: '₹62,100', count: '16 Slips', color: '#15803d', bg: '#dcfce7' },
+                    { tender: 'PM-JAY Govt Cashless', amount: '₹1,24,000', count: '12 Patients', color: '#065f46', bg: '#ecfdf5' },
+                    { tender: 'Private TPA Claims', amount: '₹23,200', count: '4 Claims', color: '#7c3aed', bg: '#f3e8ff' }
+                  ].map((t, idx) => (
+                    <div key={idx} style={{ padding: 12, borderRadius: 'var(--radius-md)', background: t.bg, border: '1px solid var(--border-subtle)' }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, color: t.color }}>{t.tender}</div>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text-primary)', marginTop: 2 }}>{t.amount}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>{t.count} settled</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Cashier Desk Banner - Styled like Reception Stat-Cards */}
           <div className="m3-doctor-patient-banner" style={{ marginBottom: 16 }}>
             {/* Ambient Pastel Blob in Top-Right Corner */}
@@ -246,6 +329,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole }) {
                 </p>
               </div>
             </div>
+
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {onSwitchRole && (
@@ -870,6 +954,94 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole }) {
                     </button>
                   </div>
                 )}
+
+                {/* Cash Tender & Live Change Due Calculator */}
+                {paymentMethod === 'CASH' && (
+                  <div style={{
+                    marginTop: 10,
+                    padding: '12px 16px',
+                    borderRadius: 10,
+                    background: '#fefce8',
+                    border: '1.5px solid #fde047',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 10
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Banknote size={18} color="#ca8a04" />
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-primary)' }}>
+                            Cash Change Calculator
+                          </div>
+                          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                            Eliminates register mental math errors during physical cash collection
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {[patientNetPayable, Math.ceil(patientNetPayable / 500) * 500, Math.ceil(patientNetPayable / 1000) * 1000, Math.ceil(patientNetPayable / 2000) * 2000].filter((v, i, a) => v > 0 && a.indexOf(v) === i).slice(0, 3).map((val, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setCashReceived(String(val))}
+                            className="m3-btn m3-btn-tonal"
+                            style={{ height: 26, fontSize: 11, padding: '0 8px' }}
+                          >
+                            ₹{val.toLocaleString()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, alignItems: 'center' }}>
+                      <div>
+                        <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
+                          Cash Tender Amount Received (₹):
+                        </label>
+                        <input
+                          type="number"
+                          value={cashReceived}
+                          onChange={(e) => setCashReceived(e.target.value)}
+                          placeholder={`Enter amount (e.g. ₹${patientNetPayable})`}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: 'var(--radius-sm)',
+                            border: '1px solid var(--border-default)',
+                            background: '#ffffff',
+                            color: 'var(--text-primary)',
+                            fontSize: 13,
+                            fontWeight: 700,
+                            boxSizing: 'border-box'
+                          }}
+                        />
+                      </div>
+
+                      <div style={{
+                        padding: '10px 14px',
+                        borderRadius: 'var(--radius-sm)',
+                        background: '#ffffff',
+                        border: '1px solid #fde047',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
+                      }}>
+                        <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                          Change Due to Patient:
+                        </span>
+                        <div style={{
+                          fontSize: 18,
+                          fontWeight: 900,
+                          color: (Number(cashReceived) || 0) >= patientNetPayable ? '#15803d' : '#dc2626'
+                        }}>
+                          ₹{Math.max(0, (Number(cashReceived) || 0) - patientNetPayable).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
 
                 {/* Cashier Remarks / Reference with STT */}
                 <div style={{ marginTop: 12 }}>

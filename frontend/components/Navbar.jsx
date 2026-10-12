@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useWalkthrough } from '../context/WalkthroughContext';
-import { Sun, Moon, Menu, Stethoscope, Users, Receipt, Gamepad2, Sparkles } from 'lucide-react';
+import { Sun, Moon, Menu, Stethoscope, Users, Receipt, ShieldCheck, LogOut, Sparkles } from 'lucide-react';
 
-export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', onRoleChange }) {
+export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', onRoleChange, onLogout }) {
   const { theme, toggleTheme } = useTheme();
   const { isGuideActive, startGuide, stopGuide } = useWalkthrough();
 
@@ -30,6 +30,8 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
                 ? 'Oncologist Clinical Workspace' 
                 : currentRole === 'cashier'
                 ? 'Cashier & Settlement Desk'
+                : currentRole === 'admin'
+                ? 'Executive Governance'
                 : 'Reception Desk'}
             </span>
             <span className="brand-counter-pill" style={{ fontSize: 8.5, fontWeight: 600, background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: 'none', padding: '1px 5px' }}>
@@ -37,6 +39,8 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
                 ? 'Dr. Kiran Patel' 
                 : currentRole === 'cashier'
                 ? 'Counter B-02'
+                : currentRole === 'admin'
+                ? 'Admin Desk'
                 : 'Counter 01'}
             </span>
           </div>
@@ -44,7 +48,7 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
       </div>
 
       <div className="header-right">
-        {/* 3-Role Switcher Segmented Control */}
+        {/* Role Switcher Segmented Control */}
         {onRoleChange && (
           <div className="m3-role-switcher">
             <button
@@ -74,6 +78,14 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
               <Receipt size={11} />
               <span>Cashier</span>
             </button>
+            <button
+              className={`m3-role-btn ${currentRole === 'admin' ? 'active' : ''}`}
+              onClick={() => onRoleChange('admin')}
+              title="Executive Admin"
+            >
+              <ShieldCheck size={11} />
+              <span>Admin</span>
+            </button>
           </div>
         )}
 
@@ -97,7 +109,20 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
         >
           {theme === 'light' ? <Moon size={13} /> : <Sun size={13} />}
         </button>
+
+        {onLogout && (
+          <button
+            className="icon-btn"
+            onClick={onLogout}
+            title="Sign Out / Switch Staff Account"
+            aria-label="Sign Out"
+            style={{ color: '#b91c1c' }}
+          >
+            <LogOut size={13} />
+          </button>
+        )}
       </div>
     </header>
   );
 }
+
