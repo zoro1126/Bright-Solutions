@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { usePatients } from '../context/PatientContext';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
@@ -67,6 +67,18 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
   const [cashierNotes, setCashierNotes] = useState('');
   const [cashReceived, setCashReceived] = useState('');
   const [billingFilter, setBillingFilter] = useState('ALL'); // 'ALL' | 'READY' | 'PAID' | 'GOVT' | 'INSURANCE' | 'CASH'
+
+  // Synchronize state when activeSubTab prop changes (e.g. from URL routing or external links)
+  useEffect(() => {
+    if (activeSubTab) {
+      setCashierNav(activeSubTab);
+      if (activeSubTab === 'receipt') {
+        setBillingFilter('PAID');
+      } else if (activeSubTab === 'billing') {
+        setBillingFilter('READY');
+      }
+    }
+  }, [activeSubTab]);
 
   const getInitials = (name) => {
     const parts = name.split(' ');
@@ -224,7 +236,20 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
           onLogout={onLogout}
         />
 
-        <main className="page-container cashier-page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: '0', padding: '16px 20px', boxSizing: 'border-box' }}>
+        <main 
+          className="page-container cashier-page-container m3-page-animate" 
+          style={{ 
+            maxWidth: '100%', 
+            width: '100%', 
+            margin: '0', 
+            padding: '16px 20px 80px', 
+            boxSizing: 'border-box',
+            overflowY: 'auto',
+            height: 'calc(100vh - 50px)',
+            maxHeight: 'calc(100vh - 50px)',
+            scrollBehavior: 'smooth'
+          }}
+        >
           {/* Cashier Operations Dashboard KPIs (P-CSH-01) */}
           {cashierNav === 'dashboard' && (
             <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -416,7 +441,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
               </div>
             </div>
 
-            <div className="table-wrapper m3-scrollable-body" style={{ maxHeight: 'calc(100vh - 270px)', overflowY: 'auto' }}>
+            <div className="table-wrapper" style={{ overflowX: 'auto', width: '100%' }}>
               <table className="patient-table">
                 <thead>
                   <tr>
@@ -601,6 +626,92 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Cashier Financial Reconciliation & End-of-Day Audit Ledger (Scrollable Downward Content) */}
+          <div className="card" style={{ padding: '18px 22px', border: '1.5px solid var(--csh-pill-border, #6ee7b7)', background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className="stat-squircle-badge" style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #065f46, #059669)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Landmark size={18} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 14.5, fontWeight: 800, color: 'var(--csh-banner-title, #064e3b)', margin: 0 }}>
+                    End-of-Day Fiscal Counter Balancing & ABDM Claim Settlement Ledger
+                  </h3>
+                  <p style={{ fontSize: 11.5, color: 'var(--text-secondary)', margin: '2px 0 0' }}>
+                    Counter B-02 daily reconciliation status • ABDM Insurance Claims & PM-JAY Cashless Package verification audit
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="badge badge-ready" style={{ background: '#d1fae5', color: '#064e3b', border: '1px solid #6ee7b7', fontWeight: 700 }}>
+                  <ShieldCheck size={12} /> Cash Register Balanced
+                </span>
+                <span className="brand-counter-pill" style={{ background: '#dcfce7', color: '#15803d', border: '1px solid #86efac', fontWeight: 800, fontSize: 10.5 }}>
+                  Audit ID #CSH-2026-B02
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, marginBottom: 14 }}>
+              <div style={{ background: '#ffffff', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)' }}>Physical Currency in Register</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#064e3b', marginTop: 3 }}>₹48,200.00</div>
+                <div style={{ fontSize: 10.5, color: '#059669', marginTop: 2, fontWeight: 600 }}>14 Cash receipts verified • Exact tally</div>
+              </div>
+
+              <div style={{ background: '#ffffff', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)' }}>Dynamic UPI / QR Settlement</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#0284c7', marginTop: 3 }}>₹84,500.00</div>
+                <div style={{ fontSize: 10.5, color: '#0284c7', marginTop: 2, fontWeight: 600 }}>28 Instant bank settlements cleared</div>
+              </div>
+
+              <div style={{ background: '#ffffff', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)' }}>POS Debit / Credit Card Swipes</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#7c3aed', marginTop: 3 }}>₹62,100.00</div>
+                <div style={{ fontSize: 10.5, color: '#7c3aed', marginTop: 2, fontWeight: 600 }}>16 Slips • Merchant batch closed</div>
+              </div>
+
+              <div style={{ background: '#ffffff', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)' }}>Ayushman Bharat PM-JAY Cashless</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#059669', marginTop: 3 }}>₹1,24,000.00</div>
+                <div style={{ fontSize: 10.5, color: '#059669', marginTop: 2, fontWeight: 600 }}>12 Beneficiary packages transmitted</div>
+              </div>
+
+              <div style={{ background: '#ffffff', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)' }}>Private TPA Insurance Pre-Auth</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#d97706', marginTop: 3 }}>₹23,200.00</div>
+                <div style={{ fontSize: 10.5, color: '#d97706', marginTop: 2, fontWeight: 600 }}>4 Claims pending cashless adjudication</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(167, 243, 208, 0.6)', paddingTop: 12, flexWrap: 'wrap', gap: 10 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <CheckCircle2 size={14} color="#059669" />
+                <span>GST Tax Invoices synchronized with ABDM Health Facility Registry (HFR #TN-HFR-8812)</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  type="button"
+                  className="m3-btn m3-btn-outlined"
+                  onClick={() => addToast('Daily Tally & ERP CSV Ledger export downloaded.', 'success')}
+                  style={{ height: 30, fontSize: 11, padding: '0 12px' }}
+                >
+                  <Download size={13} /> Export Ledger CSV
+                </button>
+                <button
+                  type="button"
+                  className="m3-btn m3-btn-filled"
+                  onClick={() => addToast('Counter B-02 Day-End Settlement scroll printed.', 'success')}
+                  style={{ height: 30, fontSize: 11, padding: '0 12px', background: 'linear-gradient(135deg, #059669, #047857)' }}
+                >
+                  <Printer size={13} /> Print Day-End Scroll
+                </button>
+              </div>
             </div>
           </div>
         </main>

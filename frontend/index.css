@@ -208,177 +208,6 @@
   --csh-nav-active-border: #059669;
 }
 
-/* ==========================================================================
-   INDEPENDENT DARK MODE PALETTE — WCAG 2.2 AA COMPLIANT
-   Designed fresh: deep obsidian slate canvas, crisp elevated surfaces,
-   and radiant high-contrast clinical accents (no simple color inversion)
-   ========================================================================== */
-[data-theme="dark"],
-.theme-dark,
-.dark {
-  /* Core Dark Canvas & Typography */
-  --background: #090d16;              /* Deep obsidian slate canvas (eliminates eye fatigue & OLED smear) */
-  --foreground: #f8fafc;              /* Slate 50 ultra-crisp white text (17.8:1 contrast on canvas) */
-  --card: #0f172a;                    /* Slate 900 elevated surface (14.2:1 against foreground) */
-  --card-foreground: #f8fafc;         /* High-contrast text on dark card */
-  --popover: #1e293b;                 /* Slate 800 floating dialogs */
-  --popover-foreground: #f8fafc;
-
-  /* Primary Brand in Dark Mode (Luminous Warm Amber / Gold) */
-  --primary: #fbbf24;                 /* Amber 400 (9.2:1 against #0f172a surface) */
-  --primary-foreground: #451a03;      /* Deep Amber 950 text on primary button */
-  --primary-hover: #fcd34d;           /* Amber 300 */
-  --primary-active: #f59e0b;          /* Amber 500 */
-  --primary-container: #451a03;       /* Deep amber container */
-  --on-primary-container: #fde68a;    /* Bright amber text (9.1:1) */
-  --primary-border: #d97706;
-  --primary-text: #fbbf24;
-
-  /* Secondary */
-  --secondary: #334155;               /* Slate 700 */
-  --secondary-foreground: #f8fafc;
-  --secondary-hover: #475569;
-  --secondary-container: #1e293b;
-  --on-secondary-container: #f1f5f9;
-
-  /* Accent */
-  --accent: #38bdf8;                  /* Sky 400 (8.1:1 on #0f172a) */
-  --accent-foreground: #082f49;
-  --accent-hover: #7dd3fc;
-  --accent-container: #082f49;
-  --on-accent-container: #bae6fd;
-
-  /* Muted & Neutral */
-  --muted: #1e293b;                   /* Slate 800 */
-  --muted-foreground: #94a3b8;        /* Slate 400 (5.1:1 on #0f172a, WCAG AA compliant) */
-
-  /* Dark Structural Boundaries & Inputs */
-  --border: #334155;                  /* Slate 700 (3.4:1 contrast boundary) */
-  --border-subtle: #1e293b;
-  --border-default: #334155;
-  --border-strong: #64748b;           /* Slate 500 (4.5:1 against #0f172a) */
-  --border-focus: #fbbf24;
-  --input: #1e293b;                   /* Input box background */
-  --input-border: #334155;
-  --ring: #38bdf8;                    /* Bright cyan focus ring */
-  --ring-offset: #090d16;
-
-  /* Semantic Feedback in Dark Mode */
-  --destructive: #f87171;             /* Red 400 (6.1:1 on #0f172a) */
-  --destructive-foreground: #450a0a;
-  --destructive-container: #450a0a;
-  --on-destructive-container: #fecaca;
-
-  --success: #34d399;                 /* Emerald 400 (7.4:1 on #0f172a) */
-  --success-foreground: #064e3b;
-  --success-container: #064e3b;
-  --on-success-container: #a7f3d0;
-
-  --warning: #fbbf24;                 /* Amber 400 (9.2:1 on #0f172a) */
-  --warning-foreground: #78350f;
-  --warning-container: #78350f;
-  --on-warning-container: #fde68a;
-
-  --info: #38bdf8;                    /* Sky 400 (7.9:1 on #0f172a) */
-  --info-foreground: #082f49;
-  --info-container: #082f49;
-  --on-info-container: #bae6fd;
-
-  /* Sidebar Tokens Dark (Default / Receptionist) */
-  --sidebar-bg: #0f172a;
-  --sidebar-fg: #f8fafc;
-  --sidebar-border: #1e293b;
-  --sidebar-primary: #fbbf24;
-  --sidebar-accent: #1e293b;
-
-  /* Chart Tokens Dark */
-  --chart-1: #2dd4bf;                 /* Luminous Teal */
-  --chart-2: #60a5fa;                 /* Cobalt */
-  --chart-3: #fbbf24;                 /* Amber */
-  --chart-4: #c084fc;                 /* Purple */
-  --chart-5: #34d399;                 /* Mint Emerald */
-
-  /* Legacy Backward Compatibility Tokens in Dark */
-  --bg-page: var(--background);
-  --bg-surface: var(--card);
-  --bg-surface-dim: #090d16;
-  --bg-surface-elevated: #1e293b;
-  --bg-subtle: var(--muted);
-  --bg-hover: #1e293b;
-  --bg-active: #334155;
-  --text-primary: var(--foreground);
-  --text-secondary: #cbd5e1;
-  --text-tertiary: #94a3b8;
-  --text-muted: var(--muted-foreground);
-  --text-inverse: #090d16;
-
-  /* Status Tokens in Dark */
-  --status-ready-bg: var(--success-container);
-  --status-ready-text: var(--on-success-container);
-  --status-ready-border: #059669;
-  --status-pending-bg: var(--warning-container);
-  --status-pending-text: var(--on-warning-container);
-  --status-pending-border: #d97706;
-  --status-alert-bg: var(--destructive-container);
-  --status-alert-text: var(--on-destructive-container);
-  --status-alert-border: #dc2626;
-  --status-active-bg: var(--accent-container);
-  --status-active-text: var(--on-accent-container);
-  --status-active-border: #0284c7;
-  --status-neutral-bg: var(--muted);
-  --status-neutral-text: var(--muted-foreground);
-  --status-neutral-border: var(--border);
-
-  /* Elevation Shadows Dark */
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 16px 32px -4px rgba(0, 0, 0, 0.6), 0 6px 12px -2px rgba(0, 0, 0, 0.4);
-  --shadow-dialog: 0 24px 48px -12px rgba(0, 0, 0, 0.8), 0 8px 16px -4px rgba(0, 0, 0, 0.5);
-
-  /* Role 1 Dark: Doctor (Luminous Clinical Teal) */
-  --doc-brand-gradient: linear-gradient(135deg, #0d9488 0%, #10b981 100%);
-  --doc-brand-shadow: 0 4px 16px rgba(45, 212, 191, 0.25);
-  --doc-accent-color: #2dd4bf;
-  --doc-banner-bg: linear-gradient(135deg, #0f172a 0%, #062a22 100%);
-  --doc-banner-border: #134e4a;
-  --doc-banner-title: #f0fdf4;
-  --doc-pill-bg: #042f2e;
-  --doc-pill-color: #2dd4bf;
-  --doc-pill-border: #0d9488;
-  --doc-nav-active-bg: #042f2e;
-  --doc-nav-active-color: #2dd4bf;
-  --doc-nav-active-border: #2dd4bf;
-  --doc-card-border-focus: #2dd4bf;
-
-  /* Role 2 Dark: Admin (Vivid Executive Cobalt) */
-  --adm-brand-gradient: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-  --adm-brand-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
-  --adm-accent-color: #60a5fa;
-  --adm-banner-bg: linear-gradient(135deg, #0f172a 0%, #172554 100%);
-  --adm-banner-border: #1e3a8a;
-  --adm-banner-title: #f8fafc;
-  --adm-pill-bg: #172554;
-  --adm-pill-color: #93c5fd;
-  --adm-pill-border: #3b82f6;
-  --adm-nav-active-bg: #172554;
-  --adm-nav-active-color: #60a5fa;
-  --adm-nav-active-border: #60a5fa;
-  --adm-card-border-focus: #60a5fa;
-
-  /* Role 3 Dark: Cashier (Mint Currency & Gold) */
-  --csh-brand-gradient: linear-gradient(135deg, #047857 0%, #10b981 100%);
-  --csh-brand-shadow: 0 4px 16px rgba(52, 211, 153, 0.25);
-  --csh-accent-color: #34d399;
-  --csh-banner-bg: linear-gradient(135deg, #0f172a 0%, #064e3b 100%);
-  --csh-banner-border: #065f46;
-  --csh-banner-title: #f0fdf4;
-  --csh-pill-bg: #064e3b;
-  --csh-pill-color: #6ee7b7;
-  --csh-pill-border: #10b981;
-  --csh-nav-active-bg: #064e3b;
-  --csh-nav-active-color: #34d399;
-  --csh-nav-active-border: #34d399;
-}
 
 
 
@@ -3191,11 +3020,6 @@ html, body {
   gap: 5px;
 }
 
-[data-theme='dark'] .guide-start-btn {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.35));
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.6);
-}
 
 .game-walkthrough-hud {
   position: fixed;
@@ -3461,11 +3285,6 @@ html, body {
   border-radius: 8px;
 }
 
-[data-theme='dark'] .game-hud-hint {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.2);
-  color: #fde68a;
-}
 
 .game-hud-footer {
   padding: 10px 16px;
@@ -4556,5 +4375,44 @@ html, body {
   background: #ecfdf5 !important;
   color: #047857 !important;
 }
+
+/* ==========================================================================
+   Cashier Page Dedicated Smooth Scroll Container
+   ========================================================================== */
+
+.cashier-page-container {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: calc(100vh - 50px) !important;
+  max-height: calc(100vh - 50px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  padding: 16px 20px 80px !important;
+  box-sizing: border-box !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #059669 var(--bg-subtle) !important;
+  scroll-behavior: smooth !important;
+}
+
+.cashier-page-container::-webkit-scrollbar {
+  width: 9px;
+}
+
+.cashier-page-container::-webkit-scrollbar-track {
+  background: var(--bg-subtle);
+  border-radius: 9999px;
+}
+
+.cashier-page-container::-webkit-scrollbar-thumb {
+  background-color: #6ee7b7;
+  border-radius: 9999px;
+  border: 2px solid var(--bg-subtle);
+}
+
+.cashier-page-container::-webkit-scrollbar-thumb:hover {
+  background-color: #059669;
+}
+
 
 

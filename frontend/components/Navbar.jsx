@@ -1,11 +1,9 @@
 import React from 'react';
 import { useWalkthrough } from '../context/WalkthroughContext';
-import { useTheme } from '../context/ThemeContext';
-import { Menu, Stethoscope, Users, Receipt, ShieldCheck, LogOut, Sparkles, Sun, Moon } from 'lucide-react';
+import { Menu, Stethoscope, Users, Receipt, ShieldCheck, LogOut, Sparkles } from 'lucide-react';
 
 export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', onRoleChange, onLogout }) {
   const { isGuideActive, startGuide, stopGuide } = useWalkthrough();
-  const { theme, toggleTheme } = useTheme();
 
   // Role-based title colors for visual contrast
   let brandRoleColor = 'var(--text-secondary)';
@@ -132,27 +130,6 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
           </div>
         )}
 
-        {/* Theme Mode Toggle (Sun / Moon) */}
-        <button
-          className="icon-btn anim-hover-lift"
-          onClick={toggleTheme}
-          title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          aria-label={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: '50%',
-            border: '1px solid var(--border-default)',
-            background: 'var(--bg-surface)',
-            color: 'var(--text-primary)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer'
-          }}
-        >
-          {theme === 'dark' ? <Sun size={14} style={{ color: '#fbbf24' }} /> : <Moon size={14} style={{ color: '#475569' }} />}
-        </button>
 
         {/* Interactive Clinical Flow Guide Button */}
         <button
