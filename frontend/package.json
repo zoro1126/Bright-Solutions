@@ -1,5 +1,5 @@
 {
-  "name": "bright-solutions-frontend",
+  "name": "cos-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -9,20 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "clsx": "^2.1.1",
-    "framer-motion": "^11.11.17",
-    "lucide-react": "^0.460.0",
+    "lucide-react": "^0.475.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0",
-    "tailwind-merge": "^2.5.5"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.0.6",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.3",
-    "tailwindcss": "^4.0.6",
-    "vite": "^5.4.11"
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.14"
   }
 }
