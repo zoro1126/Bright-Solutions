@@ -1,256 +1,117 @@
-# Bright Solutions — Frontend Incremental PR Roadmap & To-Do List
+# Bright Solutions — Frontend Build Order
 
-**Target Subsystem**: `frontend/` (React 18, Vite, Vanilla CSS Design System, Lucide React)  
-**Strict Git Isolation Rule**: **Frontend developers MUST ONLY create/edit files inside `frontend/` and `docs/FRONTEND_PR_LIST.md`. NEVER touch `backend/`.**  
-This isolation guarantees that branch rebases (`git rebase origin/main`) remain completely free of merge conflicts with backend development.
-
----
-
-## 1. Design & Typography Contract Reminder
-
-All frontend PRs must strictly adhere to the brand design system:
-- **Primary Color**: **Canary / Radiant Yellow** (`#FFE500` / `#FACC15`), text in dark high-contrast `#051A30`.
-- **Framing Complementary**: Midnight Navy (`#0A2540` / `#051A30`), Gold/Ochre Support (`#B89C14`), Vivid Red Alert (`#DC2626`).
-- **Headings (`<h1>` through `<h6>`)**: [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville) (Serif).
-- **Body, Controls, Tables & Buttons**: [DM Sans](https://fonts.google.com/specimen/DM+Sans) (Sans-Serif).
-- **Breathable UI Philosophy**: Zero vanity gauges, zero unexplained numbers, generous whitespace, high scannability.
+**Target**: `frontend/` (React 18 + Vite)
+Page details, fields and components: `FRONTEND_PAGES_SPEC.md`. Endpoints and payloads: `API_SPEC.md`.
 
 ---
 
-## 2. Developer Git Discipline & Workflow Protocol
+## 1. Routes and API Calls
 
-1. **Branch Naming Standard**: `feat/fe-<component-or-page-name>` (e.g. `feat/fe-mcq-questionnaire`)
-2. **Rebase Protocol**:
-   ```bash
-   git fetch origin
-   git rebase origin/main
-   ```
-3. **Commit Message Standard**: Conventional Commits format (`feat(frontend): ...`, `fix(frontend): ...`, `chore(frontend): ...`).
-4. **One PR = One Atomic Unit**: Max 1–2 component files per PR, under 250 lines of logic.
-5. **Local Verification**:
-   ```bash
-   cd frontend
-   npm run build # Validates JSX and bundle syntax
-   npm run dev   # Check UI in browser at http://localhost:3000
-   ```
+**Client routes (no `/api/`)**
+- Login: `/login`
+- Receptionist: `/receptionist/dashboard`, `/receptionist/intake`, `/receptionist/intake/questionnaire`, `/receptionist/reports`, `/receptionist/queue`
+- Doctor: `/doctor/dashboard`, `/doctor/patient/:id`, `/doctor/viewer/:visitId`, `/doctor/consultation/:visitId`
+- Cashier: `/cashier/dashboard`, `/cashier/billing/:visitId`, `/cashier/receipt/:billId`
+- Admin: `/admin/dashboard`, `/admin/staff`, `/admin/audit-logs`
 
-## 3. Dynamic Routing & On-Demand Data Fetching Standard (Zero Hidden DB Hits)
-
-1. **Separation of Routes & Mandatory `/api/` Backend Calls**:
-   - **Frontend SPA Routes**: Clean, semantic client URL routes without `/api/`:
-     - Receptionist: `/receptionist/dashboard`, `/receptionist/intake`, `/receptionist/intake/questionnaire`, `/receptionist/reports`, `/receptionist/queue`
-     - Doctor: `/doctor/dashboard`, `/doctor/patient/:id`, `/doctor/viewer/:visitId`, `/doctor/consultation/:visitId`
-     - Cashier: `/cashier/dashboard`, `/cashier/checkout/:visitId`
-     - Admin: `/admin/dashboard`, `/admin/users`
-   - **Backend API Requests**: Every HTTP fetch request originating from `frontend/services/api.js` **MUST strictly use the `/api/` prefix** (`/api/visits/*`, `/api/patients/*`, `/api/doctor/*`, `/api/cashier/*`, etc.), routed through Vite's dev server proxy to port `8000`.
-
-2. **On-Demand Data Fetching Rule ("Zero Hidden DB Hits")**:
-   - **Components must NEVER make network or DB requests while unmounted, hidden, or in the background.**
-   - **Lazy-Load Modal & Page Data**:
-     - Do NOT prefetch questionnaire data until `QuestionnaireModal` opens.
-     - Do NOT fetch scans / PDF buffers until `DiagnosticViewerModal` opens.
-     - Do NOT execute CDSS safety checks until the doctor explicitly enters `ConsultationRoomModal`.
-     - Do NOT load billing invoice breakdowns until the cashier clicks `Checkout`.
-   - **Polling Hygiene**: Active queue polling (e.g. 15s interval) MUST pause when:
-     - The browser tab is hidden (`document.visibilityState === 'hidden'`).
-     - A full-screen modal or separate sub-route is active.
-   - **Clean Unmounts**: Use `AbortController` or cancel flags in `useEffect` cleanup functions to discard in-flight requests when navigating away.
+**API calls**: all requests go through `services/api.js` and start with `/api/` (proxied to the backend on port 8000).
 
 ---
 
-## 4. Frontend PR Implementation Queue
+## 2. Patient Flow the Frontend Must Support
+
+1. **Receptionist** registers the patient with vitals and gets a token, fills the intake questionnaire, uploads any outside reports, and the patient appears in the live queue.
+2. **Doctor** sees the prioritized queue, calls the next patient, reviews the dossier, questionnaire and reports, then runs the consultation (diagnosis, safety checks, e-prescription) and signs off.
+3. **Cashier** sees signed-off visits, reviews the itemized bill, applies insurance co-pay or discount, takes payment, prints the receipt and closes the encounter.
+4. **Admin** views analytics, manages staff accounts and reviews the audit trail.
+
+---
+
+## 3. Build Order
 
 ```
-[PR-FE-01] API Client Extension: Endpoints for Questionnaire, Reports, CDSS & Billing
+[FE-00] Foundation: app shell, routing, role guard, login
    ↓
-[PR-FE-02] P-REC-03: Clinical Intake MCQ Questionnaire Modal with Voice Dictation
+[FE-01] API client (services/api.js)
    ↓
-[PR-FE-03] P-REC-04: External Diagnostic Reports Ingestion Modal (DICOM, ECG, PDF)
+[FE-02] Receptionist dashboard + patient registration
    ↓
-[PR-FE-04] P-REC-05: Dedicated Live OPD Patient Queue & Token Roster View
+[FE-03] Intake questionnaire
    ↓
-[PR-FE-05] P-DOC-01: Doctor Clinical Dashboard & Triage Risk Stratification
+[FE-04] External reports upload
    ↓
-[PR-FE-06] P-DOC-02: Patient Dossier Modal with MCQ Intake Review Card
+[FE-05] Live queue & token slip
    ↓
-[PR-FE-07] P-DOC-03: Diagnostic Media Canvas Viewer (DICOM, ECG Waveform & PDF)
+[FE-06] Doctor dashboard
    ↓
-[PR-FE-08] P-DOC-04: CDSS Safety Alerts & Formulary E-Prescription Studio
+[FE-07] Patient dossier
    ↓
-[PR-FE-09] P-CSH-01 to P-CSH-03: Cashier Dashboard, Itemized Checkout & Thermal Receipt
+[FE-08] Diagnostic viewer
    ↓
-[PR-FE-10] P-ADM-01 to P-ADM-03: Admin Executive Analytics & Staff Provisioning Portal
+[FE-09] Consultation studio (CDSS + e-prescription)
+   ↓
+[FE-10] Cashier: dashboard, invoice, payment & receipt
+   ↓
+[FE-11] Admin: dashboard, staff, audit logs
 ```
 
 ---
 
-## 5. Atomic PR Specifications
+## 4. Steps
 
-### [PR-FE-01] API Client Extension: Endpoints for Questionnaire, Reports, CDSS & Billing
-- **Scope**: `frontend/services/api.js`
-- **Objective**: Add strongly-typed client helper functions for upcoming backend routes:
-  - `saveQuestionnaire(visitId, payload)` & `getQuestionnaire(visitId)`
-  - `uploadExternalReport(visitId, formData)` & `getReports(visitId)`
-  - `getDoctorQueue()`, `getDoctorInsights(visitId)`, `signDoctorEncounter(visitId, data)`
-  - `searchFormulary(query)`, `createPrescription(visitId, payload)`
-  - `getCashierQueue()`, `getBillForVisit(visitId)`, `recordPayment(billId, payload)`
-  - `getAdminAnalytics()`, `createStaffUser(userData)`
-- **Verification**: Import into a test script or console, confirm endpoints point correctly through `/api` Vite proxy.
-- **Commit Message**:
-  ```git
-  feat(frontend): extend api service layer with questionnaire, cdss, and cashier endpoints
-  ```
+### FE-00 — Foundation
+- **Pages**: P-00 `/login`, role-based navigation, route guard.
+- **Does**: Login with 1-click demo personas and manual username/password (`POST /api/auth/login`, token stored in `localStorage`). After login, redirect to the role's dashboard. Each role can only open its own routes. Logout returns to `/login`.
 
----
+### FE-01 — API Client
+- **File**: `frontend/services/api.js`
+- **Does**: One helper per endpoint in `API_SPEC.md`, grouped by role: auth, receptionist (patients, tokens, questionnaire, reports, queue), doctor (queue, call, dossier, insights, prescriptions, sign-off, formulary), cashier (queue, bill, payment), admin (analytics, staff, audit logs).
 
-### [PR-FE-02] P-REC-03: Clinical Intake MCQ Questionnaire Modal with Voice Dictation
-- **Scope**: `frontend/components/QuestionnaireModal.jsx`, `frontend/App.jsx`
-- **Depends On**: `PR-FE-01`
-- **Objective**: Standardized anamnesis MCQ grid for active patient encounter.
-- **Key Details**:
-  - 2-column card grid for screening questions ($Q_1 \dots Q_{12}$ extensible to $Q_{20}$).
-  - Mutually exclusive radio option chips mapped to integer indices: `(0) None / Absent`, `(1) Mild`, `(2) Moderate`, `(3) Severe`.
-  - Linear progress bar showing answered count (e.g. `8/12 Answered`).
-  - Web Speech API microphone button streaming live transcript into `voice_notes` textarea.
-  - Canary Yellow CTA submitting payload `{ patient_id, answers: { q1: 0, q2: 1, ... }, voice_notes }`.
-- **Verification**: Launch questionnaire modal from patient queue row, choose options, record voice note, verify submit API call.
-- **Commit Message**:
-  ```git
-  feat(frontend): implement clinical intake mcq questionnaire modal with voice dictation
-  ```
+### FE-02 — Receptionist Dashboard & Registration
+- **Pages**: P-REC-01, P-REC-02
+- **Does**: Dashboard shows today's intake, next token, average triage time, hourly walk-ins, and queue balance per doctor, plus the last registrations. Registration captures demographics and vitals, shows live BMI and AHA BP stage, assigns a doctor, issues a token (`POST /api/patients`) and offers a printable slip.
 
----
+### FE-03 — Intake Questionnaire
+- **Page**: P-REC-03
+- **Depends on**: FE-01
+- **Does**: MCQ questions Q1..Q20 (extensible), each answer stored as an integer 0-3, with answered count, voice dictation into voice notes, and save (`POST /api/visits/{id}/questionnaire`). Loads only for the selected visit.
 
-### [PR-FE-03] P-REC-04: External Diagnostic Reports Ingestion Modal
-- **Scope**: `frontend/components/ReportsUploadModal.jsx`
-- **Depends On**: `PR-FE-01`
-- **Objective**: File dropzone allowing receptionist to archive patient external tests.
-- **Key Details**:
-  - Drag-and-drop zone supporting `.dcm`, `.pdf`, `.png`, `.jpg`.
-  - Modality toggle pills: `DICOM Scan`, `ECG Waveform`, `Lab Bloodwork`, `Discharge Summary`.
-  - Visual upload progress bar and file size display.
-  - Submits via `multipart/form-data` calling `api.uploadExternalReport`.
-- **Verification**: Drop sample PDF and image, select modality, verify upload confirmation badge.
-- **Commit Message**:
-  ```git
-  feat(frontend): create external diagnostic reports upload modal with modality classifier
-  ```
+### FE-04 — External Reports Upload
+- **Page**: P-REC-04
+- **Depends on**: FE-01
+- **Does**: Select a patient/visit, drag and drop files (`.dcm`, `.pdf`, `.png`, `.jpg`), choose the report type (DICOM scan, ECG waveform, lab bloodwork, discharge summary), upload with progress (`POST /api/visits/{id}/reports/upload`).
 
----
+### FE-05 — Live Queue & Token Slip
+- **Page**: P-REC-05
+- **Depends on**: FE-01
+- **Does**: Token roster with filters (All, Waiting Consultation, In Room, Completed), shows token, UHID, doctor, BP stage and wait time, refreshes every 15 seconds (paused while the browser tab is hidden), and prints the token slip.
 
-### [PR-FE-04] P-REC-05: Dedicated Live OPD Patient Queue & Token Roster View
-- **Scope**: `frontend/components/LiveQueueRoster.jsx`
-- **Depends On**: `PR-FE-01`
-- **Objective**: Dedicated high-density queue monitoring screen with token reprint slip.
-- **Key Details**:
-  - Filter tabs: `All Tokens`, `Waiting Consultation`, `In Room`, `Completed`.
-  - Row badges: Token ID (`#Q-102`), UHID, Doctor name, AHA BP Stage color pill.
-  - 1-click `Print Slip` button triggering browser print dialog for patient token slip.
-- **Verification**: Switch filter tabs, verify active patient count updates, test print slip format.
-- **Commit Message**:
-  ```git
-  feat(frontend): implement live queue roster view with status filters and token reprint action
-  ```
+### FE-06 — Doctor Dashboard
+- **Page**: P-DOC-01
+- **Depends on**: FE-01
+- **Does**: Next patient to call (`POST /api/doctor/queue/{id}/call`, then open consultation), waiting count, average consultation time, triage alert count, triage risk breakdown, top diagnoses, and the prioritized queue with high-risk patients first.
 
----
+### FE-07 — Patient Dossier
+- **Page**: P-DOC-02
+- **Depends on**: FE-06
+- **Does**: Demographics, allergy warning, today's vitals, intake questionnaire answers shown as readable labels with voice notes, and past visits timeline.
 
-### [PR-FE-05] P-DOC-01: Doctor Clinical Dashboard & Triage Risk Stratification
-- **Scope**: `frontend/components/DoctorDashboardView.jsx`, `frontend/App.jsx`
-- **Depends On**: `PR-FE-01`
-- **Objective**: Physician cockpit showing actionable metrics and prioritized patient queue.
-- **Key Details**:
-  - Hero Card: `Next Patient in Line` with chief complaint and BP stage with 1-click `Call into Room` button.
-  - Minimalist KPI cards: Waiting Patients, Avg Consultation Duration (`10.4 mins`), Triage Alerts.
-  - Graph 1: Triage Risk Stratification bar chart (Normal, Stage 1 HTN, Stage 2 HTN, Crisis).
-  - Graph 2: Top OPD Diagnoses horizontal bar ranking.
-  - Prioritized queue table with high-risk patients pinned at top in red accent.
-- **Verification**: Switch active persona to `Dr. Vikram Kulkarni`, verify doctor dashboard renders with zero visual clutter.
-- **Commit Message**:
-  ```git
-  feat(frontend): implement doctor clinical dashboard with triage risk breakdown and queue
-  ```
+### FE-08 — Diagnostic Viewer
+- **Page**: P-DOC-03
+- **Depends on**: FE-07
+- **Does**: Switch between the visit's uploaded reports: DICOM viewer with contrast/brightness control and slice scroll, 12-lead ECG waveform, lab PDF preview. Files load only when the viewer is opened.
 
----
+### FE-09 — Consultation Studio
+- **Page**: P-DOC-04
+- **Depends on**: FE-07
+- **Does**: Diagnosis and examination notes, safety rule results from the CDSS (`POST /api/doctor/visits/{id}/insights/evaluate`, run only when the consultation opens), CRITICAL alerts require an override note, formulary search, prescription items (drug, dosage, frequency, duration, food timing), and sign-off (`POST /api/doctor/visits/{id}/sign-off`) which moves the visit to billing.
 
-### [PR-FE-06] P-DOC-02: Patient Dossier Modal with MCQ Intake Review Card
-- **Scope**: `frontend/components/PatientDossierModal.jsx`
-- **Depends On**: `PR-FE-05`
-- **Objective**: Longitudinal health record viewer for physician before examination.
-- **Key Details**:
-  - Demographic header with UHID, verified phone, and age/gender.
-  - High-visibility `Allergies Warning Banner` with vivid red/yellow chips.
-  - 6-metric vitals pill strip: BP, Pulse, Temp, SpO2, BMI, Respiratory rate.
-  - `IntakeQuestionnaireReviewCard`: Clean collapsible card displaying numerical MCQ screening answers ($Q_1 \dots Q_{20}$) mapped to human-readable option labels alongside receptionist voice notes.
-  - Past visits timeline with historical doctor notes.
-- **Verification**: Click any patient in Doctor queue, verify vitals strip and questionnaire answers display properly.
-- **Commit Message**:
-  ```git
-  feat(frontend): add patient longitudinal dossier modal with mcq intake review card
-  ```
+### FE-10 — Cashier
+- **Pages**: P-CSH-01, P-CSH-02, P-CSH-03
+- **Depends on**: FE-09
+- **Does**: Dashboard shows collections today, unbilled queue, settled invoices, payment mode split and the pending billing list. Invoice page shows the itemized bill, discount, insurance co-pay and net payable. Payment page supports Cash (change calculator), UPI (QR) and Card, then prints an 80mm receipt and closes the encounter (`POST /api/bills/{id}/payments`).
 
----
-
-### [PR-FE-07] P-DOC-03: Diagnostic Media Canvas Viewer (DICOM, ECG & PDF)
-- **Scope**: `frontend/components/DiagnosticViewerModal.jsx`
-- **Depends On**: `PR-FE-06`
-- **Objective**: In-browser diagnostic inspection of radiological scans and cardiac waveforms.
-- **Key Details**:
-  - Tab toolbar toggling between uploaded DICOM, ECG traces, and Lab PDFs.
-  - HTML5 Canvas DICOM viewer with window level (contrast/brightness) slider and slice scroll.
-  - Medical millimeter-grid pink canvas plotting 12-lead ECG voltage waveforms.
-  - Embedded PDF preview pane for lab blood panels.
-- **Verification**: Open viewer modal, test canvas contrast adjusters and waveform rendering.
-- **Commit Message**:
-  ```git
-  feat(frontend): build diagnostic media viewer with html5 dicom canvas and ecg waveform renderer
-  ```
-
----
-
-### [PR-FE-08] P-DOC-04: CDSS Safety Alerts & Formulary E-Prescription Studio
-- **Scope**: `frontend/components/ConsultationRoomModal.jsx`
-- **Depends On**: `PR-FE-06`
-- **Objective**: Physician clinical assessment, deterministic safety validation, and e-prescribing.
-- **Key Details**:
-  - Assessment: Diagnosis search and clinical examination notes textarea.
-  - Deterministic CDSS Banner: Evaluates vitals and allergy contraindications; alerts tagged `CRITICAL` require override notes to proceed.
-  - Drug Formulary Search: Autocomplete dropdown searching approved clinic medicines.
-  - Prescription item builder: Dosage, frequency (OD, BD, TDS), duration, and food timing chips.
-  - Radiant Yellow Sign-off CTA locking prescription and transitioning patient to billing.
-- **Verification**: Trigger a mock penicillin allergy conflict, verify critical banner blocks sign-off until override note is supplied.
-- **Commit Message**:
-  ```git
-  feat(frontend): create cdss clinical safety banner and formulary e-prescription studio
-  ```
-
----
-
-### [PR-FE-09] P-CSH-01 to P-CSH-03: Cashier Dashboard, Itemized Checkout & Thermal Receipt
-- **Scope**: `frontend/components/CashierDashboardView.jsx`, `frontend/components/BillingCheckoutModal.jsx`
-- **Depends On**: `PR-FE-08`
-- **Objective**: Front-desk billing, itemized invoice calculation, insurance copay, and thermal receipt print.
-- **Key Details**:
-  - Cashier Dashboard: Today's OPD collection total, Cash vs UPI vs Card breakdown, and Ready for Billing table.
-  - Checkout Modal: Itemized line items (Consultation, diagnostic reports, prescribed pharmacy medicines), discount input, insurance copay deduction, and payment method selector.
-  - Thermal Receipt Slip: 80mm monospace printable slip with QR code placeholder and clinic header.
-- **Verification**: Open billing checkout for a signed patient, tender payment, click `Print Receipt`, verify print dialog.
-- **Commit Message**:
-  ```git
-  feat(frontend): build cashier financial dashboard, itemized checkout, and thermal receipt slip
-  ```
-
----
-
-### [PR-FE-10] P-ADM-01 to P-ADM-03: Admin Executive Analytics & Staff Provisioning Portal
-- **Scope**: `frontend/components/AdminDashboardView.jsx`, `frontend/components/StaffManagementModal.jsx`
-- **Depends On**: `PR-FE-09`
-- **Objective**: Executive overview of clinic operations, doctor workloads, and staff user provisioning.
-- **Key Details**:
-  - Executive KPI cards: Total Patient Volume, Avg Turnaround Time, Collection Total.
-  - Operational charts: Hourly patient arrival flow, department workload distribution.
-  - Staff Management Modal: Table of staff accounts with role badges (`RECEPTIONIST`, `DOCTOR`, `CASHIER`, `ADMIN`), active status toggles, and modal to invite/create new staff.
-- **Verification**: Switch role to `ADMIN`, view analytics figures, test staff creation form.
-- **Commit Message**:
-  ```git
-  feat(frontend): implement admin executive analytics dashboard and staff access management
-  ```
+### FE-11 — Admin
+- **Pages**: P-ADM-01, P-ADM-02, P-ADM-03
+- **Depends on**: FE-10
+- **Does**: Analytics dashboard (weekly footfall, doctor workload, disease distribution, KPIs), staff list with add-staff form, role assignment and active/inactive toggle, and a filterable audit log of rule overrides, triage edits and invoice adjustments.
