@@ -206,7 +206,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
   };
 
   return (
-    <div className="m3-app-shell">
+    <div className="m3-app-shell cashier-theme">
       {/* Sidebar Navigation Drawer for Cashier */}
       <Sidebar 
         role="cashier"
@@ -304,22 +304,22 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
           )}
 
           {/* Cashier Desk Banner - Styled like Reception Stat-Cards */}
-          <div className="m3-doctor-patient-banner" style={{ marginBottom: 16 }}>
+          <div className="m3-doctor-patient-banner" style={{ marginBottom: 16, border: '1.5px solid var(--csh-banner-border, #a7f3d0)', background: 'var(--csh-banner-bg, linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%))' }}>
             {/* Ambient Pastel Blob in Top-Right Corner */}
             <div className="stat-card-accent-blob blob-green" style={{ top: -20, right: -20, width: 96, height: 96, opacity: 0.65 }} />
 
             <div className="m3-patient-banner-info" style={{ position: 'relative', zIndex: 1 }}>
-              <div className="stat-squircle-badge badge-bg-green" style={{ width: 44, height: 44, borderRadius: 13, fontSize: 16 }}>
+              <div className="stat-squircle-badge" style={{ width: 44, height: 44, borderRadius: 13, fontSize: 16, background: 'var(--csh-brand-gradient, linear-gradient(135deg, #065f46, #059669))', color: '#ffffff', boxShadow: 'var(--csh-brand-shadow, 0 4px 10px rgba(5, 150, 105, 0.3))' }}>
                 <Receipt size={20} />
               </div>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <h2 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text-primary)' }}>
+                  <h2 style={{ fontSize: 19, fontWeight: 900, color: 'var(--csh-banner-title, #064e3b)' }}>
                     Cashier & Settlement Desk
                   </h2>
                   <span className="badge badge-ready">Real-Time TPA & ABDM Connected</span>
                   {isGovtScheme && (
-                    <span className="badge badge-active" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #6ee7b7' }}>
+                    <span className="badge badge-active" style={{ background: 'var(--csh-pill-bg, #d1fae5)', color: 'var(--csh-pill-color, #065f46)', border: '1px solid var(--csh-pill-border, #6ee7b7)' }}>
                       <Landmark size={12} /> Ayushman Bharat PM-JAY Active
                     </span>
                   )}

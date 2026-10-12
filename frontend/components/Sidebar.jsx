@@ -32,19 +32,33 @@ export default function Sidebar({
   // Role-specific config
   let brandTag = 'Reception OS';
   let BrandIcon = Activity;
+  let brandLogoIcon = Sun;
+  let brandGradient = 'linear-gradient(135deg, #f59e0b, #d97706)';
+  let brandShadow = '0 2px 6px rgba(245, 158, 11, 0.3)';
   let staffName = 'Priya Raghavan';
   let staffRole = 'Receptionist • Counter 1';
   let staffAvatar = 'PR';
+  let avatarGradient = 'linear-gradient(135deg, #f59e0b, #d97706)';
   let navItems = [];
   let sectionLabel = 'Main Navigation';
+  let activeNavBg = undefined;
+  let activeNavColor = undefined;
+  let activeNavBorder = undefined;
 
   if (role === 'admin') {
     brandTag = 'Admin OS';
     BrandIcon = ShieldCheck;
+    brandLogoIcon = ShieldCheck;
+    brandGradient = 'var(--adm-brand-gradient, linear-gradient(135deg, #0f172a, #1e3a8a))';
+    brandShadow = 'var(--adm-brand-shadow, 0 4px 12px rgba(30, 58, 138, 0.35))';
     staffName = 'Dr. Alok Mehta';
     staffRole = 'Medical Superintendent';
     staffAvatar = 'AM';
+    avatarGradient = 'linear-gradient(135deg, #0f172a, #1e3a8a)';
     sectionLabel = 'Executive Governance';
+    activeNavBg = 'var(--adm-nav-active-bg, #dbeafe)';
+    activeNavColor = 'var(--adm-nav-active-color, #1e3a8a)';
+    activeNavBorder = 'var(--adm-nav-active-border, #2563eb)';
     navItems = [
       { id: 'dashboard', label: 'Executive Analytics', icon: BarChart3 },
       { id: 'staff', label: 'Staff Roster & Access', icon: Users },
@@ -53,23 +67,37 @@ export default function Sidebar({
   } else if (role === 'doctor') {
     brandTag = 'Doctor Desk';
     BrandIcon = Stethoscope;
+    brandLogoIcon = Stethoscope;
+    brandGradient = 'var(--doc-brand-gradient, linear-gradient(135deg, #064e3b, #0d9488))';
+    brandShadow = 'var(--doc-brand-shadow, 0 4px 12px rgba(13, 148, 136, 0.35))';
     staffName = 'Dr. Kiran Patel';
     staffRole = 'Oncologist • Station 03';
     staffAvatar = 'KP';
+    avatarGradient = 'linear-gradient(135deg, #064e3b, #0d9488)';
     sectionLabel = 'Clinical Navigation';
+    activeNavBg = 'var(--doc-nav-active-bg, #ccfbf1)';
+    activeNavColor = 'var(--doc-nav-active-color, #065f46)';
+    activeNavBorder = 'var(--doc-nav-active-border, #0d9488)';
     navItems = [
       { id: 'dashboard', label: 'Clinical Dashboard', icon: LayoutDashboard },
-      { id: 'workspace', label: 'Consultation & e-Rx', icon: Stethoscope, badge: stats?.total || 5, badgeBg: '#fef3c7', badgeColor: '#b45309' },
+      { id: 'workspace', label: 'Consultation & e-Rx', icon: Stethoscope, badge: stats?.total || 5, badgeBg: 'var(--doc-pill-bg, #ccfbf1)', badgeColor: 'var(--doc-pill-color, #0f766e)' },
       { id: 'dossier', label: 'Patient Dossier', icon: FileText },
       { id: 'viewer', label: 'Diagnostic Scans', icon: Layers }
     ];
   } else if (role === 'cashier') {
     brandTag = 'Cashier Desk';
     BrandIcon = Receipt;
+    brandLogoIcon = Receipt;
+    brandGradient = 'var(--csh-brand-gradient, linear-gradient(135deg, #065f46, #059669))';
+    brandShadow = 'var(--csh-brand-shadow, 0 4px 12px rgba(5, 150, 105, 0.3))';
     staffName = 'Ramesh V.';
     staffRole = 'Cashier • Counter B-02';
     staffAvatar = 'RV';
+    avatarGradient = 'linear-gradient(135deg, #065f46, #059669)';
     sectionLabel = 'Billing Navigation';
+    activeNavBg = 'var(--csh-nav-active-bg, #d1fae5)';
+    activeNavColor = 'var(--csh-nav-active-color, #065f46)';
+    activeNavBorder = 'var(--csh-nav-active-border, #059669)';
     navItems = [
       { id: 'dashboard', label: 'Billing Dashboard', icon: BarChart3 },
       { id: 'billing', label: 'Itemized Checkout', icon: Receipt },
@@ -77,6 +105,7 @@ export default function Sidebar({
     ];
   } else {
     // Receptionist
+    avatarGradient = 'linear-gradient(135deg, #f59e0b, #d97706)';
     navItems = [
       { id: 'dashboard', label: 'Operations Dashboard', icon: LayoutDashboard },
       { id: 'queue', label: 'Live Patient Queue', icon: Users, badge: stats?.total },
@@ -86,6 +115,8 @@ export default function Sidebar({
       { id: 'insights', label: 'AI Insights Ready', icon: Sparkles, badge: stats?.insightsReady, badgeColor: '#15803d', badgeBg: '#dcfce7' }
     ];
   }
+
+  const LogoIcon = brandLogoIcon;
 
   return (
     <aside className={`m3-navigation-drawer ${collapsed ? 'collapsed' : ''}`}>
@@ -97,8 +128,8 @@ export default function Sidebar({
             title="Expand Navigation Drawer"
             aria-label="Expand Navigation Drawer"
           >
-            <div className="drawer-brand-icon" style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 2px 6px rgba(245, 158, 11, 0.3)' }}>
-              <Sun size={16} strokeWidth={2.4} />
+            <div className="drawer-brand-icon" style={{ width: 28, height: 28, borderRadius: 7, background: brandGradient, boxShadow: brandShadow, color: '#ffffff' }}>
+              <LogoIcon size={16} strokeWidth={2.4} />
             </div>
             <div className="drawer-expand-indicator">
               <ChevronRight size={10} strokeWidth={3} />
@@ -107,11 +138,11 @@ export default function Sidebar({
         ) : (
           <>
             <div className="drawer-brand">
-              <div className="drawer-brand-icon" style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 2px 6px rgba(245, 158, 11, 0.3)' }}>
-                <Sun size={16} strokeWidth={2.4} />
+              <div className="drawer-brand-icon" style={{ width: 28, height: 28, borderRadius: 7, background: brandGradient, boxShadow: brandShadow, color: '#ffffff' }}>
+                <LogoIcon size={16} strokeWidth={2.4} />
               </div>
               <div className="drawer-brand-text">
-                <span className="drawer-title" style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Bright</span>
+                <span className="drawer-title" style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em', color: role === 'doctor' || role === 'admin' ? '#03045E' : 'var(--text-primary)' }}>Bright</span>
               </div>
             </div>
             <button 
@@ -130,7 +161,7 @@ export default function Sidebar({
       <div className="drawer-nav-list">
         {!collapsed && (
           <div className="drawer-section-label">
-            <span>{sectionLabel}</span>
+            <span style={{ color: role === 'doctor' || role === 'admin' ? '#0077B6' : undefined, fontWeight: 700 }}>{sectionLabel}</span>
           </div>
         )}
 
@@ -138,31 +169,42 @@ export default function Sidebar({
           const Icon = item.icon;
           const isActive = item.active || activeTab === item.id;
 
+          const itemCustomStyle = isActive && activeNavBg ? {
+            backgroundColor: activeNavBg,
+            color: activeNavColor,
+            borderLeft: `3px solid ${activeNavBorder}`,
+            fontWeight: 700
+          } : undefined;
+
           return (
             <button
               key={item.id}
               className={`m3-nav-item ${isActive ? 'active' : ''}`}
+              style={itemCustomStyle}
               onClick={() => {
                 if (item.action) {
                   item.action();
-                } else if (setActiveTab) {
+                }
+                if (setActiveTab) {
                   setActiveTab(item.id);
                 }
               }}
               title={collapsed ? item.label : undefined}
             >
-              <div className="nav-icon-container">
+              <div className="nav-icon-container" style={{ color: isActive && activeNavColor ? activeNavColor : undefined }}>
                 <Icon size={17} strokeWidth={isActive ? 2.5 : 2.2} />
               </div>
               {!collapsed && (
                 <>
-                  <span className="nav-label">{item.label}</span>
+                  <span className="nav-label" style={{ color: isActive && activeNavColor ? activeNavColor : undefined }}>{item.label}</span>
                   {item.badge !== undefined && item.badge > 0 && (
                     <span 
                       className="nav-badge"
                       style={{ 
-                        color: item.badgeColor || 'inherit', 
-                        backgroundColor: item.badgeBg || 'var(--bg-subtle)' 
+                        color: item.badgeColor || (isActive && activeNavColor ? activeNavColor : 'inherit'), 
+                        backgroundColor: item.badgeBg || 'var(--bg-subtle)',
+                        fontWeight: 700,
+                        border: item.badgeBg === '#FDF4AF' ? '1px solid #e6dc7e' : undefined
                       }}
                     >
                       {item.badge}
@@ -209,14 +251,14 @@ export default function Sidebar({
 
         {collapsed ? (
           <div className="drawer-staff-collapsed" title={`${staffName} • ${staffRole}`}>
-            <div className="staff-avatar">{staffAvatar}</div>
+            <div className="staff-avatar" style={{ background: avatarGradient, color: '#ffffff', boxShadow: (role === 'doctor' || role === 'admin') ? '0 2px 8px rgba(3, 4, 94, 0.3)' : undefined }}>{staffAvatar}</div>
           </div>
         ) : (
-          <div className="drawer-staff-card">
-            <div className="staff-avatar">{staffAvatar}</div>
+          <div className="drawer-staff-card" style={{ backgroundColor: (role === 'doctor' || role === 'admin') ? '#CAF0F833' : undefined, border: (role === 'doctor' || role === 'admin') ? '1px solid #90E0EF66' : undefined }}>
+            <div className="staff-avatar" style={{ background: avatarGradient, color: '#ffffff', boxShadow: (role === 'doctor' || role === 'admin') ? '0 2px 8px rgba(3, 4, 94, 0.3)' : undefined }}>{staffAvatar}</div>
             <div className="staff-info">
-              <div className="staff-name">{staffName}</div>
-              <div className="staff-role">{staffRole}</div>
+              <div className="staff-name" style={{ color: (role === 'doctor' || role === 'admin') ? '#03045E' : undefined }}>{staffName}</div>
+              <div className="staff-role" style={{ color: (role === 'doctor' || role === 'admin') ? '#0077B6' : undefined }}>{staffRole}</div>
             </div>
           </div>
         )}

@@ -281,7 +281,7 @@ TREATMENT & FOLLOW-UP PLAN:
   };
 
   return (
-    <div className="m3-app-shell">
+    <div className="m3-app-shell doctor-theme">
       {/* Google M3 Sidebar Navigation Drawer */}
       <Sidebar 
         role="doctor"
@@ -311,32 +311,32 @@ TREATMENT & FOLLOW-UP PLAN:
         ) : (
           <main className="page-container doctor-page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: '0', boxSizing: 'border-box' }}>
 
-            {/* Active Patient Bar - Styled like Reception Stat-Cards */}
-            <div className="m3-doctor-patient-banner">
+            {/* Active Patient Bar - Styled with Theme Palettes */}
+            <div className="m3-doctor-patient-banner" style={{ border: '1.5px solid var(--doc-banner-border, #a7f3d0)', background: 'var(--doc-banner-bg, linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%))' }}>
         {/* Ambient Pastel Blob in Top-Right Corner */}
-        <div className="stat-card-accent-blob blob-blue" style={{ top: -20, right: -20, width: 96, height: 96, opacity: 0.65 }} />
+        <div className="stat-card-accent-blob" style={{ top: -20, right: -20, width: 96, height: 96, opacity: 0.65, background: 'radial-gradient(circle, var(--doc-accent-color, #0d9488) 0%, rgba(13, 148, 136, 0) 70%)' }} />
 
         <div className="m3-patient-banner-info" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="stat-squircle-badge badge-bg-blue" style={{ width: 42, height: 42, borderRadius: 12, fontSize: 14, fontWeight: 800 }}>
+          <div className="stat-squircle-badge" style={{ width: 42, height: 42, borderRadius: 12, fontSize: 14, fontWeight: 800, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #064e3b, #0d9488))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(13, 148, 136, 0.35))' }}>
             {patient.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-primary)' }}>
+              <h2 style={{ fontSize: 17, fontWeight: 900, color: 'var(--doc-banner-title, #064e3b)', letterSpacing: '-0.02em', margin: 0 }}>
                 {patient.fullName}
               </h2>
-              <span className="mrn-tag" style={{ fontSize: 10 }}>{patient.mrn}</span>
+              <span className="brand-counter-pill" style={{ fontSize: 10, background: 'var(--doc-pill-bg, #ccfbf1)', color: 'var(--doc-pill-color, #0f766e)', border: '1px solid var(--doc-pill-border, #99f6e4)', fontWeight: 700 }}>{patient.mrn}</span>
               {insights?.overallRisk === 'HIGH' && (
-                <span className="badge badge-alert" style={{ fontSize: 10.5, padding: '2px 8px' }}>
-                  <AlertTriangle size={11} /> High Risk Recurrence
+                <span className="brand-counter-pill" style={{ fontSize: 10.5, padding: '2px 8px', background: 'var(--warning-container, #fef3c7)', color: 'var(--on-warning-container, #78350f)', border: '1px solid var(--warning, #d97706)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <AlertTriangle size={11} color="var(--warning, #d97706)" /> High Risk Recurrence
                 </span>
               )}
             </div>
             <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <span>{patient.age}y {patient.gender} • Coverage: <strong style={{ color: '#0284c7' }}>{patient.insurance.provider}</strong> • Appt: {patient.appointmentTime}</span>
+              <span>{patient.age}y {patient.gender} • Coverage: <strong style={{ color: 'var(--doc-accent-color, #0d9488)' }}>{patient.insurance.provider}</strong> • Appt: {patient.appointmentTime}</span>
               {patient.vitals && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--bg-subtle)', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', border: '1px solid var(--border-subtle)' }}>
-                  <Activity size={12} color="#ef4444" />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--bg-surface)', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}>
+                  <Activity size={12} color="var(--doc-accent-color, #0d9488)" />
                   <span>BP: {patient.vitals.bp || '120/80'}</span>
                   <span style={{ color: 'var(--text-muted)' }}>•</span>
                   <span>HR: {patient.vitals.pulse || '72'} bpm</span>
@@ -353,19 +353,11 @@ TREATMENT & FOLLOW-UP PLAN:
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
-          {/* <button 
-            className="m3-btn m3-btn-tonal"
-            onClick={() => setDoctorNav('dashboard')}
-            title="Return to Doctor Dashboard"
-            style={{ height: 32, fontSize: 11.5, padding: '0 12px' }}
-          >
-            ← Doctor Dashboard
-          </button> */}
           <button 
-            className="m3-btn m3-btn-tonal"
+            className="m3-btn"
             onClick={onSwitchToReception}
             title="Return to Receptionist Desk"
-            style={{ height: 32, fontSize: 11.5, padding: '0 12px' }}
+            style={{ height: 32, fontSize: 11.5, padding: '0 12px', background: 'var(--bg-subtle)', color: 'var(--text-primary)', border: '1px solid var(--border-default)', fontWeight: 700 }}
           >
             ← Reception Desk
           </button>
@@ -373,7 +365,7 @@ TREATMENT & FOLLOW-UP PLAN:
             className="m3-btn m3-btn-filled"
             onClick={handleFinalizeVisit}
             data-tour="finalize-consult-btn"
-            style={{ background: 'linear-gradient(135deg, #059669, #10b981)', height: 32, fontSize: 11.5, padding: '0 14px' }}
+            style={{ background: 'var(--doc-brand-gradient, linear-gradient(135deg, #064e3b, #0d9488))', height: 32, fontSize: 11.5, padding: '0 14px', border: 'none', color: '#ffffff', fontWeight: 700 }}
           >
             <CheckCircle2 size={15} />
             <span>Finalize & Send to Cashier</span>
@@ -404,7 +396,7 @@ TREATMENT & FOLLOW-UP PLAN:
                   className={`doctor-patient-card ${isSelected ? 'selected' : ''}`}
                 >
                   {isSelected && (
-                    <div className="stat-card-accent-blob blob-yellow" style={{ top: -14, right: -14, width: 48, height: 48, opacity: 0.55 }} />
+                    <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 48, height: 48, opacity: 0.55, background: 'radial-gradient(circle, #CAF0F8 0%, rgba(202, 240, 248, 0) 70%)' }} />
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
                     <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--text-primary)' }}>

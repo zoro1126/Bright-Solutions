@@ -22,6 +22,25 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [slipModalPatient, setSlipModalPatient] = useState(null);
 
+  // Synchronize state when activeSubTab prop changes (e.g. from URL routing or external links)
+  useEffect(() => {
+    if (activeSubTab) {
+      if (activeSubTab === 'intake' || activeSubTab === 'register') {
+        setActiveNavTab('queue');
+        setIsRegisterOpen(true);
+      } else if (activeSubTab === 'pending') {
+        setActiveNavTab('pending');
+        const pendingPat = patients?.find(p => p.status === 'QUESTIONNAIRE_PENDING' || p.status === 'REGISTERED');
+        if (pendingPat) {
+          setActiveQuestionnairePatient(pendingPat);
+          setIsQuestionnaireOpen(true);
+        }
+      } else {
+        setActiveNavTab(activeSubTab);
+      }
+    }
+  }, [activeSubTab]);
+
   // 15-second polling interval for live queue, paused when tab is hidden (P-REC-05)
   useEffect(() => {
     let interval = null;
@@ -69,21 +88,25 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
       onSwitchRole('cashier');
       return;
     }
-    if (tabId === 'register') {
+    if (tabId === 'register' || tabId === 'intake') {
       setIsRegisterOpen(true);
+      setActiveNavTab('queue');
       return;
     }
     setActiveNavTab(tabId);
   };
 
   return (
-    <div className="m3-app-shell">
+    <div className="m3-app-shell receptionist-theme">
       {/* Sidebar Navigation */}
       <Sidebar 
         role="receptionist"
         activeTab={activeNavTab}
         setActiveTab={handleNavTabChange}
-        onOpenRegister={() => setIsRegisterOpen(true)}
+        onOpenRegister={() => {
+          setIsRegisterOpen(true);
+          setActiveNavTab('queue');
+        }}
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
       />
@@ -101,14 +124,17 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
           {/* TAB 1: P-REC-01 Operations Dashboard */}
           {activeNavTab === 'dashboard' && (
             <ReceptionistDashboardView 
-              onOpenRegister={() => setIsRegisterOpen(true)}
+              onOpenRegister={() => {
+                setIsRegisterOpen(true);
+                setActiveNavTab('queue');
+              }}
               onSelectPatientForQuestionnaire={(patient) => handleOpenQuestionnaire(patient)}
               onPrintSlip={(patient) => setSlipModalPatient(patient)}
             />
           )}
 
-          {/* TAB 2 & 5: P-REC-05 Live OPD Patient Queue & Token Roster */}
-          {(activeNavTab === 'queue' || activeNavTab === 'pending' || activeNavTab === 'insights') && (
+          {/* TAB 2, 3 & 5: P-REC-05 Live OPD Patient Queue, MCQ Roster & Registered Patients (with foolproof fallback) */}
+          {activeNavTab !== 'dashboard' && activeNavTab !== 'reports' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <StatsRow />
               <div className="reception-workspace">
@@ -116,7 +142,7 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
                   onOpenRegister={() => setIsRegisterOpen(true)}
                   onOpenQuestionnaire={handleOpenQuestionnaire}
                   onOpenPatientDetails={() => setIsDetailsOpen(true)}
-                  externalFilter={activeNavTab}
+                  externalFilter={activeNavTab === 'intake' || activeNavTab === 'register' ? 'queue' : activeNavTab}
                   onFilterChange={(tabId) => setActiveNavTab(tabId)}
                 />
               </div>

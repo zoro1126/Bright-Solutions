@@ -29,19 +29,28 @@ export default function ReceptionistDashboardView({ onOpenRegister, onSelectPati
   const recentPatients = patients.slice(0, 5);
 
   const hourlyData = [
-    { hour: '08:00', count: 6, pct: 50 },
-    { hour: '09:00', count: 12, pct: 100 },
-    { hour: '10:00', count: 9, pct: 75 },
-    { hour: '11:00', count: 7, pct: 58 },
-    { hour: '12:00', count: 4, pct: 33 },
-    { hour: '13:00', count: 3, pct: 25 },
-    { hour: '14:00', count: 5, pct: 42 }
+    { hour: '08:00', count: 6, waitTime: 3.2, pct: 45 },
+    { hour: '09:00', count: 14, waitTime: 7.8, pct: 100 },
+    { hour: '10:00', count: 11, waitTime: 6.4, pct: 78 },
+    { hour: '11:00', count: 8, waitTime: 5.1, pct: 57 },
+    { hour: '12:00', count: 5, waitTime: 4.0, pct: 36 },
+    { hour: '13:00', count: 3, waitTime: 2.5, pct: 21 },
+    { hour: '14:00', count: 7, waitTime: 4.8, pct: 50 },
+    { hour: '15:00', count: 9, waitTime: 5.6, pct: 64 },
+    { hour: '16:00', count: 4, waitTime: 3.0, pct: 28 }
+  ];
+
+  const triageBreakdown = [
+    { label: 'Priority 1 (Urgent / Staging)', count: 3, pct: 18, color: '#ef4444', desc: '< 5 min triage target' },
+    { label: 'Priority 2 (Standard Workup)', count: 9, pct: 56, color: '#f59e0b', desc: '< 10 min triage target' },
+    { label: 'Priority 3 (Routine Follow-up)', count: 4, pct: 26, color: '#10b981', desc: '< 15 min triage target' }
   ];
 
   const doctorLoads = [
-    { name: 'Dr. Kiran Patel (Medical Onc.)', activeCount: patients.filter(p => p.doctorAssigned?.includes('Kiran')).length || 3, color: '#0284c7' },
-    { name: 'Dr. Swaminathan (Surgical Onc.)', activeCount: patients.filter(p => p.doctorAssigned?.includes('Swami')).length || 2, color: '#10b981' },
-    { name: 'Dr. Radhika Sen (Radiation Onc.)', activeCount: 1, color: '#f59e0b' }
+    { name: 'Dr. Kiran Patel (Medical Onc.)', station: 'Station 03', activeCount: patients.filter(p => p.doctorAssigned?.includes('Kiran')).length || 3, avgWait: '5.8 min', capacity: 6, color: '#0284c7' },
+    { name: 'Dr. Swaminathan (Surgical Onc.)', station: 'Station 01', activeCount: patients.filter(p => p.doctorAssigned?.includes('Swami')).length || 2, avgWait: '7.2 min', capacity: 5, color: '#10b981' },
+    { name: 'Dr. Radhika Sen (Radiation Onc.)', station: 'Station 04', activeCount: 1, avgWait: '3.4 min', capacity: 4, color: '#f59e0b' },
+    { name: 'Dr. Anand Deshmukh (Hematology)', station: 'Station 02', activeCount: 2, avgWait: '4.1 min', capacity: 4, color: '#8b5cf6' }
   ];
 
   return (
@@ -135,59 +144,193 @@ export default function ReceptionistDashboardView({ onOpenRegister, onSelectPati
         </div>
       </div>
 
-      {/* Hourly Walk-ins + Doctor Queue Balance */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
-        {/* Hourly Footfall Chart */}
-        <div className="card" style={{ padding: 18 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+      {/* Interactive Analytics Graphs Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 16 }}>
+        {/* Graph 1: Hourly Walk-In Footfall & Wait-Time Curve */}
+        <div className="card" style={{ padding: 18, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div>
-              <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                Hourly Walk-in Footfall
-              </h3>
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '2px 0 0' }}>
-                Helps staff anticipate rush hours & relief breaks
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <TrendingUp size={15} color="#d97706" />
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Hourly Patient Flow & Wait-Time Curve
+                </h3>
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '3px 0 0' }}>
+                Walk-in volume vs triage queue latency across morning & afternoon OPD
               </p>
             </div>
-            <span className="badge badge-ready">Peak: 09:00 AM</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="badge badge-ready" style={{ fontSize: 10 }}>Peak: 09:00 AM (14 pts)</span>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: 120, padding: '0 8px', gap: 8 }}>
-            {hourlyData.map((h, idx) => (
-              <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-secondary)' }}>{h.count}</span>
-                <div style={{ width: '100%', maxWidth: 24, height: `${h.pct}%`, background: idx === 1 ? 'linear-gradient(180deg, #f59e0b, #d97706)' : 'var(--bg-subtle)', border: '1px solid var(--border-default)', borderRadius: '4px 4px 2px 2px' }} />
-                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{h.hour}</span>
+          {/* Graph Legend */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12, fontSize: 11 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)' }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: 'linear-gradient(180deg, #f59e0b, #d97706)' }} />
+              <span>Patient Registrations</span>
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)' }}>
+              <span style={{ width: 14, height: 2.5, background: '#0284c7', borderRadius: 2 }} />
+              <span>Avg Wait Time (min)</span>
+            </span>
+            <span style={{ marginLeft: 'auto', fontSize: 10.5, color: '#15803d', fontWeight: 700 }}>
+              Avg Wait: 5.2 min
+            </span>
+          </div>
+
+          {/* Dual-Metric Chart Container */}
+          <div style={{ position: 'relative', height: 150, paddingTop: 10 }}>
+            {/* SVG Wait Time Trend Curve */}
+            <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 115, zIndex: 2, pointerEvents: 'none' }} viewBox="0 0 360 100" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="waitLineGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#0284c7" />
+                  <stop offset="50%" stopColor="#38bdf8" />
+                  <stop offset="100%" stopColor="#0284c7" />
+                </linearGradient>
+                <linearGradient id="waitAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#0284c7" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="#0284c7" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path 
+                d="M 20 62 Q 58 14 96 22 T 172 44 T 248 72 T 324 48 L 340 65 L 340 100 L 20 100 Z" 
+                fill="url(#waitAreaGrad)" 
+              />
+              <path 
+                d="M 20 62 Q 58 14 96 22 T 172 44 T 248 72 T 324 48 L 340 65" 
+                fill="none" 
+                stroke="url(#waitLineGrad)" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
+              />
+              {/* Highlight Peak Circle */}
+              <circle cx="58" cy="18" r="4" fill="#0284c7" stroke="#ffffff" strokeWidth="2" />
+            </svg>
+
+            {/* Bar Columns */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: 110, padding: '0 6px', gap: 6, position: 'relative', zIndex: 1 }}>
+              {hourlyData.map((h, idx) => (
+                <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
+                  <span style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-secondary)' }}>{h.count}</span>
+                  <div 
+                    style={{ 
+                      width: '100%', 
+                      maxWidth: 22, 
+                      height: `${h.pct * 0.75}%`, 
+                      background: idx === 1 ? 'linear-gradient(180deg, #f59e0b, #d97706)' : 'rgba(245, 158, 11, 0.22)', 
+                      border: idx === 1 ? '1px solid #d97706' : '1px solid rgba(245, 158, 11, 0.45)', 
+                      borderRadius: '5px 5px 2px 2px',
+                      transition: 'all 0.2s ease'
+                    }} 
+                    title={`${h.hour}: ${h.count} registrations, avg wait ${h.waitTime} min`}
+                  />
+                  <span style={{ fontSize: 9.5, color: 'var(--text-muted)', marginTop: 4 }}>{h.hour}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Graph 2: Triage Classification & SLA Compliance */}
+        <div className="card" style={{ padding: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Activity size={15} color="#10b981" />
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Triage Urgency & Queue Velocity
+                </h3>
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '3px 0 0' }}>
+                Clinical prioritization mix & intake speed compliance
+              </p>
+            </div>
+            <span className="badge badge-ready">94.8% SLA Met</span>
+          </div>
+
+          {/* Visual Multi-Segment Bar */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', height: 10, borderRadius: 9999, overflow: 'hidden', gap: 2 }}>
+              {triageBreakdown.map((item, idx) => (
+                <div 
+                  key={idx} 
+                  style={{ width: `${item.pct}%`, background: item.color, height: '100%', borderRadius: 9999 }}
+                  title={`${item.label}: ${item.count} patients (${item.pct}%)`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {triageBreakdown.map((item, idx) => (
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: 'var(--bg-subtle)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-primary)' }}>{item.label}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{item.desc}</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--text-primary)' }}>{item.count} pts</span>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)' }}>{item.pct}% mix</div>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Doctor Queue Balance */}
-        <div className="card" style={{ padding: 18 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        {/* Graph 3: Doctor Consultation Station Queue & Load Balance */}
+        <div className="card" style={{ padding: 18, gridColumn: '1 / -1' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div>
-              <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                Doctor Queue Balance
-              </h3>
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '2px 0 0' }}>
-                Distribute incoming walk-ins to avoid station bottlenecks
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Stethoscope size={15} color="#0284c7" />
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Real-Time Physician Station Queue & Throughput Velocity
+                </h3>
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '3px 0 0' }}>
+                Balanced patient routing prevents room crowding and ensures smooth oncologist handover
               </p>
             </div>
-            <span className="badge badge-active">3 Doctors On Duty</span>
+            <span className="badge badge-active">4 Stations Active</span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {doctorLoads.map((d, idx) => (
-              <div key={idx}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{d.name}</span>
-                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{d.activeCount} waiting</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+            {doctorLoads.map((d, idx) => {
+              const utilPct = Math.min(100, Math.round((d.activeCount / d.capacity) * 100));
+              return (
+                <div key={idx} style={{ padding: '12px 14px', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 12, boxShadow: 'var(--shadow-sm)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'var(--bg-subtle)', color: 'var(--text-secondary)' }}>
+                      {d.station}
+                    </span>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, color: utilPct > 75 ? '#dc2626' : '#15803d' }}>
+                      {utilPct > 75 ? 'Heavy Load' : 'Flow Normal'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {d.name.split('(')[0]}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', marginBottom: 8 }}>
+                    {d.name.includes('(') ? `(${d.name.split('(')[1]}` : ''}
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Waiting: <strong>{d.activeCount}</strong>/{d.capacity}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Avg Wait: <strong style={{ color: d.color }}>{d.avgWait}</strong></span>
+                  </div>
+
+                  <div style={{ width: '100%', height: 6, background: 'var(--bg-subtle)', borderRadius: 9999, overflow: 'hidden' }}>
+                    <div style={{ width: `${utilPct}%`, height: '100%', background: d.color, borderRadius: 9999, transition: 'width 0.3s ease' }} />
+                  </div>
                 </div>
-                <div style={{ width: '100%', height: 6, background: 'var(--bg-subtle)', borderRadius: 9999, overflow: 'hidden' }}>
-                  <div style={{ width: `${Math.min(100, d.activeCount * 25)}%`, height: '100%', background: d.color, borderRadius: 9999 }} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

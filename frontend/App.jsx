@@ -142,6 +142,32 @@ function RoleRouter() {
             </ProtectedRoute>
           } 
         />
+        <Route 
+          path="/receptionist/pending" 
+          element={
+            <ProtectedRoute allowedRole="receptionist">
+              <ReceptionistPage 
+                currentRole="receptionist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="pending"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/receptionist/insights" 
+          element={
+            <ProtectedRoute allowedRole="receptionist">
+              <ReceptionistPage 
+                currentRole="receptionist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="insights"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* DOCTOR PORTAL (P-DOC-01 to P-DOC-04) */}
         <Route 

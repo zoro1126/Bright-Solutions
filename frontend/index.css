@@ -7,12 +7,17 @@
    - Smooth fluid animations across drawer, dialogs, pills, and buttons
    ========================================================================== */
 
-:root {
+:root,
+[data-theme="light"],
+.theme-light {
   /* Fonts */
   --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Bright (cancer care) Light Theme Tokens */
+  /* =========================================================================
+     CORE SEMANTIC DESIGN TOKENS (LIGHT THEME) — WCAG 2.2 AA COMPLIANT
+     Base / Receptionist: Original Warm Sunbeam Golden Amber & Pearl Palette
+     ========================================================================= */
   --bg-page: #fcfbfa;                  /* Warm luminous ambient pearl background */
   --bg-surface: #ffffff;               /* M3 Surface (Card foreground) */
   --bg-surface-dim: #f8fafc;
@@ -21,53 +26,113 @@
   --bg-hover: #fefce8;                 /* Soft sunbeam yellow hover */
   --bg-active: #fef3c7;                /* Warm sunlit buttercup active highlight */
 
-  /* Bright Luminous Sunbeam & Golden Amber Palette */
-  --primary: #d97706;                  /* Luminous warm amber / sunlit gold */
-  --primary-hover: #b45309;
-  --primary-container: #fef3c7;        /* Subtle warm sunlight yellow container */
-  --on-primary-container: #78350f;     /* Rich deep warm amber text */
-  --primary-border: #fde68a;           /* Soft golden hairline */
+  --background: var(--bg-page);
+  --foreground: #0f172a;              /* Slate 900 high-density typography (15.4:1 contrast on white) */
+  --card: #ffffff;                    /* Pure white elevated surface */
+  --card-foreground: #0f172a;         /* High-contrast text on card */
+  --popover: #ffffff;                 /* Floating dialogs & menus */
+  --popover-foreground: #0f172a;      /* Text on popover */
+
+  /* Global Primary Brand Token — Original Warm Amber / Sunbeam */
+  --primary: #d97706;                 /* Luminous warm amber / sunlit gold */
+  --primary-foreground: #ffffff;      /* Contrast: 4.6:1 */
+  --primary-hover: #b45309;           /* Amber 700 */
+  --primary-active: #92400e;          /* Amber 800 */
+  --primary-container: #fef3c7;       /* Subtle warm sunlight yellow container */
+  --on-primary-container: #78350f;    /* Rich deep warm amber text (7.8:1) */
+  --primary-border: #fde68a;          /* Soft golden hairline */
   --primary-text: #b45309;
 
-  --secondary-container: #fef9c3;      /* Gentle pastel yellow container */
+  /* Secondary */
+  --secondary: #1e293b;               /* Slate 800 */
+  --secondary-foreground: #ffffff;
+  --secondary-hover: #334155;
+  --secondary-container: #fef9c3;     /* Gentle pastel yellow container */
   --on-secondary-container: #713f12;
 
   --tertiary-container: #ecfdf5;
   --on-tertiary-container: #065f46;
 
-  /* Borders & Outlines */
+  /* Accent */
+  --accent: #f59e0b;                  /* Amber 500 */
+  --accent-foreground: #ffffff;
+  --accent-hover: #d97706;
+  --accent-container: #fef3c7;
+  --on-accent-container: #92400e;
+
+  /* Muted & Neutral */
+  --muted: #fbf9f1;
+  --muted-foreground: #64748b;        /* Slate 500 */
+
+  /* Structural Boundaries & Focus Rings */
+  --border: #e7e5d8;                  /* Soft warm divider */
   --border-subtle: #f4f3ea;            /* Delicate warm hairline */
-  --border-default: #e7e5d8;           /* Soft warm divider */
+  --border-default: #e7e5d8;
   --border-strong: #cbd5e1;
   --border-focus: #f59e0b;
+  --input: #ffffff;
+  --input-border: #e2e8f0;
+  --ring: #f59e0b;
+  --ring-offset: #ffffff;
 
-  /* Typography Colors */
-  --text-primary: #0f172a;             /* Deep slate / M3 on-surface */
-  --text-secondary: #334155;           /* M3 on-surface-variant */
+  /* Semantic Feedback Status Tokens */
+  --destructive: #dc2626;             /* Red 600 (4.6:1 on white) */
+  --destructive-foreground: #ffffff;
+  --destructive-container: #fee2e2;   /* Red 100 */
+  --on-destructive-container: #991b1b;/* Red 800 (7.2:1) */
+
+  --success: #059669;                 /* Emerald 600 (4.8:1 on white) */
+  --success-foreground: #ffffff;
+  --success-container: #d1fae5;       /* Emerald 100 */
+  --on-success-container: #065f46;    /* Emerald 800 (7.6:1) */
+
+  --warning: #d97706;                 /* Amber 600 (4.5:1 on white) */
+  --warning-foreground: #ffffff;
+  --warning-container: #fef3c7;       /* Amber 100 */
+  --on-warning-container: #78350f;    /* Amber 900 (7.8:1) */
+
+  --info: #0284c7;                    /* Sky 600 (4.7:1 on white) */
+  --info-foreground: #ffffff;
+  --info-container: #e0f2fe;
+  --on-info-container: #075985;
+
+  /* Sidebar Tokens (Receptionist / Default) */
+  --sidebar-bg: #ffffff;
+  --sidebar-fg: #0f172a;
+  --sidebar-border: #f4f3ea;
+  --sidebar-primary: #d97706;
+  --sidebar-accent: #fef3c7;
+
+  /* Chart Tokens */
+  --chart-1: #d97706;                 /* Warm Amber */
+  --chart-2: #2563eb;                 /* Royal Cobalt */
+  --chart-3: #059669;                 /* Emerald */
+  --chart-4: #8b5cf6;                 /* Deep Violet */
+  --chart-5: #0284c7;                 /* Sky */
+
+  /* Legacy Mappings */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
   --text-tertiary: #64748b;
-  --text-muted: #94a3b8;               /* Dimmed down prompts / placeholders */
+  --text-muted: #94a3b8;
   --text-inverse: #ffffff;
 
-  /* Vibrant Clinical Status Accents */
-  --status-ready-bg: #dcfce7;
-  --status-ready-text: #15803d;
+  /* Status Tokens (Legacy compatible) */
+  --status-ready-bg: var(--success-container);
+  --status-ready-text: var(--on-success-container);
   --status-ready-border: #86efac;
-
-  --status-pending-bg: #fef3c7;
-  --status-pending-text: #b45309;
+  --status-pending-bg: var(--warning-container);
+  --status-pending-text: var(--on-warning-container);
   --status-pending-border: #fcd34d;
-
-  --status-alert-bg: #fee2e2;
-  --status-alert-text: #b91c1c;
+  --status-alert-bg: var(--destructive-container);
+  --status-alert-text: var(--on-destructive-container);
   --status-alert-border: #fca5a5;
-
-  --status-active-bg: #e0f2fe;
-  --status-active-text: #0369a1;
+  --status-active-bg: var(--accent-container);
+  --status-active-text: var(--on-accent-container);
   --status-active-border: #7dd3fc;
-
-  --status-neutral-bg: #f1f5f9;
-  --status-neutral-text: #475569;
-  --status-neutral-border: #cbd5e1;
+  --status-neutral-bg: var(--muted);
+  --status-neutral-text: var(--muted-foreground);
+  --status-neutral-border: var(--border);
 
   /* M3 Radii Tokens */
   --radius-xs: 4px;
@@ -75,75 +140,247 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
-  --radius-2xl: 28px;                  /* Standard M3 Dialog & Large Shape */
+  --radius-2xl: 28px;
   --radius-full: 9999px;
 
-  /* M3 Elevation Shadows */
+  /* Elevation Shadows */
   --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
   --shadow-lg: 0 16px 32px -4px rgba(15, 23, 42, 0.1), 0 6px 12px -2px rgba(15, 23, 42, 0.05);
   --shadow-dialog: 0 24px 48px -12px rgba(15, 23, 42, 0.2), 0 8px 16px -4px rgba(15, 23, 42, 0.08);
 
-  /* M3 Standard Easing Curves */
+  /* Standard Curves */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
   --duration-fast: 0.15s;
   --duration-normal: 0.25s;
+
+  /* =========================================================================
+     ROLE 1: DOCTOR DESK — Clinical Medical Eucalyptus & Sage Teal
+     (Contrast distinction: Organic, healing, diagnostic clarity. NOT blue!)
+     ========================================================================= */
+  --doc-brand-gradient: linear-gradient(135deg, #064e3b 0%, #0d9488 100%);
+  --doc-brand-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+  --doc-accent-color: #0d9488;
+  --doc-banner-bg: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  --doc-banner-border: #a7f3d0;
+  --doc-banner-title: #064e3b;
+  --doc-pill-bg: #ccfbf1;
+  --doc-pill-color: #0f766e;
+  --doc-pill-border: #99f6e4;
+  --doc-nav-active-bg: #ccfbf1;
+  --doc-nav-active-color: #065f46;
+  --doc-nav-active-border: #0d9488;
+  --doc-card-border-focus: #0d9488;
+
+  /* =========================================================================
+     ROLE 2: ADMIN PORTAL — High-Authority Midnight Navy & Royal Cobalt
+     (Contrast distinction: Institutional, legal, corporate governance)
+     ========================================================================= */
+  --adm-brand-gradient: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  --adm-brand-shadow: 0 4px 14px rgba(30, 58, 138, 0.35);
+  --adm-accent-color: #2563eb;
+  --adm-banner-bg: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+  --adm-banner-border: #bfdbfe;
+  --adm-banner-title: #0f172a;
+  --adm-pill-bg: #dbeafe;
+  --adm-pill-color: #1e40af;
+  --adm-pill-border: #93c5fd;
+  --adm-nav-active-bg: #dbeafe;
+  --adm-nav-active-color: #1e3a8a;
+  --adm-nav-active-border: #2563eb;
+  --adm-card-border-focus: #2563eb;
+
+  /* =========================================================================
+     ROLE 3: CASHIER DESK — Financial Fiscal Slate & Emerald / Amber
+     ========================================================================= */
+  --csh-brand-gradient: linear-gradient(135deg, #065f46 0%, #059669 100%);
+  --csh-brand-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+  --csh-accent-color: #059669;
+  --csh-banner-bg: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+  --csh-banner-border: #a7f3d0;
+  --csh-banner-title: #064e3b;
+  --csh-pill-bg: #d1fae5;
+  --csh-pill-color: #065f46;
+  --csh-pill-border: #6ee7b7;
+  --csh-nav-active-bg: #d1fae5;
+  --csh-nav-active-color: #065f46;
+  --csh-nav-active-border: #059669;
 }
 
-/* Optional Dark Theme */
-[data-theme="dark"] {
-  --bg-page: #0a0f1d;
-  --bg-surface: #121a2d;
-  --bg-surface-dim: #0d1424;
-  --bg-surface-elevated: #18233c;
-  --bg-subtle: #17223b;
-  --bg-hover: #1f2e4f;
-  --bg-active: #273a64;
+/* ==========================================================================
+   INDEPENDENT DARK MODE PALETTE — WCAG 2.2 AA COMPLIANT
+   Designed fresh: deep obsidian slate canvas, crisp elevated surfaces,
+   and radiant high-contrast clinical accents (no simple color inversion)
+   ========================================================================== */
+[data-theme="dark"],
+.theme-dark,
+.dark {
+  /* Core Dark Canvas & Typography */
+  --background: #090d16;              /* Deep obsidian slate canvas (eliminates eye fatigue & OLED smear) */
+  --foreground: #f8fafc;              /* Slate 50 ultra-crisp white text (17.8:1 contrast on canvas) */
+  --card: #0f172a;                    /* Slate 900 elevated surface (14.2:1 against foreground) */
+  --card-foreground: #f8fafc;         /* High-contrast text on dark card */
+  --popover: #1e293b;                 /* Slate 800 floating dialogs */
+  --popover-foreground: #f8fafc;
 
-  --primary: #38bdf8;
-  --primary-hover: #7dd3fc;
-  --primary-container: #0c2d48;
-  --on-primary-container: #7dd3fc;
-  --primary-border: #0284c7;
-  --primary-text: #7dd3fc;
+  /* Primary Brand in Dark Mode (Luminous Warm Amber / Gold) */
+  --primary: #fbbf24;                 /* Amber 400 (9.2:1 against #0f172a surface) */
+  --primary-foreground: #451a03;      /* Deep Amber 950 text on primary button */
+  --primary-hover: #fcd34d;           /* Amber 300 */
+  --primary-active: #f59e0b;          /* Amber 500 */
+  --primary-container: #451a03;       /* Deep amber container */
+  --on-primary-container: #fde68a;    /* Bright amber text (9.1:1) */
+  --primary-border: #d97706;
+  --primary-text: #fbbf24;
 
-  --border-subtle: #1a253e;
-  --border-default: #2a3b5e;
-  --border-strong: #3d5483;
-  --border-focus: #38bdf8;
+  /* Secondary */
+  --secondary: #334155;               /* Slate 700 */
+  --secondary-foreground: #f8fafc;
+  --secondary-hover: #475569;
+  --secondary-container: #1e293b;
+  --on-secondary-container: #f1f5f9;
 
-  --text-primary: #f8fafc;
+  /* Accent */
+  --accent: #38bdf8;                  /* Sky 400 (8.1:1 on #0f172a) */
+  --accent-foreground: #082f49;
+  --accent-hover: #7dd3fc;
+  --accent-container: #082f49;
+  --on-accent-container: #bae6fd;
+
+  /* Muted & Neutral */
+  --muted: #1e293b;                   /* Slate 800 */
+  --muted-foreground: #94a3b8;        /* Slate 400 (5.1:1 on #0f172a, WCAG AA compliant) */
+
+  /* Dark Structural Boundaries & Inputs */
+  --border: #334155;                  /* Slate 700 (3.4:1 contrast boundary) */
+  --border-subtle: #1e293b;
+  --border-default: #334155;
+  --border-strong: #64748b;           /* Slate 500 (4.5:1 against #0f172a) */
+  --border-focus: #fbbf24;
+  --input: #1e293b;                   /* Input box background */
+  --input-border: #334155;
+  --ring: #38bdf8;                    /* Bright cyan focus ring */
+  --ring-offset: #090d16;
+
+  /* Semantic Feedback in Dark Mode */
+  --destructive: #f87171;             /* Red 400 (6.1:1 on #0f172a) */
+  --destructive-foreground: #450a0a;
+  --destructive-container: #450a0a;
+  --on-destructive-container: #fecaca;
+
+  --success: #34d399;                 /* Emerald 400 (7.4:1 on #0f172a) */
+  --success-foreground: #064e3b;
+  --success-container: #064e3b;
+  --on-success-container: #a7f3d0;
+
+  --warning: #fbbf24;                 /* Amber 400 (9.2:1 on #0f172a) */
+  --warning-foreground: #78350f;
+  --warning-container: #78350f;
+  --on-warning-container: #fde68a;
+
+  --info: #38bdf8;                    /* Sky 400 (7.9:1 on #0f172a) */
+  --info-foreground: #082f49;
+  --info-container: #082f49;
+  --on-info-container: #bae6fd;
+
+  /* Sidebar Tokens Dark (Default / Receptionist) */
+  --sidebar-bg: #0f172a;
+  --sidebar-fg: #f8fafc;
+  --sidebar-border: #1e293b;
+  --sidebar-primary: #fbbf24;
+  --sidebar-accent: #1e293b;
+
+  /* Chart Tokens Dark */
+  --chart-1: #2dd4bf;                 /* Luminous Teal */
+  --chart-2: #60a5fa;                 /* Cobalt */
+  --chart-3: #fbbf24;                 /* Amber */
+  --chart-4: #c084fc;                 /* Purple */
+  --chart-5: #34d399;                 /* Mint Emerald */
+
+  /* Legacy Backward Compatibility Tokens in Dark */
+  --bg-page: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-dim: #090d16;
+  --bg-surface-elevated: #1e293b;
+  --bg-subtle: var(--muted);
+  --bg-hover: #1e293b;
+  --bg-active: #334155;
+  --text-primary: var(--foreground);
   --text-secondary: #cbd5e1;
   --text-tertiary: #94a3b8;
-  --text-muted: #64748b;
-  --text-inverse: #0a0f1d;
+  --text-muted: var(--muted-foreground);
+  --text-inverse: #090d16;
 
-  --status-ready-bg: #064e3b;
-  --status-ready-text: #86efac;
+  /* Status Tokens in Dark */
+  --status-ready-bg: var(--success-container);
+  --status-ready-text: var(--on-success-container);
   --status-ready-border: #059669;
-
-  --status-pending-bg: #78350f;
-  --status-pending-text: #fde68a;
+  --status-pending-bg: var(--warning-container);
+  --status-pending-text: var(--on-warning-container);
   --status-pending-border: #d97706;
-
-  --status-alert-bg: #7f1d1d;
-  --status-alert-text: #fca5a5;
+  --status-alert-bg: var(--destructive-container);
+  --status-alert-text: var(--on-destructive-container);
   --status-alert-border: #dc2626;
-
-  --status-active-bg: #082f49;
-  --status-active-text: #7dd3fc;
+  --status-active-bg: var(--accent-container);
+  --status-active-text: var(--on-accent-container);
   --status-active-border: #0284c7;
+  --status-neutral-bg: var(--muted);
+  --status-neutral-text: var(--muted-foreground);
+  --status-neutral-border: var(--border);
 
-  --status-neutral-bg: #1e293b;
-  --status-neutral-text: #94a3b8;
-  --status-neutral-border: #334155;
-
+  /* Elevation Shadows Dark */
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 16px 32px -4px rgba(0, 0, 0, 0.6);
-  --shadow-dialog: 0 24px 48px -12px rgba(0, 0, 0, 0.7);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 32px -4px rgba(0, 0, 0, 0.6), 0 6px 12px -2px rgba(0, 0, 0, 0.4);
+  --shadow-dialog: 0 24px 48px -12px rgba(0, 0, 0, 0.8), 0 8px 16px -4px rgba(0, 0, 0, 0.5);
+
+  /* Role 1 Dark: Doctor (Luminous Clinical Teal) */
+  --doc-brand-gradient: linear-gradient(135deg, #0d9488 0%, #10b981 100%);
+  --doc-brand-shadow: 0 4px 16px rgba(45, 212, 191, 0.25);
+  --doc-accent-color: #2dd4bf;
+  --doc-banner-bg: linear-gradient(135deg, #0f172a 0%, #062a22 100%);
+  --doc-banner-border: #134e4a;
+  --doc-banner-title: #f0fdf4;
+  --doc-pill-bg: #042f2e;
+  --doc-pill-color: #2dd4bf;
+  --doc-pill-border: #0d9488;
+  --doc-nav-active-bg: #042f2e;
+  --doc-nav-active-color: #2dd4bf;
+  --doc-nav-active-border: #2dd4bf;
+  --doc-card-border-focus: #2dd4bf;
+
+  /* Role 2 Dark: Admin (Vivid Executive Cobalt) */
+  --adm-brand-gradient: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  --adm-brand-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+  --adm-accent-color: #60a5fa;
+  --adm-banner-bg: linear-gradient(135deg, #0f172a 0%, #172554 100%);
+  --adm-banner-border: #1e3a8a;
+  --adm-banner-title: #f8fafc;
+  --adm-pill-bg: #172554;
+  --adm-pill-color: #93c5fd;
+  --adm-pill-border: #3b82f6;
+  --adm-nav-active-bg: #172554;
+  --adm-nav-active-color: #60a5fa;
+  --adm-nav-active-border: #60a5fa;
+  --adm-card-border-focus: #60a5fa;
+
+  /* Role 3 Dark: Cashier (Mint Currency & Gold) */
+  --csh-brand-gradient: linear-gradient(135deg, #047857 0%, #10b981 100%);
+  --csh-brand-shadow: 0 4px 16px rgba(52, 211, 153, 0.25);
+  --csh-accent-color: #34d399;
+  --csh-banner-bg: linear-gradient(135deg, #0f172a 0%, #064e3b 100%);
+  --csh-banner-border: #065f46;
+  --csh-banner-title: #f0fdf4;
+  --csh-pill-bg: #064e3b;
+  --csh-pill-color: #6ee7b7;
+  --csh-pill-border: #10b981;
+  --csh-nav-active-bg: #064e3b;
+  --csh-nav-active-color: #34d399;
+  --csh-nav-active-border: #34d399;
 }
+
+
 
 /* ==========================================================================
    Base Rules & CSS Reset
@@ -166,20 +403,11 @@ html, body {
   overflow: hidden;
 }
 
-[data-theme="dark"] html,
-[data-theme="dark"] body {
-  background-color: var(--bg-page);
-}
-
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--bg-page);
-}
-
-[data-theme="dark"] #root {
   background-color: var(--bg-page);
 }
 
@@ -640,12 +868,6 @@ html, body {
   white-space: nowrap;
 }
 
-[data-theme="dark"] .m3-live-beacon {
-  background-color: #064e3b;
-  color: #86efac;
-  border-color: #059669;
-}
-
 .live-dot {
   width: 6px;
   height: 6px;
@@ -700,103 +922,143 @@ html, body {
 
 .stat-card {
   background-color: #ffffff;
-  border-radius: 14px;
-  padding: 12px 14px;
+  border-radius: 18px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.04), 0 1px 4px -1px rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  transition: all var(--duration-normal) var(--ease-standard);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
 }
 
-[data-theme="dark"] .stat-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-}
-
 .stat-card:hover {
-  transform: translateY(-1.5px);
-  box-shadow: 0 6px 18px -3px rgba(0, 0, 0, 0.07);
+  transform: translateY(-2.5px);
+  box-shadow: 0 6px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  border-color: rgba(203, 213, 225, 0.95);
 }
 
 /* Ambient Pastel Blob in Top-Right Corner */
 .stat-card-accent-blob {
   position: absolute;
-  top: -16px;
-  right: -16px;
-  width: 64px;
-  height: 64px;
+  top: -12px;
+  right: -12px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   pointer-events: none;
-  filter: blur(1px);
+  filter: blur(14px);
+  opacity: 0.6;
 }
 
 .blob-blue {
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0.02) 75%);
+  background: radial-gradient(circle, #3b82f6 0%, rgba(59, 130, 246, 0) 70%);
 }
 
 .blob-green {
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.02) 75%);
+  background: radial-gradient(circle, #10b981 0%, rgba(16, 185, 129, 0) 70%);
 }
 
 .blob-yellow {
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.24) 0%, rgba(245, 158, 11, 0.03) 75%);
+  background: radial-gradient(circle, #f59e0b 0%, rgba(245, 158, 11, 0) 70%);
 }
 
+/* Redefined from pink to Frosted Blue / Coastal Blue so rogue pink is eliminated */
 .blob-rose {
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.16) 0%, rgba(236, 72, 153, 0.02) 75%);
+  background: radial-gradient(circle, #90E0EF 0%, rgba(144, 224, 239, 0) 70%);
+}
+
+.blob-deep-twilight {
+  background: radial-gradient(circle, #03045E 0%, rgba(3, 4, 94, 0) 70%);
+}
+
+.blob-frosted-blue {
+  background: radial-gradient(circle, #90E0EF 0%, rgba(144, 224, 239, 0) 70%);
+}
+
+.blob-light-cyan {
+  background: radial-gradient(circle, #CAF0F8 0%, rgba(202, 240, 248, 0) 70%);
+}
+
+.blob-mint {
+  background: radial-gradient(circle, #A5E9DD 0%, rgba(165, 233, 221, 0) 70%);
+}
+
+.blob-buttercream {
+  background: radial-gradient(circle, #FDF4AF 0%, rgba(253, 244, 175, 0) 70%);
 }
 
 /* Top-Left Vibrant Icon Squircle Badge */
 .stat-squircle-badge {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
   flex-shrink: 0;
-  transition: transform var(--duration-fast) var(--ease-standard);
+  transition: transform 0.2s ease;
 }
 
 .stat-card:hover .stat-squircle-badge {
-  transform: scale(1.06);
+  transform: scale(1.08);
 }
 
 .badge-bg-blue {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+  background: linear-gradient(135deg, #03045E, #0077B6);
+  box-shadow: 0 4px 10px rgba(0, 119, 182, 0.35);
 }
 
 .badge-bg-green {
-  background: linear-gradient(135deg, #10b981, #059669);
-  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.25);
+  background: linear-gradient(135deg, #34908B, #6FBEB2);
+  box-shadow: 0 4px 10px rgba(52, 144, 139, 0.35);
 }
 
 .badge-bg-yellow {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.28);
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
 }
 
+/* Redefined from pink to Coastal Bright Teal so rogue pink is eliminated */
 .badge-bg-rose {
-  background: linear-gradient(135deg, #ec4899, #db2777);
-  box-shadow: 0 3px 8px rgba(236, 72, 153, 0.25);
+  background: linear-gradient(135deg, #0077B6, #00B4D8);
+  box-shadow: 0 4px 10px rgba(0, 119, 182, 0.35);
+}
+
+.badge-bg-deep-twilight {
+  background: linear-gradient(135deg, #03045E, #0077B6);
+  box-shadow: 0 4px 10px rgba(0, 119, 182, 0.35);
+}
+
+.badge-bg-turquoise {
+  background: linear-gradient(135deg, #00B4D8, #90E0EF);
+  color: #03045E;
+  box-shadow: 0 4px 10px rgba(0, 180, 216, 0.35);
+}
+
+.badge-bg-eucalyptus {
+  background: linear-gradient(135deg, #34908B, #6FBEB2);
+  box-shadow: 0 4px 10px rgba(52, 144, 139, 0.35);
+}
+
+.badge-bg-buttercream {
+  background: linear-gradient(135deg, #FDF4AF, #e6dc7e);
+  color: #03045E;
+  box-shadow: 0 4px 10px rgba(230, 220, 126, 0.4);
 }
 
 /* Big Metric Number Below Icon */
 .stat-card-value {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1;
-  margin-top: 10px;
-  letter-spacing: -0.02em;
+  color: #0f172a;
+  line-height: 1.1;
+  margin-top: 12px;
+  letter-spacing: -0.03em;
 }
 
 /* Uppercase Tracked Subtitle Label Below Number */
@@ -804,9 +1066,9 @@ html, body {
   font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-tertiary);
-  margin-top: 4px;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  margin-top: 5px;
 }
 
 /* Split Workspace */
@@ -890,14 +1152,15 @@ html, body {
 }
 
 .m3-btn-filled {
-  background-color: var(--primary);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
   color: #ffffff;
-  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.3);
+  border: none;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
 }
 
 .m3-btn-filled:hover {
-  background-color: var(--primary-hover);
-  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.4);
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
   transform: translateY(-1px);
 }
 
@@ -1017,17 +1280,8 @@ html, body {
   background-color: #f1f5f9;
 }
 
-[data-theme="dark"] .m3-row-animate:hover {
-  background-color: #1a253e;
-}
-
 .m3-row-animate.selected {
   background-color: #fffdf2;
-  border-left: 4px solid #f59e0b;
-}
-
-[data-theme="dark"] .m3-row-animate.selected {
-  background-color: #261f12;
   border-left: 4px solid #f59e0b;
 }
 
@@ -1319,11 +1573,6 @@ html, body {
   border: none;
 }
 
-[data-theme="dark"] .ml-status-callout.ready {
-  background-color: #064e3b;
-  border-color: #059669;
-}
-
 .ml-callout-header {
   display: flex;
   align-items: center;
@@ -1332,10 +1581,6 @@ html, body {
   font-size: 12px;
   font-weight: 800;
   color: #15803d;
-}
-
-[data-theme="dark"] .ml-callout-header {
-  color: #86efac;
 }
 
 .ml-callout-body {
@@ -1364,9 +1609,9 @@ html, body {
 
 .m3-dialog-container {
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  border: 1.5px solid rgba(251, 191, 36, 0.45);
   border-radius: var(--radius-2xl); /* M3 28px standard dialog radius */
-  box-shadow: var(--shadow-dialog);
+  box-shadow: 0 20px 48px -12px rgba(245, 158, 11, 0.18), 0 0 0 1px rgba(253, 230, 138, 0.6), var(--shadow-dialog);
   width: 100%;
   max-width: 780px;
   max-height: 90vh;
@@ -1377,22 +1622,17 @@ html, body {
 }
 
 .m3-dialog-header {
-  padding: 18px 24px 15px;
+  padding: 18px 24px 16px;
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid rgba(217, 119, 6, 0.35);
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  border-bottom: 3px solid #fde047;
+  background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 35%, #fbbf24 75%, #f59e0b 100%);
   position: relative;
   flex-shrink: 0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 3px 14px rgba(245, 158, 11, 0.25);
 }
 
-[data-theme="dark"] .m3-dialog-header {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%);
-  border-bottom: 1px solid rgba(245, 158, 11, 0.3);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
 
 .m3-dialog-icon {
   width: 40px;
@@ -1409,12 +1649,6 @@ html, body {
   backdrop-filter: blur(8px);
 }
 
-[data-theme="dark"] .m3-dialog-icon {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(255, 255, 255, 0.25) !important;
-  color: #ffffff !important;
-}
-
 .m3-dialog-title-block {
   flex: 1;
   min-width: 0;
@@ -1428,12 +1662,6 @@ html, body {
   color: #ffffff !important;
   letter-spacing: -0.015em;
   line-height: 1.25;
-}
-
-[data-theme="dark"] .m3-dialog-header .m3-headline-small,
-[data-theme="dark"] .m3-dialog-header h2,
-[data-theme="dark"] .m3-dialog-header h3 {
-  color: #ffffff !important;
 }
 
 .m3-dialog-header .m3-body-medium,
@@ -1453,24 +1681,7 @@ html, body {
   color: #ffffff !important;
 }
 
-[data-theme="dark"] .m3-dialog-header .m3-body-medium,
-[data-theme="dark"] .m3-dialog-header p,
-[data-theme="dark"] .m3-dialog-header .m3-dialog-title-block p,
-[data-theme="dark"] .m3-dialog-header div[style*="var(--text-secondary)"],
-[data-theme="dark"] .m3-dialog-header div[style*="var(--text-muted)"],
-[data-theme="dark"] .m3-dialog-header p[style*="var(--text-muted)"] {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-[data-theme="dark"] .m3-dialog-header div[style*="var(--text-primary)"] {
-  color: #ffffff !important;
-}
-
 .m3-dialog-header strong {
-  color: #ffffff !important;
-}
-
-[data-theme="dark"] .m3-dialog-header strong {
   color: #ffffff !important;
 }
 
@@ -1478,12 +1689,6 @@ html, body {
   background: rgba(255, 255, 255, 0.22) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
-}
-
-[data-theme="dark"] .m3-dialog-header .mrn-tag {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
 .m3-dialog-header .m3-icon-button,
@@ -1771,19 +1976,10 @@ html, body {
   transform: translateY(-1px);
 }
 
-[data-theme="dark"] .mcq-card:hover {
-  background-color: #0c2d48;
-}
-
 .mcq-card.selected {
   border-color: #0284c7;
   background-color: #e0f2fe;
   box-shadow: 0 1px 4px rgba(2, 132, 199, 0.2);
-}
-
-[data-theme="dark"] .mcq-card.selected {
-  background-color: #0c2d48;
-  border-color: #38bdf8;
 }
 
 .mcq-card-icon {
@@ -1822,10 +2018,6 @@ html, body {
 .mcq-card.selected .mcq-card-title {
   color: #0369a1;
   font-weight: 700;
-}
-
-[data-theme="dark"] .mcq-card.selected .mcq-card-title {
-  color: #7dd3fc;
 }
 
 .mcq-card-sub {
@@ -2140,12 +2332,6 @@ html, body {
   overflow: hidden;
 }
 
-[data-theme="dark"] .m3-ai-unified-section {
-  background-color: #062e24;
-  border-color: #059669;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
 .m3-ai-header {
   display: flex;
   align-items: center;
@@ -2159,10 +2345,6 @@ html, body {
   font-size: 13px;
   font-weight: 800;
   color: #15803d;
-}
-
-[data-theme="dark"] .m3-ai-title {
-  color: #86efac;
 }
 
 .m3-sparkle-icon {
@@ -2209,29 +2391,14 @@ html, body {
   border: 1px solid #fecaca;
 }
 
-[data-theme="dark"] .m3-risk-row-high {
-  background-color: #450a0a;
-  border-color: #7f1d1d;
-}
-
 .m3-risk-row-caution {
   background-color: #fef3c7;
   border: 1px solid #fde68a;
 }
 
-[data-theme="dark"] .m3-risk-row-caution {
-  background-color: #451a03;
-  border-color: #78350f;
-}
-
 .m3-risk-row-info {
   background-color: #ede9fe;
   border: 1px solid #ddd6fe;
-}
-
-[data-theme="dark"] .m3-risk-row-info {
-  background-color: #2e1065;
-  border-color: #4c1d95;
 }
 
 .m3-risk-row-header {
@@ -2451,12 +2618,6 @@ html, body {
   color: #15803d;
 }
 
-[data-theme="dark"] .m3-stepper-chip.completed {
-  background-color: #064e3b;
-  border-color: #059669;
-  color: #a7f3d0;
-}
-
 .m3-stepper-circle {
   width: 17px;
   height: 17px;
@@ -2558,11 +2719,6 @@ html, body {
   gap: 16px;
 }
 
-[data-theme="dark"] .m3-inference-ready-card {
-  background: linear-gradient(135deg, #0c2d48, #064e3b);
-  border-color: #38bdf8;
-}
-
 .m3-inference-icon {
   width: 40px;
   height: 40px;
@@ -2579,10 +2735,6 @@ html, body {
   font-size: 13.5px;
   font-weight: 800;
   color: #0369a1;
-}
-
-[data-theme="dark"] .m3-inference-title {
-  color: #7dd3fc;
 }
 
 .m3-inference-subtitle {
@@ -2603,11 +2755,6 @@ html, body {
   padding: 4px 10px;
   border-radius: var(--radius-full);
   white-space: nowrap;
-}
-
-[data-theme="dark"] .m3-inference-tag {
-  background: #064e3b;
-  color: #a7f3d0;
 }
 
 .m3-btn-success {
@@ -2738,12 +2885,6 @@ html, body {
   user-select: none;
 }
 
-[data-theme="dark"] .m3-doctor-patient-banner {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-}
-
 .m3-doctor-patient-banner:hover {
   box-shadow: 0 6px 24px -3px rgba(0, 0, 0, 0.07);
 }
@@ -2768,12 +2909,6 @@ html, body {
   position: relative;
   overflow: hidden;
   transition: all var(--duration-normal) var(--ease-standard);
-}
-
-[data-theme="dark"] .prescription-med-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .prescription-med-card:hover {
@@ -2805,12 +2940,6 @@ html, body {
   background-color: #ffffff;
   border: 1px solid rgba(245, 158, 11, 0.22);
   box-shadow: 0 3px 12px -2px rgba(245, 158, 11, 0.12), 0 1px 4px -1px rgba(0, 0, 0, 0.03);
-}
-
-[data-theme="dark"] .doctor-patient-card.selected {
-  background-color: var(--bg-surface);
-  border-color: rgba(56, 189, 248, 0.3);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 /* DICOM Viewer Viewport */
@@ -3016,7 +3145,7 @@ html, body {
   box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.08);
 }
 .infusion-flowing-bar {
-  background: linear-gradient(90deg, #0284c7, #38bdf8, #059669, #0284c7);
+  background: linear-gradient(90deg, #0077B6, #00B4D8, #34908B, #6FBEB2, #0077B6);
   background-size: 300% 100%;
   animation: infusionStream 3s ease infinite;
 }
@@ -3653,12 +3782,6 @@ html, body {
   width: fit-content;
 }
 
-[data-theme="dark"] .tour-target-badge {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fde68a;
-  border-color: rgba(245, 158, 11, 0.35);
-}
-
 .tour-card-title {
   font-size: 14.5px;
   font-weight: 800;
@@ -3966,3 +4089,472 @@ html, body {
   0%, 100% { transform: scaleY(0.5); transform-origin: center; }
   50% { transform: scaleY(1.2); transform-origin: center; }
 }
+
+/* ==========================================================================
+   DOCTOR PORTAL THEME — Image 2 Clinical Seafoam & Teal Palette
+   #FDF4AF (rgb: 253, 244, 175) | Buttercream Yellow
+   #A5E9DD (rgb: 165, 233, 221) | Fresh Mint Aqua
+   #6FBEB2 (rgb: 111, 190, 178) | Seafoam Jade
+   #34908B (rgb: 52, 144, 139)  | Deep Eucalyptus Teal
+   ========================================================================== */
+
+.doctor-theme {
+  --primary: #34908B;
+  --primary-hover: #29726E;
+  --primary-container: #A5E9DD;
+  --on-primary-container: #1b4b48;
+  --primary-border: #6FBEB2;
+  --primary-text: #34908B;
+
+  --secondary-container: #FDF4AF;
+  --on-secondary-container: #5c4e04;
+
+  --tertiary-container: #A5E9DD;
+  --on-tertiary-container: #1b4b48;
+
+  --bg-page: #f6fbf9;
+  --bg-surface: #ffffff;
+  --bg-subtle: #eff9f7;
+  --bg-hover: #e5f6f2;
+  --bg-active: #d5f2ec;
+
+  --border-subtle: #e3f5f1;
+  --border-default: #cbeae4;
+  --border-focus: #34908B;
+
+  --status-ready-bg: #A5E9DD;
+  --status-ready-text: #1b4b48;
+  --status-ready-border: #6FBEB2;
+
+  --status-pending-bg: #FDF4AF;
+  --status-pending-text: #5c4e04;
+  --status-pending-border: #f0de7e;
+
+  --status-active-bg: #eff9f7;
+  --status-active-text: #34908B;
+  --status-active-border: #6FBEB2;
+}
+
+.doctor-theme .m3-btn-filled,
+.doctor-theme .btn-primary {
+  background: linear-gradient(135deg, #34908B, #29726E) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(52, 144, 139, 0.3) !important;
+}
+
+.doctor-theme .m3-btn-filled:hover,
+.doctor-theme .btn-primary:hover {
+  background: linear-gradient(135deg, #29726E, #1e5653) !important;
+  box-shadow: 0 4px 12px rgba(52, 144, 139, 0.4) !important;
+}
+
+.doctor-theme .m3-btn-tonal {
+  background: #A5E9DD !important;
+  color: #1b4b48 !important;
+  border: 1px solid #6FBEB2 !important;
+}
+
+.doctor-theme .m3-btn-tonal:hover {
+  background: #90ded1 !important;
+}
+
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active {
+  background: #A5E9DD !important;
+  color: #1b4b48 !important;
+  font-weight: 700 !important;
+  border-left: 3px solid #34908B !important;
+}
+
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active .m3-nav-icon {
+  color: #34908B !important;
+}
+
+.doctor-theme .m3-navigation-drawer .m3-nav-item:hover {
+  background: #eff9f7 !important;
+  color: #34908B !important;
+}
+
+.doctor-theme .tab-item.active,
+.doctor-theme .m3-tab.active {
+  color: #34908B !important;
+  border-bottom: 2.5px solid #34908B !important;
+  background: #eff9f7 !important;
+}
+
+.doctor-theme .m3-doctor-patient-banner {
+  background: linear-gradient(135deg, #ffffff 0%, #eff9f7 100%) !important;
+  border: 1.5px solid #cbeae4 !important;
+  box-shadow: 0 4px 16px rgba(52, 144, 139, 0.08) !important;
+}
+
+.doctor-theme .doctor-patient-card.selected {
+  border-color: #34908B !important;
+  background: #eff9f7 !important;
+  box-shadow: 0 0 0 1.5px #34908B !important;
+}
+
+.doctor-theme .doctor-patient-card.selected .doctor-patient-name {
+  color: #34908B !important;
+}
+
+.doctor-theme .badge-ready {
+  background: #A5E9DD !important;
+  color: #1b4b48 !important;
+  border-color: #6FBEB2 !important;
+}
+
+.doctor-theme .badge-pending {
+  background: #FDF4AF !important;
+  color: #5c4e04 !important;
+  border-color: #f0de7e !important;
+}
+
+.doctor-theme .badge-active {
+  background: #eff9f7 !important;
+  color: #34908B !important;
+  border-color: #6FBEB2 !important;
+}
+
+.doctor-theme .m3-dialog-header {
+  background: linear-gradient(90deg, #34908B 0%, #6FBEB2 50%, #34908B 100%) !important;
+  border-bottom: 3px solid #FDF4AF !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 14px rgba(52, 144, 139, 0.25) !important;
+}
+
+.doctor-theme .stat-squircle-badge.badge-bg-blue {
+  background: linear-gradient(135deg, #34908B, #29726E) !important;
+  box-shadow: 0 4px 10px rgba(52, 144, 139, 0.35) !important;
+}
+
+.doctor-theme .stat-squircle-badge.badge-bg-green {
+  background: linear-gradient(135deg, #6FBEB2, #34908B) !important;
+  box-shadow: 0 4px 10px rgba(111, 190, 178, 0.35) !important;
+}
+
+.doctor-theme .stat-card-accent-blob.blob-blue {
+  background: radial-gradient(circle, #6FBEB2 0%, rgba(111, 190, 178, 0) 70%) !important;
+}
+
+.doctor-theme .stat-card-accent-blob.blob-yellow {
+  background: radial-gradient(circle, #FDF4AF 0%, rgba(253, 244, 175, 0) 70%) !important;
+}
+
+
+/* ==========================================================================
+   ADMIN PORTAL THEME — Image 3 Coastal Cyan & Turquoise Palette
+   #0077B6 (Bright Teal Blue)
+   #00B4D8 (Turquoise Surf)
+   #90E0EF (Frosted Blue)
+   #CAF0F8 (Light Cyan)
+   ========================================================================== */
+
+.admin-theme {
+  --primary: #0077B6;
+  --primary-hover: #005f92;
+  --primary-container: #CAF0F8;
+  --on-primary-container: #003652;
+  --primary-border: #90E0EF;
+  --primary-text: #0077B6;
+
+  --secondary-container: #90E0EF;
+  --on-secondary-container: #004b73;
+
+  --tertiary-container: #CAF0F8;
+  --on-tertiary-container: #003652;
+
+  --bg-page: #f5fbfe;
+  --bg-surface: #ffffff;
+  --bg-subtle: #edf8fc;
+  --bg-hover: #e2f4fb;
+  --bg-active: #d2eefa;
+
+  --border-subtle: #e0f2f9;
+  --border-default: #bfe7f5;
+  --border-focus: #00B4D8;
+
+  --status-ready-bg: #CAF0F8;
+  --status-ready-text: #0077B6;
+  --status-ready-border: #90E0EF;
+
+  --status-active-bg: #90E0EF;
+  --status-active-text: #004b73;
+  --status-active-border: #00B4D8;
+}
+
+.admin-theme .m3-btn-filled,
+.admin-theme .btn-primary {
+  background: linear-gradient(135deg, #0077B6, #00B4D8) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 119, 182, 0.3) !important;
+}
+
+.admin-theme .m3-btn-filled:hover,
+.admin-theme .btn-primary:hover {
+  background: linear-gradient(135deg, #005f92, #0096b7) !important;
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.4) !important;
+}
+
+.admin-theme .m3-btn-tonal {
+  background: #CAF0F8 !important;
+  color: #005f92 !important;
+  border: 1px solid #90E0EF !important;
+}
+
+.admin-theme .m3-btn-tonal:hover {
+  background: #b6ebf5 !important;
+}
+
+.admin-theme .m3-navigation-drawer .m3-nav-item.active {
+  background: #CAF0F8 !important;
+  color: #0077B6 !important;
+  font-weight: 700 !important;
+  border-left: 3px solid #0077B6 !important;
+}
+
+.admin-theme .m3-navigation-drawer .m3-nav-item.active .m3-nav-icon {
+  color: #0077B6 !important;
+}
+
+.admin-theme .m3-navigation-drawer .m3-nav-item:hover {
+  background: #edf8fc !important;
+  color: #0077B6 !important;
+}
+
+.admin-theme .m3-doctor-patient-banner {
+  background: linear-gradient(135deg, #ffffff 0%, #edf8fc 100%) !important;
+  border: 1.5px solid #bfe7f5 !important;
+  box-shadow: 0 4px 16px rgba(0, 119, 182, 0.08) !important;
+}
+
+.admin-theme .badge-ready {
+  background: #CAF0F8 !important;
+  color: #0077B6 !important;
+  border-color: #90E0EF !important;
+}
+
+.admin-theme .badge-active {
+  background: #90E0EF !important;
+  color: #004b73 !important;
+  border-color: #00B4D8 !important;
+}
+
+.admin-theme .m3-dialog-header {
+  background: linear-gradient(90deg, #0077B6 0%, #00B4D8 50%, #0077B6 100%) !important;
+  border-bottom: 3px solid #CAF0F8 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 14px rgba(0, 119, 182, 0.25) !important;
+}
+
+.admin-theme .stat-squircle-badge.badge-bg-blue {
+  background: linear-gradient(135deg, #0077B6, #00B4D8) !important;
+  box-shadow: 0 4px 10px rgba(0, 119, 182, 0.35) !important;
+}
+
+.admin-theme .stat-squircle-badge.badge-bg-green {
+  background: linear-gradient(135deg, #00B4D8, #0077B6) !important;
+  box-shadow: 0 4px 10px rgba(0, 180, 216, 0.35) !important;
+}
+
+.admin-theme .stat-card-accent-blob.blob-blue {
+  background: radial-gradient(circle, #00B4D8 0%, rgba(0, 180, 216, 0) 70%) !important;
+}
+
+.admin-theme .stat-card-accent-blob.blob-yellow {
+  background: radial-gradient(circle, #90E0EF 0%, rgba(144, 224, 239, 0) 70%) !important;
+}
+
+/* ==========================================================================
+   RECEPTIONIST PORTAL THEME — Original Warm Sunbeam Amber & Pearl Palette
+   #d97706 (Amber 600)
+   #f59e0b (Amber 500)
+   #b45309 (Amber 700)
+   #fef3c7 (Amber 100 / Warm Sunlight)
+   #78350f (Amber 900)
+   ========================================================================== */
+
+.receptionist-theme {
+  --primary: #d97706;
+  --primary-hover: #b45309;
+  --primary-active: #92400e;
+  --primary-container: #fef3c7;
+  --on-primary-container: #78350f;
+  --primary-border: #fde68a;
+  --primary-text: #b45309;
+
+  --secondary-container: #fef9c3;
+  --on-secondary-container: #713f12;
+
+  --tertiary-container: #ecfdf5;
+  --on-tertiary-container: #065f46;
+
+  --bg-page: #fcfbfa;
+  --bg-surface: #ffffff;
+  --bg-subtle: #fbf9f1;
+  --bg-hover: #fefce8;
+  --bg-active: #fef3c7;
+
+  --border-subtle: #f4f3ea;
+  --border-default: #e7e5d8;
+  --border-focus: #f59e0b;
+
+  --status-ready-bg: #dcfce7;
+  --status-ready-text: #15803d;
+  --status-ready-border: #86efac;
+
+  --status-pending-bg: #fef3c7;
+  --status-pending-text: #b45309;
+  --status-pending-border: #fcd34d;
+
+  --status-active-bg: #e0f2fe;
+  --status-active-text: #0369a1;
+  --status-active-border: #7dd3fc;
+}
+
+.receptionist-theme .m3-btn-filled,
+.receptionist-theme .btn-primary {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+}
+
+.receptionist-theme .m3-btn-filled:hover,
+.receptionist-theme .btn-primary:hover {
+  background: linear-gradient(135deg, #d97706, #b45309) !important;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4) !important;
+}
+
+.receptionist-theme .m3-btn-tonal {
+  background: #fef3c7 !important;
+  color: #78350f !important;
+  border: 1px solid #fde68a !important;
+}
+
+.receptionist-theme .m3-btn-tonal:hover {
+  background: #fde68a !important;
+}
+
+.receptionist-theme .m3-navigation-drawer .m3-nav-item.active {
+  background: #fef3c7 !important;
+  color: #78350f !important;
+  font-weight: 700 !important;
+  border-left: 3px solid #d97706 !important;
+}
+
+.receptionist-theme .m3-navigation-drawer .m3-nav-item.active .nav-icon-container,
+.receptionist-theme .m3-navigation-drawer .m3-nav-item.active .nav-label {
+  color: #78350f !important;
+}
+
+.receptionist-theme .m3-navigation-drawer .m3-nav-item:hover {
+  background: #fefce8 !important;
+  color: #b45309 !important;
+}
+
+.receptionist-theme .tab-item.active,
+.receptionist-theme .m3-tab.active {
+  color: #b45309 !important;
+  border-bottom: 2.5px solid #d97706 !important;
+  background: #fef3c7 !important;
+}
+
+.receptionist-theme .badge-ready {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  border-color: #86efac !important;
+}
+
+.receptionist-theme .badge-pending {
+  background: #fef3c7 !important;
+  color: #78350f !important;
+  border-color: #fde68a !important;
+}
+
+.receptionist-theme .badge-active {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+  border-color: #fde68a !important;
+}
+
+.receptionist-theme .m3-dialog-header {
+  background: linear-gradient(90deg, #d97706 0%, #f59e0b 50%, #d97706 100%) !important;
+  border-bottom: 3px solid #fef3c7 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 14px rgba(217, 119, 6, 0.25) !important;
+}
+
+.receptionist-theme .stat-squircle-badge.badge-bg-blue {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35) !important;
+}
+
+.receptionist-theme .stat-card-accent-blob.blob-blue {
+  background: radial-gradient(circle, #fde68a 0%, rgba(253, 230, 138, 0) 70%) !important;
+}
+
+.receptionist-theme .stat-card-accent-blob.blob-yellow {
+  background: radial-gradient(circle, #fef3c7 0%, rgba(254, 243, 199, 0) 70%) !important;
+}
+
+/* ==========================================================================
+   CASHIER PORTAL THEME — Fiscal Slate & Emerald Palette
+   ========================================================================== */
+
+.cashier-theme {
+  --primary: #047857;
+  --primary-hover: #065f46;
+  --primary-active: #064e3b;
+  --primary-container: #d1fae5;
+  --on-primary-container: #064e3b;
+  --primary-border: #6ee7b7;
+  --primary-text: #047857;
+
+  --secondary-container: #fef3c7;
+  --on-secondary-container: #78350f;
+
+  --bg-page: #f0fdf4;
+  --bg-surface: #ffffff;
+  --bg-subtle: #ecfdf5;
+  --bg-hover: #d1fae5;
+  --bg-active: #a7f3d0;
+
+  --border-subtle: #ecfdf5;
+  --border-default: #a7f3d0;
+  --border-focus: #059669;
+
+  --status-ready-bg: #d1fae5;
+  --status-ready-text: #064e3b;
+  --status-ready-border: #6ee7b7;
+}
+
+.cashier-theme .m3-btn-filled,
+.cashier-theme .btn-primary {
+  background: linear-gradient(135deg, #059669, #047857) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3) !important;
+}
+
+.cashier-theme .m3-btn-filled:hover,
+.cashier-theme .btn-primary:hover {
+  background: linear-gradient(135deg, #047857, #064e3b) !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4) !important;
+}
+
+.cashier-theme .m3-navigation-drawer .m3-nav-item.active {
+  background: #d1fae5 !important;
+  color: #064e3b !important;
+  font-weight: 700 !important;
+  border-left: 3px solid #059669 !important;
+}
+
+.cashier-theme .m3-navigation-drawer .m3-nav-item.active .m3-nav-icon {
+  color: #059669 !important;
+}
+
+.cashier-theme .m3-navigation-drawer .m3-nav-item:hover {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
+

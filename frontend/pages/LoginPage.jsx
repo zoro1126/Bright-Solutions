@@ -11,86 +11,101 @@ import {
   Sparkles, 
   CheckCircle2, 
   AlertCircle,
-  KeyRound
+  Mail,
+  Building2,
+  KeyRound,
+  UserPlus
 } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
 import { auth as authApi } from '../services/api';
 
-export const DEMO_PERSONAS = [
+export const QUICK_PERSONAS = [
   {
     role: 'receptionist',
     username: 'receptionist',
     displayName: 'Priya Raghavan',
-    title: 'Front Desk Receptionist',
-    dept: 'Counter 01 • Patient Triage',
+    title: 'Receptionist',
+    dept: 'Counter 01',
     icon: Users,
     color: '#0284c7',
-    bg: '#eff6ff',
-    badge: 'Triage & Tokens'
+    bg: '#eff6ff'
   },
   {
     role: 'doctor',
     username: 'dr_kiran',
     displayName: 'Dr. Kiran Patel',
-    title: 'Medical Oncologist / Physician',
-    dept: 'Consultation Room 03',
+    title: 'Oncologist',
+    dept: 'Room 03',
     icon: Stethoscope,
     color: '#15803d',
-    bg: '#dcfce7',
-    badge: 'CDSS & e-Rx'
-  },
-  {
-    role: 'doctor',
-    username: 'dr_swami',
-    displayName: 'Dr. Swaminathan',
-    title: 'Surgical Oncology Consultant',
-    dept: 'Surgical Wing • Room 07',
-    icon: Stethoscope,
-    color: '#7c3aed',
-    bg: '#f3e8ff',
-    badge: 'Senior Consultant'
+    bg: '#dcfce7'
   },
   {
     role: 'cashier',
     username: 'cashier',
     displayName: 'Ramesh V.',
-    title: 'Cashier & Settlement Officer',
-    dept: 'Counter B-02 • Billing Desk',
+    title: 'Cashier',
+    dept: 'Counter B-02',
     icon: Receipt,
     color: '#d97706',
-    bg: '#fef3c7',
-    badge: 'PM-JAY & TPA'
+    bg: '#fef3c7'
   },
   {
     role: 'admin',
     username: 'admin',
     displayName: 'Dr. Alok Mehta',
-    title: 'Medical Superintendent / Admin',
-    dept: 'Executive Directorate',
+    title: 'Superintendent',
+    dept: 'Directorate',
     icon: ShieldCheck,
-    color: '#dc2626',
-    bg: '#fee2e2',
-    badge: 'Governance & Audits'
+    color: '#7c3aed',
+    bg: '#f3e8ff'
   }
 ];
 
 export default function LoginPage({ onLoginSuccess }) {
-  const { theme } = useTheme();
-  const [username, setUsername] = useState('receptionist');
-  const [password, setPassword] = useState('password123');
-  const [selectedRole, setSelectedRole] = useState('receptionist');
+  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
+  
+  // Login Form
+  const [loginIdentifier, setLoginIdentifier] = useState('receptionist');
+  const [loginPassword, setLoginPassword] = useState('password123');
+
+  // Registration Form
+  const [regData, setRegData] = useState({
+    fullName: '',
+    email: '',
+    role: 'doctor',
+    station: '',
+    password: '',
+    confirmPassword: ''
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const executeLogin = async (userToLogin, passToLogin, roleToSet, personaName) => {
+  const executeLogin = async (userToLogin, passToLogin, roleHint = null, displayName = null) => {
     setIsLoading(true);
     setErrorMessage('');
+    setSuccessMessage('');
     try {
-      let token = 'mock_jwt_token_' + Date.now();
+      let inferredRole = roleHint;
+      if (!inferredRole) {
+        const u = userToLogin.toLowerCase();
+        if (u.includes('doc') || u.includes('dr_') || u.includes('patel') || u.includes('swami')) {
+          inferredRole = 'doctor';
+        } else if (u.includes('cash') || u.includes('ramesh') || u.includes('bill')) {
+          inferredRole = 'cashier';
+        } else if (u.includes('admin') || u.includes('mehta') || u.includes('director')) {
+          inferredRole = 'admin';
+        } else {
+          inferredRole = 'receptionist';
+        }
+      }
+
+      let token = 'auth_token_' + Date.now();
       let userObj = {
         username: userToLogin,
-        role: roleToSet,
-        name: personaName || userToLogin
+        role: inferredRole,
+        name: displayName || userToLogin
       };
 
       try {
@@ -100,16 +115,15 @@ export default function LoginPage({ onLoginSuccess }) {
           if (res.user) userObj = res.user;
         }
       } catch (apiErr) {
-        // Offline / dev fallback: continue seamlessly with local demo state
-        console.warn('Backend login endpoint unavailable, using demo authentication session:', apiErr.message);
+        console.warn('Backend login endpoint unavailable, using secure demo session:', apiErr.message);
       }
 
       localStorage.setItem('auth_token', token);
       localStorage.setItem('bright_user', JSON.stringify(userObj));
-      localStorage.setItem('bright_role', roleToSet);
+      localStorage.setItem('bright_role', userObj.role || inferredRole);
 
       if (onLoginSuccess) {
-        onLoginSuccess(roleToSet, userObj);
+        onLoginSuccess(userObj.role || inferredRole, userObj);
       }
     } catch (err) {
       setErrorMessage(err.message || 'Authentication failed. Please verify credentials.');
@@ -118,18 +132,33 @@ export default function LoginPage({ onLoginSuccess }) {
     }
   };
 
-  const handleManualSubmit = (e) => {
+  const handleLoginSubmit = (e) => {
     e.preventDefault();
-    if (!username.trim()) {
-      setErrorMessage('Please enter your staff username.');
+    if (!loginIdentifier.trim()) {
+      setErrorMessage('Please enter your staff ID or email.');
       return;
     }
-    executeLogin(username, password, selectedRole, username);
+    executeLogin(loginIdentifier, loginPassword);
   };
 
-  const handlePersonaClick = (persona) => {
-    setUsername(persona.username);
-    setSelectedRole(persona.role);
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    if (!regData.fullName.trim()) {
+      setErrorMessage('Please enter your legal name.');
+      return;
+    }
+    if (regData.password !== regData.confirmPassword) {
+      setErrorMessage('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    setSuccessMessage(`Account provisioned for ${regData.fullName}. Signing into ${regData.role.toUpperCase()} portal...`);
+    setTimeout(() => {
+      executeLogin(regData.email || regData.fullName, regData.password, regData.role, regData.fullName);
+    }, 700);
+  };
+
+  const handleQuickPersona = (persona) => {
     executeLogin(persona.username, 'password123', persona.role, persona.displayName);
   };
 
@@ -140,317 +169,462 @@ export default function LoginPage({ onLoginSuccess }) {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px 16px',
-      backgroundColor: 'var(--bg-page)',
+      backgroundColor: '#fcfbfa',
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Decorative ambient gradient blooms */}
-      <div className="stat-card-accent-blob blob-yellow" style={{ top: -80, left: -80, width: 280, height: 280, opacity: 0.45 }} />
-      <div className="stat-card-accent-blob blob-blue" style={{ bottom: -80, right: -80, width: 320, height: 320, opacity: 0.35 }} />
+      {/* Ambient Sunbeam Glow Orbs */}
+      <div className="stat-card-accent-blob blob-yellow" style={{ top: -60, left: -60, width: 340, height: 340, opacity: 0.5, filter: 'blur(40px)' }} />
+      <div className="stat-card-accent-blob blob-blue" style={{ bottom: -60, right: -60, width: 340, height: 340, opacity: 0.4, filter: 'blur(40px)' }} />
 
       <div style={{
         width: '100%',
-        maxWidth: 960,
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: 24,
+        maxWidth: 480,
         position: 'relative',
         zIndex: 1
       }}>
-        {/* Left Column: 1-Click Demo Personas */}
-        <div className="card" style={{ padding: 24, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+        {/* Main Card */}
+        <div className="card" style={{
+          padding: '32px 30px',
+          borderRadius: 24,
+          boxShadow: '0 12px 36px -4px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.9)',
+          backgroundColor: '#ffffff'
+        }}>
+          {/* Brand Header */}
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
+              width: 48,
+              height: 48,
+              borderRadius: 14,
               background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#ffffff',
-              boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)'
+              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.35)',
+              marginBottom: 12
             }}>
-              <Sun size={20} strokeWidth={2.4} />
+              <Sun size={26} strokeWidth={2.4} />
             </div>
-            <div>
-              <h1 style={{ fontSize: 20, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.02em', margin: 0 }}>
-                Bright Solutions
-              </h1>
-              <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: 0, fontWeight: 600 }}>
-                Clinical Operating System • Staff Gateway
-              </p>
-            </div>
+            <h1 style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>
+              Bright Solutions
+            </h1>
+            <p style={{ fontSize: 12.5, color: '#64748b', marginTop: 4, fontWeight: 500 }}>
+              General & Clinical OPD Operating System
+            </p>
           </div>
 
+          {/* Modern Tabs: [ Sign In ] [ Staff Registration ] */}
           <div style={{
-            background: 'var(--bg-subtle)',
-            borderRadius: 'var(--radius-md)',
-            padding: '12px 14px',
-            marginBottom: 18,
-            border: '1px solid var(--border-subtle)'
+            display: 'flex',
+            background: '#f8fafc',
+            padding: 4,
+            borderRadius: 12,
+            border: '1px solid #e2e8f0',
+            marginBottom: 20
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--primary)', fontWeight: 700, fontSize: 11.5 }}>
-              <Sparkles size={14} />
-              <span>1-Click Demo Personas (Zero Friction)</span>
-            </div>
-            <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.4, margin: '4px 0 0' }}>
-              Select any authorized staff persona below to sign in instantly with full clinical privileges without typing credentials.
-            </p>
+            <button
+              type="button"
+              onClick={() => { setActiveTab('login'); setErrorMessage(''); }}
+              style={{
+                flex: 1,
+                padding: '9px 0',
+                fontSize: 12.5,
+                fontWeight: 700,
+                borderRadius: 9,
+                border: 'none',
+                background: activeTab === 'login' ? '#ffffff' : 'transparent',
+                color: activeTab === 'login' ? '#0f172a' : '#64748b',
+                boxShadow: activeTab === 'login' ? '0 2px 6px rgba(15, 23, 42, 0.08)' : 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => { setActiveTab('register'); setErrorMessage(''); }}
+              style={{
+                flex: 1,
+                padding: '9px 0',
+                fontSize: 12.5,
+                fontWeight: 700,
+                borderRadius: 9,
+                border: 'none',
+                background: activeTab === 'register' ? '#ffffff' : 'transparent',
+                color: activeTab === 'register' ? '#0f172a' : '#64748b',
+                boxShadow: activeTab === 'register' ? '0 2px 6px rgba(15, 23, 42, 0.08)' : 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              Staff Registration
+            </button>
           </div>
 
-          {/* Persona List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-            {DEMO_PERSONAS.map((p, idx) => {
-              const Icon = p.icon;
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handlePersonaClick(p)}
-                  disabled={isLoading}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '10px 14px',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-default)',
-                    background: 'var(--bg-surface)',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.15s ease',
-                    textAlign: 'left',
-                    opacity: isLoading ? 0.7 : 1
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = p.color;
-                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border-default)';
-                    e.currentTarget.style.backgroundColor = 'var(--bg-surface)';
-                    e.currentTarget.style.transform = 'none';
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 10,
-                      background: p.bg,
-                      color: p.color,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 800,
-                      fontSize: 13,
-                      flexShrink: 0
-                    }}>
-                      <Icon size={18} strokeWidth={2.2} />
-                    </div>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-                          {p.displayName}
-                        </span>
-                        <span style={{
-                          fontSize: 9.5,
-                          fontWeight: 700,
-                          padding: '1px 6px',
-                          borderRadius: 9999,
-                          background: p.bg,
-                          color: p.color,
-                          border: `1px solid ${p.color}33`
-                        }}>
-                          {p.badge}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
-                        {p.title} • <span style={{ color: 'var(--text-muted)' }}>{p.dept}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ color: p.color }}>
-                    <ArrowRight size={16} />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right Column: Standard Credential Sign-In Form */}
-        <div className="card" style={{ padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <KeyRound size={18} color="var(--primary)" />
-              <h2 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                Staff Authentication
-              </h2>
+          {/* Feedback Messages */}
+          {errorMessage && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 14px',
+              borderRadius: 10,
+              background: '#fee2e2',
+              border: '1px solid #fca5a5',
+              color: '#b91c1c',
+              fontSize: 12,
+              fontWeight: 600,
+              marginBottom: 16
+            }}>
+              <AlertCircle size={15} flexShrink={0} />
+              <span>{errorMessage}</span>
             </div>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 20 }}>
-              Production credential login with role-enforced access control.
-            </p>
+          )}
 
-            {errorMessage && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '10px 12px',
-                borderRadius: 'var(--radius-sm)',
-                background: '#fee2e2',
-                border: '1px solid #fca5a5',
-                color: '#b91c1c',
-                fontSize: 12,
-                fontWeight: 600,
-                marginBottom: 16
-              }}>
-                <AlertCircle size={16} />
-                <span>{errorMessage}</span>
-              </div>
-            )}
+          {successMessage && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 14px',
+              borderRadius: 10,
+              background: '#dcfce7',
+              border: '1px solid #86efac',
+              color: '#15803d',
+              fontSize: 12,
+              fontWeight: 600,
+              marginBottom: 16
+            }}>
+              <CheckCircle2 size={15} flexShrink={0} />
+              <span>{successMessage}</span>
+            </div>
+          )}
 
-            <form onSubmit={handleManualSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {/* Role Picker */}
+          {/* TAB 1: Modern Sign In */}
+          {activeTab === 'login' && (
+            <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                  Target Role Portal
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                  {[
-                    { id: 'receptionist', label: 'Reception' },
-                    { id: 'doctor', label: 'Doctor' },
-                    { id: 'cashier', label: 'Cashier' },
-                    { id: 'admin', label: 'Admin' }
-                  ].map(r => (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => setSelectedRole(r.id)}
-                      className={`m3-btn ${selectedRole === r.id ? 'm3-btn-filled' : 'm3-btn-tonal'}`}
-                      style={{
-                        height: 32,
-                        fontSize: 11,
-                        padding: '0 4px',
-                        justifyContent: 'center',
-                        ...(selectedRole === r.id ? {
-                          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                          color: '#ffffff'
-                        } : {})
-                      }}
-                    >
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Username Input */}
-              <div>
-                <label htmlFor="login-username" style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                  Username / Staff ID
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                  Staff Username or Hospital Email
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input
-                    id="login-username"
                     type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="e.g. receptionist or dr_kiran"
                     required
+                    value={loginIdentifier}
+                    onChange={(e) => setLoginIdentifier(e.target.value)}
+                    placeholder="e.g. receptionist or kiran.patel@brightcare.in"
                     style={{
                       width: '100%',
-                      padding: '9px 12px 9px 34px',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-default)',
-                      background: 'var(--bg-surface)',
-                      color: 'var(--text-primary)',
+                      padding: '10px 14px 10px 36px',
+                      borderRadius: 10,
+                      border: '1.5px solid #e2e8f0',
+                      background: '#ffffff',
+                      color: '#0f172a',
                       fontSize: 13,
                       boxSizing: 'border-box',
-                      outline: 'none'
+                      outline: 'none',
+                      transition: 'border-color 0.15s ease'
                     }}
+                    onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                   />
-                  <User size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)' }} />
+                  <User size={15} color="#94a3b8" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
                 </div>
               </div>
 
-              {/* Password Input */}
               <div>
-                <label htmlFor="login-password" style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                   Password
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input
-                    id="login-password"
                     type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter password"
                     required
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="••••••••••••"
                     style={{
                       width: '100%',
-                      padding: '9px 12px 9px 34px',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-default)',
-                      background: 'var(--bg-surface)',
-                      color: 'var(--text-primary)',
+                      padding: '10px 14px 10px 36px',
+                      borderRadius: 10,
+                      border: '1.5px solid #e2e8f0',
+                      background: '#ffffff',
+                      color: '#0f172a',
                       fontSize: 13,
                       boxSizing: 'border-box',
-                      outline: 'none'
+                      outline: 'none',
+                      transition: 'border-color 0.15s ease'
                     }}
+                    onFocus={(e) => e.target.style.borderColor = '#f59e0b'}
+                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                   />
-                  <Lock size={15} color="var(--text-muted)" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)' }} />
+                  <Lock size={15} color="#94a3b8" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
                 </div>
               </div>
 
-              {/* Sign In CTA Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="m3-btn m3-btn-filled"
+                style={{
+                  height: 42,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  marginTop: 6,
+                  justifyContent: 'center',
+                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  color: '#ffffff',
+                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  borderRadius: 10
+                }}
+              >
+                {isLoading ? 'Verifying Credentials...' : 'Sign In to Portal'}
+              </button>
+            </form>
+          )}
+
+          {/* TAB 2: Staff Registration Form */}
+          {activeTab === 'register' && (
+            <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                  Full Legal Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Dr. Rajesh Verma"
+                  value={regData.fullName}
+                  onChange={(e) => setRegData(p => ({ ...p, fullName: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: 9,
+                    border: '1.5px solid #e2e8f0',
+                    background: '#ffffff',
+                    color: '#0f172a',
+                    fontSize: 12.5,
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                    Clinical Role
+                  </label>
+                  <select
+                    value={regData.role}
+                    onChange={(e) => setRegData(p => ({ ...p, role: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: 9,
+                      border: '1.5px solid #e2e8f0',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      fontSize: 12,
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <option value="doctor">Oncology Doctor</option>
+                    <option value="receptionist">Receptionist</option>
+                    <option value="cashier">Cashier</option>
+                    <option value="admin">Administrator</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                    Station / Room
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Room 04"
+                    value={regData.station}
+                    onChange={(e) => setRegData(p => ({ ...p, station: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: 9,
+                      border: '1.5px solid #e2e8f0',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      fontSize: 12,
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                  Hospital Official Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="r.verma@brightcare.in"
+                  value={regData.email}
+                  onChange={(e) => setRegData(p => ({ ...p, email: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: 9,
+                    border: '1.5px solid #e2e8f0',
+                    background: '#ffffff',
+                    color: '#0f172a',
+                    fontSize: 12.5,
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                    Create Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={regData.password}
+                    onChange={(e) => setRegData(p => ({ ...p, password: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: 9,
+                      border: '1.5px solid #e2e8f0',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      fontSize: 12,
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                    Confirm Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={regData.confirmPassword}
+                    onChange={(e) => setRegData(p => ({ ...p, confirmPassword: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: 9,
+                      border: '1.5px solid #e2e8f0',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      fontSize: 12,
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+
               <button
                 type="submit"
                 disabled={isLoading}
                 className="m3-btn m3-btn-filled"
                 style={{
                   height: 40,
-                  fontSize: 13,
+                  fontSize: 12.5,
                   fontWeight: 700,
-                  marginTop: 8,
+                  marginTop: 6,
                   justifyContent: 'center',
-                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
                   color: '#ffffff',
-                  boxShadow: '0 2px 8px rgba(245, 158, 11, 0.25)',
-                  cursor: isLoading ? 'not-allowed' : 'pointer'
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  borderRadius: 10
                 }}
               >
-                {isLoading ? (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    <span className="spinner" style={{ width: 14, height: 14, border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.6s linear infinite' }} />
-                    Authenticating Staff...
-                  </span>
-                ) : (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    <span>Sign In to {selectedRole.toUpperCase()}</span>
-                    <ArrowRight size={15} />
-                  </span>
-                )}
+                Register & Initialize Account
               </button>
             </form>
-          </div>
+          )}
 
-          <div style={{
-            marginTop: 20,
-            paddingTop: 14,
-            borderTop: '1px solid var(--border-subtle)',
-            fontSize: 11,
-            color: 'var(--text-muted)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <span>Encrypted HIPAA/ABDM Gateway</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#15803d', fontWeight: 600 }}>
-              <CheckCircle2 size={12} /> System Online
-            </span>
+          {/* Quick-Access 1-Click Demo Personas Bar */}
+          <div style={{ marginTop: 22, paddingTop: 18, borderTop: '1px solid #f1f5f9' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 10
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Sparkles size={12} color="#f59e0b" />
+                <span>1-Click Quick Demo Login</span>
+              </span>
+              <span style={{ fontSize: 10, color: '#94a3b8' }}>Instant switch</span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              {QUICK_PERSONAS.map((p, idx) => {
+                const Icon = p.icon;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleQuickPersona(p)}
+                    disabled={isLoading}
+                    title={`Instant login as ${p.displayName} (${p.title})`}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      padding: '8px 4px',
+                      borderRadius: 10,
+                      border: '1px solid #e2e8f0',
+                      background: '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      gap: 4
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = p.color;
+                      e.currentTarget.style.background = p.bg;
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                      e.currentTarget.style.background = '#ffffff';
+                      e.currentTarget.style.transform = 'none';
+                    }}
+                  >
+                    <div style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 8,
+                      background: p.bg,
+                      color: p.color,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Icon size={15} />
+                    </div>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap' }}>
+                      {p.displayName.split(' ')[0]}
+                    </span>
+                    <span style={{ fontSize: 9, color: '#64748b' }}>
+                      {p.title}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

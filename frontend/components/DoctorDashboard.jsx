@@ -204,7 +204,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
     }
   ]);
 
-  // Oncology Case Mix Breakdown
+  // Oncology Case Mix Breakdown — Image 3 & Image 2 Palettes
   const caseMix = [
     { 
       id: 'breast', 
@@ -212,7 +212,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       shortSite: 'Breast IDC', 
       count: 2, 
       percent: 40, 
-      color: '#ec4899', 
+      color: '#03045E', // Deep Twilight
       stage: 'Stage IIB - III',
       stages: [
         { label: 'Stage I', pct: 15 },
@@ -229,7 +229,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       shortSite: 'Lung NSCLC', 
       count: 1, 
       percent: 20, 
-      color: '#3b82f6', 
+      color: '#0077B6', // Bright Teal Blue
       stage: 'Stage IIIA (EGFR+)',
       stages: [
         { label: 'Stage I', pct: 20 },
@@ -246,7 +246,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       shortSite: 'Colorectal', 
       count: 1, 
       percent: 20, 
-      color: '#f59e0b', 
+      color: '#00B4D8', // Turquoise Surf
       stage: 'Stage II (MSI-High)',
       stages: [
         { label: 'Stage I', pct: 25 },
@@ -263,7 +263,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       shortSite: 'DLBCL Lymphoma', 
       count: 1, 
       percent: 20, 
-      color: '#8b5cf6', 
+      color: '#34908B', // Deep Eucalyptus Teal
       stage: 'Stage I (Ann Arbor)',
       stages: [
         { label: 'Stage I', pct: 35 },
@@ -276,12 +276,12 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
     },
   ];
 
-  // Biomarkers List
+  // Biomarkers List — Harmonious Integration of Image 3 & Image 2
   const biomarkers = [
-    { id: 'er_pr', label: 'ER+/PR+', prevalence: '55%', color: '#be185d', bg: '#fdf2f8', drug: 'Endocrine (Letrozole / Tamoxifen)' },
-    { id: 'her2', label: 'HER2 Amplified', prevalence: '20%', color: '#1d4ed8', bg: '#eff6ff', drug: 'Trastuzumab + Pertuzumab' },
-    { id: 'tnbc', label: 'Triple Negative', prevalence: '15%', color: '#b91c1c', bg: '#fef2f2', drug: 'Platinum + Immunotherapy' },
-    { id: 'egfr', label: 'EGFR Exon 19 Del', prevalence: '10%', color: '#15803d', bg: '#f0fdf4', drug: 'Osimertinib 3rd Gen TKI' }
+    { id: 'er_pr', label: 'ER+/PR+', prevalence: '55%', color: '#03045E', bg: '#CAF0F8', border: '#90E0EF', drug: 'Endocrine (Letrozole / Tamoxifen)' },
+    { id: 'her2', label: 'HER2 Amplified', prevalence: '20%', color: '#0077B6', bg: '#e0f2fe', border: '#00B4D8', drug: 'Trastuzumab + Pertuzumab' },
+    { id: 'tnbc', label: 'Triple Negative', prevalence: '15%', color: '#5c4e04', bg: '#FDF4AF', border: '#e8dc7e', drug: 'Platinum + Immunotherapy' },
+    { id: 'egfr', label: 'FGFR Exon 19 Del', prevalence: '10%', color: '#1b4b48', bg: '#A5E9DD', border: '#6FBEB2', drug: 'Osimertinib 3rd Gen TKI' }
   ];
 
   // Diagnostic Studies Mock Data
@@ -458,57 +458,67 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       {/* =========================================================================
           Top Welcome & Shift Banner - Reception Stat-Card Standard
           ========================================================================= */}
-      <div className="m3-doctor-patient-banner" style={{ padding: '12px 18px' }}>
-        <div className="stat-card-accent-blob blob-yellow" style={{ top: -20, right: -20, width: 110, height: 110, opacity: 0.6 }} />
+      {/* =========================================================================
+          Top Welcome & Shift Banner - Reception Stat-Card Standard
+          ========================================================================= */}
+      <div className="m3-doctor-patient-banner" style={{ padding: '12px 18px', border: '1.5px solid var(--doc-banner-border, #a7f3d0)', background: 'var(--doc-banner-bg, linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%))' }}>
+        <div className="stat-card-accent-blob" style={{ top: -20, right: -20, width: 110, height: 110, opacity: 0.6, background: 'radial-gradient(circle, var(--doc-accent-color, #0d9488) 0%, rgba(13, 148, 136, 0) 70%)' }} />
         
         <div className="m3-patient-banner-info" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="stat-squircle-badge badge-bg-yellow" style={{ width: 44, height: 44, borderRadius: 13 }}>
+          <div className="stat-squircle-badge" style={{ width: 44, height: 44, borderRadius: 13, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #064e3b, #0d9488))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(13, 148, 136, 0.35))' }}>
             <Stethoscope size={22} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.02em', margin: 0 }}>
+              <h2 style={{ fontSize: 17, fontWeight: 900, color: 'var(--doc-banner-title, #064e3b)', letterSpacing: '-0.02em', margin: 0 }}>
                 Dr. Kiran Patel, MD
               </h2>
-              <span className="brand-counter-pill" style={{ textTransform: 'none', fontSize: 10, background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' }}>
+              <span className="brand-counter-pill" style={{ textTransform: 'none', fontSize: 10, background: 'var(--doc-pill-bg, #ccfbf1)', color: 'var(--doc-pill-color, #0f766e)', border: '1px solid var(--doc-pill-border, #99f6e4)', fontWeight: 700 }}>
                 Senior Medical Oncologist
               </span>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>• Station 03 • OPD Session Active</span>
+              <span style={{ fontSize: 11, color: 'var(--doc-accent-color, #0d9488)', fontWeight: 600 }}>• Station 03 • OPD Session Active</span>
             </div>
             <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2, fontWeight: 500 }}>
-              Cancer Center Care Stream • <strong>{patients.length} Consultations Booked</strong> • <strong style={{ color: '#b91c1c' }}>{sentinelAlerts.length} Sentinel AI Warnings</strong>
+              Cancer Center Care Stream • <strong>{patients.length} Consultations Booked</strong> • <strong style={{ color: 'var(--doc-accent-color, #0d9488)' }}>{sentinelAlerts.length} Sentinel AI Warnings</strong>
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
           <button 
-            className="m3-btn m3-btn-tonal"
+            className="m3-btn"
             onClick={onSwitchToReception}
             title="Switch to Reception Desk"
-            style={{ height: 32, fontSize: 11.5, padding: '0 12px' }}
+            style={{ height: 32, fontSize: 11.5, padding: '0 12px', background: 'var(--bg-subtle)', color: 'var(--text-primary)', border: '1px solid var(--border-default)', fontWeight: 700 }}
           >
             ← Reception Desk
           </button>
           <button 
-            className="m3-btn m3-btn-tonal"
+            className="m3-btn"
             onClick={() => onOpenWorkspace(selectedPatientId || 'pat-001', 'insights')}
             title="Open Station 03 Clinical Consultation Workspace"
-            style={{ height: 32, fontSize: 11.5, padding: '0 12px', gap: 5 }}
+            style={{ height: 32, fontSize: 11.5, padding: '0 12px', gap: 5, background: 'var(--doc-pill-bg, #ccfbf1)', color: 'var(--doc-pill-color, #0f766e)', border: '1px solid var(--doc-pill-border, #99f6e4)', fontWeight: 700 }}
           >
             <Stethoscope size={14} />
             <span>Clinical Workspace →</span>
           </button>
           <button 
-            className="m3-btn m3-btn-filled anim-hover-lift"
+            className="m3-btn anim-hover-lift"
             onClick={() => onOpenWorkspace('pat-001', 'insights')}
             style={{ 
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
+              background: 'var(--doc-brand-gradient, linear-gradient(135deg, #064e3b, #0d9488))', 
               color: '#ffffff', 
               height: 34, 
               fontSize: 12, 
               padding: '0 16px',
-              boxShadow: '0 2px 8px rgba(245, 158, 11, 0.35)' 
+              border: 'none',
+              borderRadius: 'var(--radius-sm)',
+              boxShadow: 'var(--doc-brand-shadow, 0 2px 8px rgba(13, 148, 136, 0.35))',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              fontWeight: 700,
+              cursor: 'pointer'
             }}
           >
             <span>Resume Patient: Ananya Sharma</span>
@@ -518,11 +528,11 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       </div>
 
       {/* =========================================================================
-          4 Top Stat Cards Row (Reception Stat Card Standard) - Fully Clickable!
+          4 Top Stat Cards Row — Clinical Medical Eucalyptus & Sage Palette
           ========================================================================= */}
       <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 2 }}>
         
-        {/* Card 1: Today's OPD Consults */}
+        {/* Card 1: Today's OPD Consults — Eucalyptus Forest (#064e3b & #0d9488) */}
         <div 
           className="stat-card anim-hover-lift" 
           style={{ cursor: 'pointer' }} 
@@ -532,36 +542,36 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           }}
           title="Click to view all scheduled patients"
         >
-          <div className="stat-card-accent-blob blob-blue" />
-          <div className="stat-squircle-badge badge-bg-blue">
-            <Users size={16} />
+          <div className="stat-card-accent-blob" style={{ background: 'radial-gradient(circle, var(--doc-pill-bg, #ccfbf1) 0%, rgba(204, 251, 241, 0) 70%)' }} />
+          <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #064e3b, #0d9488)', color: '#ffffff', boxShadow: '0 4px 10px rgba(13, 148, 136, 0.35)' }}>
+            <Users size={16} strokeWidth={2.4} />
           </div>
-          <div className="stat-card-value">{patients.length}</div>
+          <div className="stat-card-value" style={{ color: 'var(--doc-banner-title, #064e3b)' }}>{patients.length}</div>
           <div className="stat-card-label">Scheduled Patients</div>
-          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 4, fontWeight: 600 }}>
+          <div style={{ fontSize: 10.5, color: 'var(--doc-accent-color, #0d9488)', marginTop: 4, fontWeight: 700 }}>
             3 AI Ready • 1 In Consultation
           </div>
         </div>
 
-        {/* Card 2: AI Risk Alerts */}
+        {/* Card 2: AI Risk Alerts — Alert Crimson (#dc2626 & #b91c1c) */}
         <div 
           className="stat-card anim-hover-lift" 
           style={{ cursor: 'pointer' }}
           onClick={() => setIsAllAlertsModalOpen(true)}
           title="Click to review all active sentinel AI warnings"
         >
-          <div className="stat-card-accent-blob blob-rose" />
-          <div className="stat-squircle-badge badge-bg-rose anim-pulse-amber">
-            <AlertTriangle size={16} />
+          <div className="stat-card-accent-blob" style={{ background: 'radial-gradient(circle, #fecaca 0%, rgba(254, 202, 202, 0) 70%)' }} />
+          <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)', color: '#ffffff', boxShadow: '0 4px 10px rgba(220, 38, 38, 0.35)' }}>
+            <AlertTriangle size={16} strokeWidth={2.4} />
           </div>
-          <div className="stat-card-value" style={{ color: '#dc2626' }}>{sentinelAlerts.length}</div>
+          <div className="stat-card-value" style={{ color: '#b91c1c' }}>{sentinelAlerts.length}</div>
           <div className="stat-card-label">Critical Sentinel Alerts</div>
           <div style={{ fontSize: 10.5, color: '#dc2626', marginTop: 4, fontWeight: 700 }}>
             Recurrence Watch & Toxicity
           </div>
         </div>
 
-        {/* Card 3: Active Chemotherapy */}
+        {/* Card 3: Active Chemotherapy — Oceanic Teal & Sage (#0f766e & #14b8a6) */}
         <div 
           className="stat-card anim-hover-lift"
           style={{ cursor: 'pointer' }}
@@ -571,31 +581,31 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           }}
           title="Click to inspect Daycare Chemotherapy Suite"
         >
-          <div className="stat-card-accent-blob blob-yellow" />
-          <div className="stat-squircle-badge badge-bg-yellow">
-            <Pill size={16} />
+          <div className="stat-card-accent-blob" style={{ background: 'radial-gradient(circle, #ccfbf1 0%, rgba(204, 251, 241, 0) 70%)' }} />
+          <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #0f766e, #14b8a6)', color: '#ffffff', boxShadow: '0 4px 10px rgba(15, 118, 110, 0.35)' }}>
+            <Pill size={16} strokeWidth={2.4} />
           </div>
-          <div className="stat-card-value">{infusions.length}</div>
+          <div className="stat-card-value" style={{ color: '#0f766e' }}>{infusions.length}</div>
           <div className="stat-card-label">Active Chemo Protocols</div>
-          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 4, fontWeight: 600 }}>
+          <div style={{ fontSize: 10.5, color: '#0f766e', marginTop: 4, fontWeight: 700 }}>
             {infusions.filter(c => !c.isPaused).length} Pumps Running
           </div>
         </div>
 
-        {/* Card 4: Diagnostic Reviews */}
+        {/* Card 4: Diagnostic Reviews — Clinical Amber Gold (#d97706 & #b45309) */}
         <div 
           className="stat-card anim-hover-lift"
           style={{ cursor: 'pointer' }}
           onClick={() => setIsDiagnosticsModalOpen(true)}
           title="Click to inspect pending radiology & imaging studies"
         >
-          <div className="stat-card-accent-blob blob-green" />
-          <div className="stat-squircle-badge badge-bg-green">
-            <Layers size={16} />
+          <div className="stat-card-accent-blob" style={{ background: 'radial-gradient(circle, #fef3c7 0%, rgba(254, 243, 199, 0) 70%)' }} />
+          <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #d97706, #b45309)', color: '#ffffff', boxShadow: '0 4px 10px rgba(217, 119, 6, 0.35)' }}>
+            <Layers size={16} strokeWidth={2.4} />
           </div>
-          <div className="stat-card-value">{pendingDiagnostics.length}</div>
+          <div className="stat-card-value" style={{ color: '#b45309' }}>{pendingDiagnostics.length}</div>
           <div className="stat-card-label">Pending Diagnostic Studies</div>
-          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 4, fontWeight: 600 }}>
+          <div style={{ fontSize: 10.5, color: '#b45309', marginTop: 4, fontWeight: 700 }}>
             2 Contrast PET-CT • 1 Breast MRI
           </div>
         </div>
@@ -618,11 +628,11 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           
           {/* VISUAL 1: Oncological Case Mix & Cancer Staging Distribution */}
           <div className="card anim-hover-lift" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
-            <div className="stat-card-accent-blob blob-yellow" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.35 }} />
+            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #ccfbf1) 0%, rgba(204, 251, 241, 0) 70%)' }} />
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className="stat-squircle-badge badge-bg-yellow" style={{ width: 28, height: 28, borderRadius: 8 }}>
+                <div className="stat-squircle-badge" style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #064e3b, #0d9488))', color: '#ffffff' }}>
                   <TrendingUp size={15} />
                 </div>
                 <div>
@@ -634,7 +644,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   </span>
                 </div>
               </div>
-              <span className="brand-counter-pill" style={{ fontSize: 9.5 }}>Interactive Cohort</span>
+              <span className="brand-counter-pill" style={{ fontSize: 9.5, background: 'var(--doc-pill-bg, #ccfbf1)', color: 'var(--doc-pill-color, #0f766e)', border: '1px solid var(--doc-pill-border, #99f6e4)', fontWeight: 700 }}>Interactive Cohort</span>
             </div>
 
             {/* Stacked Visual Bar with hover effects */}
@@ -797,11 +807,11 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
           {/* VISUAL 2: Daycare Chemotherapy Chair Live Infusion Tracker */}
           <div className="card anim-hover-lift" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
-            <div className="stat-card-accent-blob blob-blue" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.35 }} />
+            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #ccfbf1) 0%, rgba(204, 251, 241, 0) 70%)' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className="stat-squircle-badge badge-bg-blue">
+                <div className="stat-squircle-badge" style={{ background: 'var(--doc-brand-gradient, linear-gradient(135deg, #064e3b, #0d9488))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(13, 148, 136, 0.35))' }}>
                   <Activity size={15} />
                 </div>
                 <div>
@@ -813,8 +823,8 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   </span>
                 </div>
               </div>
-              <div className="m3-live-beacon" style={{ height: 22, fontSize: 9.5 }}>
-                <span className="live-dot" />
+              <div className="brand-counter-pill" style={{ height: 22, fontSize: 9.5, background: 'var(--doc-pill-bg, #ccfbf1)', color: 'var(--doc-pill-color, #0f766e)', border: '1px solid var(--doc-pill-border, #99f6e4)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <span className="live-dot" style={{ backgroundColor: 'var(--doc-accent-color, #0d9488)' }} />
                 <span>{infusions.filter(c => !c.isPaused).length} Active Pumps</span>
               </div>
             </div>
@@ -908,7 +918,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
                     <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span>Vitals: {inf.vitals.bp} • HR {inf.vitals.hr} bpm • SpO2 {inf.vitals.spo2}%</span>
-                      <span style={{ color: 'var(--primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <span style={{ color: '#0077B6', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
                         Inspect Flowsheet <ChevronRight size={11} />
                       </span>
                     </div>
@@ -923,13 +933,13 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
         {/* RIGHT COLUMN: Priority Sentinel Warnings & Quick Today's Patient Schedule */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           
-          {/* VISUAL 3: Sentinel Risk Radar */}
+          {/* VISUAL 3: Sentinel Risk Radar — Clinical Sentinel Watchlist */}
           <div className="card anim-hover-lift" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
-            <div className="stat-card-accent-blob blob-rose" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.35 }} />
+            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, #fecaca 0%, rgba(254, 202, 202, 0) 70%)' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className="stat-squircle-badge badge-bg-rose anim-pulse-amber">
+                <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)', color: '#ffffff', boxShadow: '0 4px 10px rgba(220, 38, 38, 0.35)' }}>
                   <ShieldAlert size={15} />
                 </div>
                 <div>
@@ -941,70 +951,79 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   </span>
                 </div>
               </div>
-              <span className="badge badge-alert" style={{ fontSize: 9.5 }}>{sentinelAlerts.length} Alerts</span>
+              <span className="brand-counter-pill" style={{ fontSize: 9.5, background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', fontWeight: 700 }}>{sentinelAlerts.length} Alerts</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {sentinelAlerts.map((alert) => (
-                <div 
-                  key={alert.id}
-                  style={{
-                    backgroundColor: alert.level === 'CRITICAL' ? '#fff5f5' : alert.level === 'GENOMIC' ? '#faf5ff' : '#fffbeb',
-                    border: `1px solid ${alert.level === 'CRITICAL' ? '#fecaca' : alert.level === 'GENOMIC' ? '#e9d5ff' : '#fde68a'}`,
-                    borderRadius: 10,
-                    padding: '9px 11px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 4
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ 
-                      fontSize: 9.5, 
-                      fontWeight: 800, 
-                      color: alert.level === 'CRITICAL' ? '#b91c1c' : alert.level === 'GENOMIC' ? '#6b21a8' : '#b45309',
-                      letterSpacing: '0.04em',
-                      textTransform: 'uppercase'
-                    }}>
-                      {alert.level} ({alert.confidence}) • {alert.patientName}
-                    </span>
-                    <button 
-                      onClick={() => setActiveAlertModal(alert)}
-                      className="m3-btn m3-btn-sm"
-                      style={{
-                        height: 22,
-                        fontSize: 10.5,
-                        padding: '0 8px',
-                        background: 'var(--bg-surface)',
-                        border: '1px solid var(--border-default)',
-                        color: alert.level === 'CRITICAL' ? '#b91c1c' : alert.level === 'GENOMIC' ? '#7e22ce' : '#b45309',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <span>Take Action</span>
-                      <ChevronRight size={11} />
-                    </button>
-                  </div>
+              {sentinelAlerts.map((alert) => {
+                const isCrit = alert.level === 'CRITICAL';
+                const isGen = alert.level === 'GENOMIC';
+                const bgTint = isCrit ? 'var(--destructive-container, #fee2e2)' : isGen ? 'var(--doc-pill-bg, #ccfbf1)' : 'var(--warning-container, #fef3c7)';
+                const borderTint = isCrit ? 'var(--destructive, #dc2626)' : isGen ? 'var(--doc-accent-color, #0d9488)' : 'var(--warning, #d97706)';
+                const titleColor = isCrit ? 'var(--on-destructive-container, #991b1b)' : isGen ? 'var(--doc-pill-color, #0f766e)' : 'var(--on-warning-container, #78350f)';
+                const btnColor = isCrit ? '#dc2626' : isGen ? '#0d9488' : '#d97706';
 
-                  <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-primary)' }}>
-                    {alert.title}
+                return (
+                  <div 
+                    key={alert.id}
+                    style={{
+                      backgroundColor: bgTint,
+                      border: `1.5px solid ${borderTint}`,
+                      borderRadius: 10,
+                      padding: '9px 11px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 4
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ 
+                        fontSize: 9.5, 
+                        fontWeight: 800, 
+                        color: titleColor,
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase'
+                      }}>
+                        {alert.level} ({alert.confidence}) • {alert.patientName}
+                      </span>
+                      <button 
+                        onClick={() => setActiveAlertModal(alert)}
+                        className="m3-btn m3-btn-sm"
+                        style={{
+                          height: 22,
+                          fontSize: 10.5,
+                          padding: '0 8px',
+                          background: '#ffffff',
+                          border: `1px solid ${borderTint}`,
+                          color: btnColor,
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <span>Take Action</span>
+                        <ChevronRight size={11} />
+                      </button>
+                    </div>
+
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {alert.title}
+                    </div>
+                    <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.35 }}>
+                      {alert.desc}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.35 }}>
-                    {alert.desc}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           {/* VISUAL 4: Today's OPD Schedule with Search & Filters */}
           <div className="card anim-hover-lift" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
-            <div className="stat-card-accent-blob blob-green" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.35 }} />
+            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #ccfbf1) 0%, rgba(204, 251, 241, 0) 70%)' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className="stat-squircle-badge badge-bg-green">
+                <div className="stat-squircle-badge" style={{ background: 'var(--doc-brand-gradient, linear-gradient(135deg, #064e3b, #0d9488))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(13, 148, 136, 0.35))' }}>
                   <Calendar size={15} />
                 </div>
                 <div>
@@ -1016,7 +1035,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   </span>
                 </div>
               </div>
-              <span className="card-count-badge" style={{ fontSize: 10 }}>{filteredPatients.length} Shown</span>
+              <span className="brand-counter-pill" style={{ fontSize: 10, background: 'var(--doc-pill-bg, #ccfbf1)', color: 'var(--doc-pill-color, #0f766e)', border: '1px solid var(--doc-pill-border, #99f6e4)', fontWeight: 700 }}>{filteredPatients.length} Shown</span>
             </div>
 
             {/* Filter Tabs & Search Bar */}
@@ -1037,8 +1056,8 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                       fontSize: 10.5,
                       padding: '0 10px',
                       borderRadius: 9999,
-                      border: '1px solid var(--border-default)',
-                      backgroundColor: scheduleFilter === tab.id ? 'var(--primary)' : 'var(--bg-subtle)',
+                      border: scheduleFilter === tab.id ? '1px solid var(--doc-accent-color, #0d9488)' : '1px solid var(--border-default)',
+                      backgroundColor: scheduleFilter === tab.id ? 'var(--doc-accent-color, #0d9488)' : 'var(--bg-subtle)',
                       color: scheduleFilter === tab.id ? '#ffffff' : 'var(--text-secondary)',
                       fontWeight: scheduleFilter === tab.id ? 700 : 500,
                       cursor: 'pointer'
@@ -1110,7 +1129,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                       title="Click to start consultation"
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                        <div className="patient-avatar-chip" style={{ width: 26, height: 26, fontSize: 10, background: 'linear-gradient(135deg, #0284c7, #2563eb)' }}>
+                        <div className="patient-avatar-chip" style={{ width: 26, height: 26, fontSize: 10, background: 'linear-gradient(135deg, #03045E, #0077B6)' }}>
                           {p.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </div>
                         <div style={{ minWidth: 0 }}>
@@ -1128,7 +1147,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                         {hasML ? (
-                          <span className="badge badge-ready" style={{ fontSize: 9.5, padding: '1.5px 6px' }}>
+                          <span className="brand-counter-pill" style={{ fontSize: 9.5, padding: '1.5px 6px', background: '#CAF0F8', color: '#03045E', border: '1px solid #90E0EF', fontWeight: 700 }}>
                             <Sparkles size={9} /> AI Ready
                           </span>
                         ) : (
@@ -1136,7 +1155,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                             {p.status.replace('_', ' ')}
                           </span>
                         )}
-                        <span style={{ fontSize: 10.5, color: 'var(--primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <span style={{ fontSize: 10.5, color: '#0077B6', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
                           Start <ChevronRight size={13} />
                         </span>
                       </div>
@@ -1151,7 +1170,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           <div className="card anim-hover-lift" style={{ padding: '12px 14px', backgroundColor: 'var(--bg-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <FileText size={14} color="var(--primary)" />
+                <FileText size={14} color="#0077B6" />
                 <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
                   Oncologist Shift Voice Memo & Dictation
                 </span>
@@ -1197,7 +1216,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                 <button
                   onClick={handleSaveMemo}
                   className="m3-btn m3-btn-sm"
-                  style={{ height: 26, fontSize: 10.5, padding: '0 12px', background: 'var(--primary)', color: '#ffffff' }}
+                  style={{ height: 26, fontSize: 10.5, padding: '0 12px', background: 'linear-gradient(135deg, #0077B6, #00B4D8)', color: '#ffffff', border: 'none' }}
                 >
                   Save Memo
                 </button>
@@ -1440,12 +1459,12 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid var(--border-default)', paddingBottom: 12, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div className="stat-squircle-badge badge-bg-rose" style={{ width: 36, height: 36, borderRadius: 10 }}>
+                <div className="stat-squircle-badge" style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #03045E, #0077B6)', color: '#ffffff' }}>
                   <ShieldAlert size={18} />
                 </div>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span className="badge badge-alert" style={{ fontSize: 9.5 }}>{activeAlertModal.level}</span>
+                    <span className="brand-counter-pill" style={{ fontSize: 9.5, background: '#CAF0F8', color: '#03045E', border: '1px solid #90E0EF', fontWeight: 700 }}>{activeAlertModal.level}</span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Confidence: {activeAlertModal.confidence}</span>
                   </div>
                   <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', margin: '2px 0 0' }}>
@@ -1460,8 +1479,8 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
             {/* Body */}
             <div className="m3-scrollable-body" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ padding: 12, backgroundColor: '#fff5f5', border: '1px solid #fecaca', borderRadius: 10 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#b91c1c', marginBottom: 4 }}>
+              <div style={{ padding: 12, backgroundColor: '#CAF0F833', border: '1.5px solid #0077B6', borderRadius: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#03045E', marginBottom: 4 }}>
                   Patient: {activeAlertModal.patientName} ({activeAlertModal.age}y {activeAlertModal.gender}) • {activeAlertModal.mrn}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.45 }}>
@@ -1490,7 +1509,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   className="m3-btn m3-btn-tonal"
                   style={{ height: 34, fontSize: 11.5, justifyContent: 'flex-start' }}
                 >
-                  <Plus size={14} color="#059669" />
+                  <Plus size={14} color="#0077B6" />
                   <span>1-Click: Append Recommendations to Patient Treatment Plan</span>
                 </button>
                 <button
@@ -1500,7 +1519,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   className="m3-btn m3-btn-tonal"
                   style={{ height: 34, fontSize: 11.5, justifyContent: 'flex-start' }}
                 >
-                  <Layers size={14} color="#0284c7" />
+                  <Layers size={14} color="#00B4D8" />
                   <span>1-Click: Order STAT Re-staging Diagnostic Imaging & Labs</span>
                 </button>
               </div>
@@ -1521,7 +1540,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   onOpenWorkspace(activeAlertModal.patientId, 'insights');
                   setActiveAlertModal(null);
                 }}
-                style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', height: 34, fontSize: 11.5 }}
+                style={{ background: 'linear-gradient(135deg, #0077B6, #00B4D8)', height: 34, fontSize: 11.5 }}
               >
                 <span>Jump to Patient Consultation Dossier</span>
                 <ArrowRight size={14} />
@@ -1634,7 +1653,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-default)', paddingBottom: 12, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div className="stat-squircle-badge badge-bg-rose" style={{ width: 36, height: 36, borderRadius: 10 }}>
+                <div className="stat-squircle-badge" style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #03045E, #0077B6)', color: '#ffffff' }}>
                   <ShieldAlert size={18} />
                 </div>
                 <div>
@@ -1667,7 +1686,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span className="badge badge-alert" style={{ fontSize: 9.5 }}>{alert.level}</span>
+                      <span className="brand-counter-pill" style={{ fontSize: 9.5, background: '#CAF0F8', color: '#03045E', border: '1px solid #90E0EF', fontWeight: 700 }}>{alert.level}</span>
                       <strong style={{ fontSize: 12.5, color: 'var(--text-primary)' }}>{alert.title}</strong>
                     </div>
                     <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>Confidence: {alert.confidence}</span>
@@ -1694,7 +1713,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                         onOpenWorkspace(alert.patientId, 'insights');
                       }}
                       className="m3-btn m3-btn-sm"
-                      style={{ height: 26, fontSize: 10.5, background: 'var(--primary)', color: '#ffffff' }}
+                      style={{ height: 26, fontSize: 10.5, background: 'linear-gradient(135deg, #0077B6, #00B4D8)', color: '#ffffff', border: 'none' }}
                     >
                       <span>Take Action in Dossier →</span>
                     </button>
