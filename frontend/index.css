@@ -156,22 +156,33 @@
   --duration-normal: 0.25s;
 
   /* =========================================================================
-     ROLE 1: DOCTOR DESK — Clinical Medical Eucalyptus & Sage Teal
-     (Contrast distinction: Organic, healing, diagnostic clarity. NOT blue!)
+     ROLE 1: DOCTOR DESK — Ultra-Lightest Crystal Sky Blue Medical Aesthetic
+     Sidebar: Luminous Ice Sky #f0f9ff→#e0f2fe→#bae6fd | Content: #f0f8ff
+     Accent: Bright Sky #0284c7 | Cyan #38bdf8 | Alert Amber: #f59e0b
      ========================================================================= */
-  --doc-brand-gradient: linear-gradient(135deg, #064e3b 0%, #0d9488 100%);
-  --doc-brand-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
-  --doc-accent-color: #0d9488;
-  --doc-banner-bg: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-  --doc-banner-border: #a7f3d0;
-  --doc-banner-title: #064e3b;
-  --doc-pill-bg: #ccfbf1;
-  --doc-pill-color: #0f766e;
-  --doc-pill-border: #99f6e4;
-  --doc-nav-active-bg: #ccfbf1;
-  --doc-nav-active-color: #065f46;
-  --doc-nav-active-border: #0d9488;
-  --doc-card-border-focus: #0d9488;
+  --doc-brand-gradient: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 50%, #0284c7 100%);
+  --doc-brand-shadow: 0 4px 18px rgba(56, 189, 248, 0.35);
+  --doc-accent-color: #0284c7;
+  --doc-primary: #0284c7;
+  --doc-secondary: #38bdf8;
+  --doc-cyan: #38bdf8;
+  --doc-amber: #f59e0b;
+  --doc-bg: #f0f8ff;
+  --doc-alert: #f59e0b;
+  --doc-banner-bg: linear-gradient(120deg, #ffffff 0%, #f0f9ff 45%, #e0f2fe 100%);
+  --doc-banner-border: #bae6fd;
+  --doc-banner-title: #0369a1;
+  --doc-pill-bg: #e0f2fe;
+  --doc-pill-color: #0284c7;
+  --doc-pill-border: #bae6fd;
+  --doc-nav-active-bg: #ffffff;
+  --doc-nav-active-color: #0284c7;
+  --doc-nav-active-border: #38bdf8;
+  --doc-card-border-focus: #38bdf8;
+  --doc-surface: #ffffff;
+  --doc-surface-subtle: #f0f9ff;
+  --doc-sky-light: #f0f9ff;
+  --doc-sky-medium: #e0f2fe;
 
   /* =========================================================================
      ROLE 2: ADMIN PORTAL — High-Authority Midnight Navy & Royal Cobalt
@@ -192,20 +203,21 @@
   --adm-card-border-focus: #2563eb;
 
   /* =========================================================================
-     ROLE 3: CASHIER DESK — Financial Fiscal Slate & Emerald / Amber
+     ROLE 3: CASHIER DESK — Inherited Doctor Teal (Eucalyptus & Sage)
+     Transferred from previous Doctor theme for continuity
      ========================================================================= */
-  --csh-brand-gradient: linear-gradient(135deg, #065f46 0%, #059669 100%);
-  --csh-brand-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
-  --csh-accent-color: #059669;
-  --csh-banner-bg: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+  --csh-brand-gradient: linear-gradient(135deg, #064e3b 0%, #0d9488 100%);
+  --csh-brand-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+  --csh-accent-color: #0d9488;
+  --csh-banner-bg: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
   --csh-banner-border: #a7f3d0;
   --csh-banner-title: #064e3b;
-  --csh-pill-bg: #d1fae5;
-  --csh-pill-color: #065f46;
-  --csh-pill-border: #6ee7b7;
-  --csh-nav-active-bg: #d1fae5;
+  --csh-pill-bg: #ccfbf1;
+  --csh-pill-color: #0f766e;
+  --csh-pill-border: #99f6e4;
+  --csh-nav-active-bg: #ccfbf1;
   --csh-nav-active-color: #065f46;
-  --csh-nav-active-border: #059669;
+  --csh-nav-active-border: #0d9488;
 }
 
 
@@ -2694,6 +2706,577 @@ html, body {
   box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
 }
 
+/* ==========================================================================
+   DOCTOR THEME — Crystal Sky Blue Medical Premium
+   Sidebar: Luminous Sky Blue | Content: Ice White | Bright Cyan Accents
+   Applied via .doctor-theme class on the root m3-app-shell element
+   ========================================================================== */
+
+/* ---- Keyframes ---- */
+@keyframes docSidebarSlide {
+  from { opacity: 0; transform: translateX(-22px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes docFadeUp {
+  from { opacity: 0; transform: translateY(14px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes docCardPop {
+  0%  { opacity: 0; transform: translateY(18px) scale(0.97); }
+  65% { opacity: 1; transform: translateY(-3px) scale(1.01); }
+  100%{ opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes docNavPop {
+  0%   { transform: scaleY(0); opacity: 0; }
+  100% { transform: scaleY(1); opacity: 1; }
+}
+
+@keyframes docSkyBeacon {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }
+  50%       { box-shadow: 0 0 0 7px rgba(14, 165, 233, 0); }
+}
+
+@keyframes docTabIn {
+  from { transform: scale(0.9) translateY(2px); opacity: 0.7; }
+  to   { transform: scale(1) translateY(0);     opacity: 1; }
+}
+
+@keyframes docBannerRainbow {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes docAmberBreathe {
+  0%, 100% { box-shadow: 0 3px 14px rgba(245, 158, 11, 0.38); }
+  50%       { box-shadow: 0 6px 26px rgba(245, 158, 11, 0.65); }
+}
+
+@keyframes docSkyFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33%       { transform: translateY(-4px) rotate(0.5deg); }
+  66%       { transform: translateY(-2px) rotate(-0.3deg); }
+}
+
+@keyframes docSidebarGlow {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+/* ======================== SIDEBAR — ULTRA-LIGHTEST BRIGHT SKY BLUE ======================== */
+.doctor-theme .m3-navigation-drawer {
+  background: linear-gradient(
+    180deg,
+    #f0f9ff 0%,
+    #e0f2fe 35%,
+    #bae6fd 75%,
+    #7dd3fc 100%
+  ) !important;
+  border-right: 1.5px solid #bae6fd !important;
+  box-shadow:
+    6px 0 32px rgba(186, 230, 253, 0.5),
+    2px 0 8px rgba(125, 211, 252, 0.25) !important;
+  animation: docSidebarSlide 0.45s cubic-bezier(0.05, 0.7, 0.1, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Soft luminous sheen on top of sidebar */
+.doctor-theme .m3-navigation-drawer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 45%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* Subtle crystal orb bottom-right for luminous depth */
+.doctor-theme .m3-navigation-drawer::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.7) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: docSidebarGlow 4s ease-in-out infinite;
+}
+
+.doctor-theme .m3-navigation-drawer > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.doctor-theme .drawer-header {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border-bottom: 1px solid rgba(186, 230, 253, 0.8) !important;
+  backdrop-filter: blur(12px);
+}
+
+.doctor-theme .drawer-title {
+  color: #0284c7 !important;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  text-shadow: 0 1px 4px rgba(2, 132, 199, 0.15);
+}
+
+.doctor-theme .drawer-tag {
+  color: #0369a1 !important;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.doctor-theme .drawer-toggle-btn {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: #bae6fd !important;
+  color: #0284c7 !important;
+  transition: all 0.2s ease;
+}
+
+.doctor-theme .drawer-toggle-btn:hover {
+  background: #ffffff !important;
+  color: #0369a1 !important;
+  border-color: #7dd3fc !important;
+  transform: scale(1.1);
+}
+
+.doctor-theme .drawer-section-label span {
+  color: #0284c7 !important;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+/* Nav Items */
+.doctor-theme .m3-nav-item {
+  color: #082f49 !important;
+  border-radius: 10px;
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  margin-bottom: 3px;
+  position: relative;
+  overflow: hidden;
+  font-weight: 700;
+}
+
+.doctor-theme .m3-nav-item .nav-label {
+  color: #082f49 !important;
+  font-weight: 700 !important;
+}
+
+.doctor-theme .m3-nav-item .m3-nav-icon,
+.doctor-theme .m3-nav-item .nav-icon-container,
+.doctor-theme .m3-nav-item svg {
+  color: #0284c7 !important;
+  transition: all 0.2s ease;
+}
+
+.doctor-theme .m3-nav-item:hover {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #0284c7 !important;
+  transform: translateX(4px);
+  box-shadow: 0 2px 10px rgba(186, 230, 253, 0.4);
+}
+
+.doctor-theme .m3-nav-item:hover .nav-label,
+.doctor-theme .m3-nav-item:hover .nav-icon-container,
+.doctor-theme .m3-nav-item:hover svg {
+  color: #0284c7 !important;
+}
+
+.doctor-theme .m3-nav-item.active {
+  background: #ffffff !important;
+  color: #0284c7 !important;
+  border-left: none !important;
+  box-shadow:
+    0 4px 16px rgba(56, 189, 248, 0.28),
+    0 1px 3px rgba(3, 105, 161, 0.08),
+    inset 0 1px 0 #ffffff !important;
+  font-weight: 800 !important;
+}
+
+.doctor-theme .m3-nav-item.active .nav-label {
+  color: #0284c7 !important;
+  font-weight: 800 !important;
+}
+
+.doctor-theme .m3-nav-item.active .m3-nav-icon,
+.doctor-theme .m3-nav-item.active .nav-icon-container,
+.doctor-theme .m3-nav-item.active svg {
+  color: #0284c7 !important;
+}
+
+.doctor-theme .m3-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 3.5px;
+  background: #38bdf8;
+  border-radius: 0 4px 4px 0;
+  animation: docNavPop 0.28s cubic-bezier(0.05, 0.7, 0.1, 1) forwards;
+  transform-origin: center top;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+}
+
+/* Staff card */
+.doctor-theme .staff-name {
+  color: #0369a1 !important;
+  font-weight: 800;
+}
+
+.doctor-theme .staff-role {
+  color: #0284c7 !important;
+  font-weight: 600;
+}
+
+.doctor-theme .drawer-staff-card {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1.5px solid #bae6fd !important;
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(186, 230, 253, 0.45), inset 0 1px 0 #ffffff !important;
+}
+
+.doctor-theme .staff-avatar {
+  background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%) !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  box-shadow: 0 0 0 2.5px #ffffff, 0 4px 12px rgba(56, 189, 248, 0.35) !important;
+}
+
+.doctor-theme .drawer-expand-indicator {
+  border-color: #bae6fd;
+  color: #0284c7;
+  background: #ffffff;
+}
+
+/* Collapsed sidebar */
+.doctor-theme .drawer-brand-btn-collapsed .drawer-brand-icon {
+  background: linear-gradient(135deg, #7dd3fc, #38bdf8);
+  box-shadow: 0 3px 12px rgba(56, 189, 248, 0.4);
+}
+
+/* Nav badge */
+.doctor-theme .nav-badge {
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+  border: 1px solid #bae6fd !important;
+  font-weight: 800;
+  text-shadow: none;
+}
+
+/* Footer nav items */
+.doctor-theme .drawer-footer .m3-nav-item {
+  color: #034674 !important;
+}
+.doctor-theme .drawer-footer .m3-nav-item:hover {
+  color: #0284c7 !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* ======================== TOP APP BAR ======================== */
+.doctor-theme .m3-top-app-bar {
+  background: #ffffff;
+  border-bottom: 1.5px solid rgba(14, 165, 233, 0.15);
+  box-shadow:
+    0 1px 20px rgba(14, 165, 233, 0.09),
+    0 1px 4px rgba(3, 105, 161, 0.05);
+}
+
+.doctor-theme .m3-top-app-bar::after {
+  background: radial-gradient(circle at 100% 100%, transparent 12px, #ffffff 12.5px);
+}
+
+.doctor-theme .brand-counter-pill {
+  background: rgba(14, 165, 233, 0.1);
+  color: #0284c7;
+  border-color: rgba(14, 165, 233, 0.28);
+  font-weight: 800;
+}
+
+.doctor-theme .icon-btn:hover {
+  background-color: rgba(14, 165, 233, 0.1);
+  color: #0ea5e9;
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+/* Live beacon */
+.doctor-theme .m3-live-beacon {
+  background: rgba(14, 165, 233, 0.1);
+  color: #0369a1;
+  border-color: rgba(14, 165, 233, 0.35);
+  font-weight: 700;
+}
+
+.doctor-theme .live-dot {
+  background-color: #0ea5e9;
+  box-shadow: 0 0 10px rgba(14, 165, 233, 1);
+  animation: docSkyBeacon 2s ease-in-out infinite;
+}
+
+/* ======================== CONTENT AREA ======================== */
+.doctor-theme .doctor-page-container {
+  background: #f0f9ff;
+}
+
+.doctor-theme .m3-main-viewport {
+  background: #f0f9ff;
+}
+
+/* ======================== PATIENT BANNER ======================== */
+.doctor-theme .m3-doctor-patient-banner {
+  background: linear-gradient(
+    120deg,
+    #ffffff 0%,
+    #f0f9ff 35%,
+    #e0f2fe 70%,
+    #f0f9ff 100%
+  ) !important;
+  border: 1.5px solid rgba(14, 165, 233, 0.38) !important;
+  box-shadow:
+    0 4px 28px rgba(14, 165, 233, 0.12),
+    0 1px 4px rgba(3, 105, 161, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  animation: docFadeUp 0.4s cubic-bezier(0.05, 0.7, 0.1, 1) both;
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated sky shimmer bar at top of banner */
+.doctor-theme .m3-doctor-patient-banner::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #0369a1 0%,
+    #0ea5e9 25%,
+    #38bdf8 50%,
+    #06b6d4 75%,
+    #0369a1 100%
+  );
+  background-size: 200% auto;
+  animation: docBannerRainbow 3.5s linear infinite;
+  border-radius: 14px 14px 0 0;
+}
+
+.doctor-theme .m3-doctor-patient-banner:hover {
+  box-shadow:
+    0 10px 36px rgba(14, 165, 233, 0.18),
+    0 2px 8px rgba(3, 105, 161, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+}
+
+/* ======================== CARDS ======================== */
+.doctor-theme .card {
+  border: 1px solid rgba(14, 165, 233, 0.14);
+  box-shadow:
+    0 2px 14px rgba(14, 165, 233, 0.07),
+    0 1px 3px rgba(3, 105, 161, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  background: #ffffff;
+  animation: docCardPop 0.42s cubic-bezier(0.05, 0.7, 0.1, 1) both;
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  border-radius: 16px;
+}
+
+.doctor-theme .card:hover {
+  border-color: rgba(14, 165, 233, 0.28);
+  box-shadow:
+    0 8px 28px rgba(14, 165, 233, 0.13),
+    0 2px 6px rgba(3, 105, 161, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transform: translateY(-1.5px);
+}
+
+.doctor-theme .card-header {
+  background: linear-gradient(90deg, rgba(240, 249, 255, 0.8) 0%, rgba(224, 242, 254, 0.4) 100%);
+  border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+}
+
+/* ======================== VIEW TABS ======================== */
+.doctor-theme .m3-view-tabs-container {
+  background: #ffffff;
+  border: 1.5px solid rgba(14, 165, 233, 0.18);
+  box-shadow:
+    0 2px 12px rgba(14, 165, 233, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+}
+
+.doctor-theme .m3-view-tab {
+  color: #64748b;
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  border-radius: 999px;
+}
+
+.doctor-theme .m3-view-tab:hover {
+  background: rgba(14, 165, 233, 0.09);
+  color: #0284c7;
+}
+
+.doctor-theme .m3-view-tab.active {
+  background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow:
+    0 3px 14px rgba(14, 165, 233, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  animation: docTabIn 0.22s ease both;
+  text-shadow: 0 1px 3px rgba(3, 105, 161, 0.3);
+}
+
+/* ======================== PATIENT QUEUE CARDS ======================== */
+.doctor-theme .doctor-patient-card:hover {
+  background: rgba(14, 165, 233, 0.06);
+  border-color: rgba(14, 165, 233, 0.16);
+  transform: translateX(3px);
+}
+
+.doctor-theme .doctor-patient-card.selected {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+  border: 1.5px solid rgba(14, 165, 233, 0.35) !important;
+  box-shadow:
+    0 4px 20px rgba(14, 165, 233, 0.16),
+    0 1px 4px rgba(3, 105, 161, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ======================== BUTTONS ======================== */
+.doctor-theme .m3-btn-filled {
+  background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 3px 14px rgba(14, 165, 233, 0.42);
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.doctor-theme .m3-btn-filled:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  box-shadow: 0 6px 22px rgba(14, 165, 233, 0.55);
+  transform: translateY(-2px);
+}
+
+/* Finalize button — warm amber */
+.doctor-theme .m3-btn-filled[data-tour="finalize-consult-btn"] {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  box-shadow: 0 3px 14px rgba(245, 158, 11, 0.42) !important;
+  animation: docAmberBreathe 2.2s ease infinite;
+}
+
+.doctor-theme .m3-btn-filled[data-tour="finalize-consult-btn"]:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+  box-shadow: 0 6px 24px rgba(245, 158, 11, 0.6) !important;
+  transform: translateY(-2px);
+  animation: none;
+}
+
+.doctor-theme .m3-btn-tonal {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.22);
+  color: #0284c7;
+  transition: all 0.2s ease;
+}
+
+.doctor-theme .m3-btn-tonal:hover {
+  background: rgba(14, 165, 233, 0.15);
+  border-color: #0ea5e9;
+  color: #0369a1;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(14, 165, 233, 0.2);
+}
+
+/* ======================== PRESCRIPTION MED CARDS ======================== */
+.doctor-theme .prescription-med-card {
+  border: 1px solid rgba(14, 165, 233, 0.13);
+  box-shadow:
+    0 2px 12px rgba(14, 165, 233, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  background: #ffffff;
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  animation: docFadeUp 0.35s ease both;
+  border-radius: 14px;
+}
+
+.doctor-theme .prescription-med-card:hover {
+  border-color: rgba(14, 165, 233, 0.28);
+  box-shadow:
+    0 7px 24px rgba(14, 165, 233, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transform: translateY(-2.5px);
+}
+
+/* ======================== STAT CARDS ======================== */
+.doctor-theme .stat-card {
+  background: #ffffff;
+  border: 1px solid rgba(14, 165, 233, 0.1);
+  border-radius: 18px;
+  transition: all 0.26s cubic-bezier(0.2, 0, 0, 1);
+  animation: docCardPop 0.5s cubic-bezier(0.05, 0.7, 0.1, 1) both;
+  box-shadow: 0 2px 12px rgba(14, 165, 233, 0.07);
+}
+
+.doctor-theme .stat-card:hover {
+  transform: translateY(-6px) scale(1.008);
+  box-shadow:
+    0 14px 40px rgba(14, 165, 233, 0.18),
+    0 4px 12px rgba(3, 105, 161, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  border-color: rgba(14, 165, 233, 0.25);
+  animation: docSkyFloat 3s ease-in-out infinite;
+}
+
+/* ======================== PATIENT TABLE ======================== */
+.doctor-theme .m3-row-animate.selected {
+  background: linear-gradient(90deg, rgba(240,249,255,0.95), rgba(224,242,254,0.7));
+  border-left: 3px solid #0ea5e9;
+}
+
+.doctor-theme .m3-row-animate:hover {
+  background: rgba(14, 165, 233, 0.05);
+}
+
+/* ======================== SCROLLBARS ======================== */
+.doctor-theme .m3-scrollable-body::-webkit-scrollbar-thumb,
+.doctor-theme .patient-overview-scroll-body::-webkit-scrollbar-thumb {
+  background-color: rgba(14, 165, 233, 0.3);
+  border-radius: 4px;
+}
+
+.doctor-theme .m3-scrollable-body::-webkit-scrollbar-thumb:hover,
+.doctor-theme .patient-overview-scroll-body::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(14, 165, 233, 0.55);
+}
+
+/* ======================== PAGE ANIMATIONS ======================== */
+.doctor-theme .m3-page-animate {
+  animation: docFadeUp 0.38s cubic-bezier(0.05, 0.7, 0.1, 1) both;
+}
+
+/* ======================== SIDEBAR NAV HOVER OVERRIDE ======================== */
+.doctor-theme .m3-navigation-drawer .drawer-nav-list .m3-nav-item:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
 /* Active Patient Banner in Doctor & Cashier View - Styled like Reception Stat-Cards */
 .m3-doctor-patient-banner {
   background-color: #ffffff;
@@ -3910,153 +4493,159 @@ html, body {
 }
 
 /* ==========================================================================
-   DOCTOR PORTAL THEME — Image 2 Clinical Seafoam & Teal Palette
-   #FDF4AF (rgb: 253, 244, 175) | Buttercream Yellow
-   #A5E9DD (rgb: 165, 233, 221) | Fresh Mint Aqua
-   #6FBEB2 (rgb: 111, 190, 178) | Seafoam Jade
-   #34908B (rgb: 52, 144, 139)  | Deep Eucalyptus Teal
+   DOCTOR PORTAL THEME — Ultra-Lightest Crystal Sky Blue Medical Aesthetic
+   #f0f8ff | Luminous Light Ice-Sky Canvas
+   #e0f2fe | Lightest Powder Blue Container
+   #bae6fd | Soft Crisp Sky Blue Border
+   #38bdf8 | Luminous Cyan Sky Highlight
+   #0284c7 | Vivid High-Contrast Sky Blue Accent
+   #0369a1 | Deep Sapphire Slate Clinical Text
    ========================================================================== */
 
 .doctor-theme {
-  --primary: #34908B;
-  --primary-hover: #29726E;
-  --primary-container: #A5E9DD;
-  --on-primary-container: #1b4b48;
-  --primary-border: #6FBEB2;
-  --primary-text: #34908B;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-active: #075985;
+  --primary-container: #e0f2fe;
+  --on-primary-container: #0369a1;
+  --primary-border: #bae6fd;
+  --primary-text: #0284c7;
 
-  --secondary-container: #FDF4AF;
-  --on-secondary-container: #5c4e04;
+  --secondary: #0ea5e9;
+  --secondary-container: #f0f9ff;
+  --on-secondary-container: #0369a1;
 
-  --tertiary-container: #A5E9DD;
-  --on-tertiary-container: #1b4b48;
+  --tertiary-container: #e0f2fe;
+  --on-tertiary-container: #0284c7;
 
-  --bg-page: #f6fbf9;
+  --bg-page: #f0f8ff;
   --bg-surface: #ffffff;
-  --bg-subtle: #eff9f7;
-  --bg-hover: #e5f6f2;
-  --bg-active: #d5f2ec;
+  --bg-subtle: #f0f9ff;
+  --bg-hover: #e0f2fe;
+  --bg-active: #bae6fd;
 
-  --border-subtle: #e3f5f1;
-  --border-default: #cbeae4;
-  --border-focus: #34908B;
+  --border-subtle: #f0f9ff;
+  --border-default: #bae6fd;
+  --border-focus: #38bdf8;
 
-  --status-ready-bg: #A5E9DD;
-  --status-ready-text: #1b4b48;
-  --status-ready-border: #6FBEB2;
+  --status-ready-bg: #e0f2fe;
+  --status-ready-text: #0284c7;
+  --status-ready-border: #bae6fd;
 
-  --status-pending-bg: #FDF4AF;
-  --status-pending-text: #5c4e04;
-  --status-pending-border: #f0de7e;
+  --status-pending-bg: #fef3c7;
+  --status-pending-text: #b45309;
+  --status-pending-border: #fcd34d;
 
-  --status-active-bg: #eff9f7;
-  --status-active-text: #34908B;
-  --status-active-border: #6FBEB2;
+  --status-active-bg: #e0f2fe;
+  --status-active-text: #0284c7;
+  --status-active-border: #7dd3fc;
 }
 
 .doctor-theme .m3-btn-filled,
 .doctor-theme .btn-primary {
-  background: linear-gradient(135deg, #34908B, #29726E) !important;
+  background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
   color: #ffffff !important;
   border: none !important;
-  box-shadow: 0 2px 8px rgba(52, 144, 139, 0.3) !important;
+  box-shadow: 0 3px 14px rgba(56, 189, 248, 0.35) !important;
 }
 
 .doctor-theme .m3-btn-filled:hover,
 .doctor-theme .btn-primary:hover {
-  background: linear-gradient(135deg, #29726E, #1e5653) !important;
-  box-shadow: 0 4px 12px rgba(52, 144, 139, 0.4) !important;
+  background: linear-gradient(135deg, #0ea5e9, #0369a1) !important;
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45) !important;
 }
 
 .doctor-theme .m3-btn-tonal {
-  background: #A5E9DD !important;
-  color: #1b4b48 !important;
-  border: 1px solid #6FBEB2 !important;
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+  border: 1px solid #bae6fd !important;
 }
 
 .doctor-theme .m3-btn-tonal:hover {
-  background: #90ded1 !important;
+  background: #bae6fd !important;
+  color: #0369a1 !important;
 }
 
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active {
-  background: #A5E9DD !important;
-  color: #1b4b48 !important;
-  font-weight: 700 !important;
-  border-left: 3px solid #34908B !important;
+  background: #ffffff !important;
+  color: #0284c7 !important;
+  font-weight: 800 !important;
+  border-left: 3.5px solid #38bdf8 !important;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25) !important;
 }
 
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active .m3-nav-icon {
-  color: #34908B !important;
+  color: #0284c7 !important;
 }
 
 .doctor-theme .m3-navigation-drawer .m3-nav-item:hover {
-  background: #eff9f7 !important;
-  color: #34908B !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  color: #0284c7 !important;
 }
 
 .doctor-theme .tab-item.active,
 .doctor-theme .m3-tab.active {
-  color: #34908B !important;
-  border-bottom: 2.5px solid #34908B !important;
-  background: #eff9f7 !important;
+  color: #0284c7 !important;
+  border-bottom: 2.5px solid #0284c7 !important;
+  background: #e0f2fe !important;
 }
 
 .doctor-theme .m3-doctor-patient-banner {
-  background: linear-gradient(135deg, #ffffff 0%, #eff9f7 100%) !important;
-  border: 1.5px solid #cbeae4 !important;
-  box-shadow: 0 4px 16px rgba(52, 144, 139, 0.08) !important;
+  background: linear-gradient(120deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 80%, #ffffff 100%) !important;
+  border: 1.5px solid #bae6fd !important;
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.12) !important;
 }
 
 .doctor-theme .doctor-patient-card.selected {
-  border-color: #34908B !important;
-  background: #eff9f7 !important;
-  box-shadow: 0 0 0 1.5px #34908B !important;
+  border-color: #38bdf8 !important;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+  box-shadow: 0 0 0 1.5px #38bdf8, 0 3px 12px rgba(56, 189, 248, 0.15) !important;
 }
 
 .doctor-theme .doctor-patient-card.selected .doctor-patient-name {
-  color: #34908B !important;
+  color: #0369a1 !important;
 }
 
 .doctor-theme .badge-ready {
-  background: #A5E9DD !important;
-  color: #1b4b48 !important;
-  border-color: #6FBEB2 !important;
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+  border-color: #bae6fd !important;
 }
 
 .doctor-theme .badge-pending {
-  background: #FDF4AF !important;
-  color: #5c4e04 !important;
-  border-color: #f0de7e !important;
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+  border-color: #fcd34d !important;
 }
 
 .doctor-theme .badge-active {
-  background: #eff9f7 !important;
-  color: #34908B !important;
-  border-color: #6FBEB2 !important;
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+  border-color: #7dd3fc !important;
 }
 
 .doctor-theme .m3-dialog-header {
-  background: linear-gradient(90deg, #34908B 0%, #6FBEB2 50%, #34908B 100%) !important;
-  border-bottom: 3px solid #FDF4AF !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 14px rgba(52, 144, 139, 0.25) !important;
+  background: linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #0284c7 100%) !important;
+  border-bottom: 3px solid #e0f2fe !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 14px rgba(56, 189, 248, 0.25) !important;
 }
 
 .doctor-theme .stat-squircle-badge.badge-bg-blue {
-  background: linear-gradient(135deg, #34908B, #29726E) !important;
-  box-shadow: 0 4px 10px rgba(52, 144, 139, 0.35) !important;
+  background: linear-gradient(135deg, #7dd3fc, #38bdf8) !important;
+  box-shadow: 0 4px 10px rgba(56, 189, 248, 0.35) !important;
 }
 
 .doctor-theme .stat-squircle-badge.badge-bg-green {
-  background: linear-gradient(135deg, #6FBEB2, #34908B) !important;
-  box-shadow: 0 4px 10px rgba(111, 190, 178, 0.35) !important;
+  background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
+  box-shadow: 0 4px 10px rgba(14, 165, 233, 0.35) !important;
 }
 
 .doctor-theme .stat-card-accent-blob.blob-blue {
-  background: radial-gradient(circle, #6FBEB2 0%, rgba(111, 190, 178, 0) 70%) !important;
+  background: radial-gradient(circle, #bae6fd 0%, rgba(186, 230, 253, 0) 70%) !important;
 }
 
 .doctor-theme .stat-card-accent-blob.blob-yellow {
-  background: radial-gradient(circle, #FDF4AF 0%, rgba(253, 244, 175, 0) 70%) !important;
+  background: radial-gradient(circle, #e0f2fe 0%, rgba(224, 242, 254, 0) 70%) !important;
 }
 
 
