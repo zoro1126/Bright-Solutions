@@ -22,10 +22,10 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
     brandPillColor = 'var(--adm-pill-color, #0077B6)';
     brandPillBorder = 'var(--adm-pill-border, #90E0EF)';
   } else if (currentRole === 'cashier') {
-    brandRoleColor = 'var(--csh-accent-color, #059669)';
-    brandPillBg = 'var(--csh-pill-bg, #d1fae5)';
-    brandPillColor = 'var(--csh-pill-color, #065f46)';
-    brandPillBorder = 'var(--csh-pill-border, #6ee7b7)';
+    brandRoleColor = 'var(--csh-accent-color, #d97706)';
+    brandPillBg = 'var(--csh-pill-bg, #fef3c7)';
+    brandPillColor = 'var(--csh-pill-color, #92400e)';
+    brandPillBorder = 'var(--csh-pill-border, #fde68a)';
   } else {
     brandRoleColor = '#d97706';
     brandPillBg = '#fef3c7';
@@ -113,7 +113,7 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
               onClick={() => onRoleChange('cashier')}
               title="Cashier & Billing"
               data-tour="role-cashier-btn"
-              style={currentRole === 'cashier' ? { backgroundColor: 'var(--csh-pill-bg, #d1fae5)', color: 'var(--csh-pill-color, #065f46)', border: '1px solid var(--csh-pill-border, #6ee7b7)', fontWeight: 800 } : undefined}
+              style={currentRole === 'cashier' ? { backgroundColor: 'var(--csh-pill-bg, #fef3c7)', color: 'var(--csh-pill-color, #92400e)', border: '1px solid var(--csh-pill-border, #fde68a)', fontWeight: 800 } : undefined}
             >
               <Receipt size={11} />
               <span>Cashier</span>

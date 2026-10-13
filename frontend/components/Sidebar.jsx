@@ -15,7 +15,8 @@ import {
   Sliders,
   Sun,
   LayoutDashboard,
-  ShieldCheck
+  ShieldCheck,
+  FileCheck
 } from 'lucide-react';
 import { usePatients } from '../context/PatientContext';
 
@@ -88,20 +89,20 @@ export default function Sidebar({
     brandTag = 'Cashier Desk';
     BrandIcon = Receipt;
     brandLogoIcon = Receipt;
-    brandGradient = 'var(--csh-brand-gradient, linear-gradient(135deg, #065f46, #059669))';
-    brandShadow = 'var(--csh-brand-shadow, 0 4px 12px rgba(5, 150, 105, 0.3))';
+    brandGradient = 'var(--csh-brand-gradient, linear-gradient(135deg, #f59e0b, #d97706))';
+    brandShadow = 'var(--csh-brand-shadow, 0 4px 12px rgba(245, 158, 11, 0.35))';
     staffName = 'Ramesh V.';
     staffRole = 'Cashier • Counter B-02';
     staffAvatar = 'RV';
-    avatarGradient = 'linear-gradient(135deg, #065f46, #059669)';
+    avatarGradient = 'linear-gradient(135deg, #f59e0b, #d97706)';
     sectionLabel = 'Billing Navigation';
-    activeNavBg = 'var(--csh-nav-active-bg, #d1fae5)';
-    activeNavColor = 'var(--csh-nav-active-color, #065f46)';
-    activeNavBorder = 'var(--csh-nav-active-border, #059669)';
+    activeNavBg = 'var(--csh-nav-active-bg, #fef3c7)';
+    activeNavColor = 'var(--csh-nav-active-color, #78350f)';
+    activeNavBorder = 'var(--csh-nav-active-border, #d97706)';
     navItems = [
       { id: 'dashboard', label: 'Billing Dashboard', icon: BarChart3 },
-      { id: 'billing', label: 'Itemized Checkout', icon: Receipt },
-      { id: 'receipt', label: 'Settlement & Receipts', icon: Receipt }
+      { id: 'billing', label: 'Itemized Checkout', icon: Receipt, badge: stats?.pendingBilling || 3, badgeColor: '#78350f', badgeBg: '#fef3c7' },
+      { id: 'receipt', label: 'Settlement & Receipts', icon: FileCheck, badge: 18, badgeColor: '#78350f', badgeBg: '#fef3c7' }
     ];
   } else {
     // Receptionist
@@ -161,7 +162,7 @@ export default function Sidebar({
       <div className="drawer-nav-list">
         {!collapsed && (
           <div className="drawer-section-label">
-            <span style={{ color: (role === 'doctor' || role === 'admin') ? '#0077B6' : undefined, fontWeight: 700 }}>{sectionLabel}</span>
+            <span style={{ color: (role === 'doctor' || role === 'admin') ? '#0077B6' : (role === 'cashier' ? '#b45309' : undefined), fontWeight: 700 }}>{sectionLabel}</span>
           </div>
         )}
 
@@ -216,24 +217,7 @@ export default function Sidebar({
           );
         })}
 
-        {/* Minimal placeholder notice for Cashier pending user menu details */}
-        {role === 'cashier' && !collapsed && (
-          <div style={{
-            margin: '12px 6px 0',
-            padding: '8px 10px',
-            borderRadius: 'var(--radius-sm)',
-            border: '1px dashed var(--border-default)',
-            backgroundColor: 'var(--bg-subtle)',
-            fontSize: '10.5px',
-            color: 'var(--text-muted)',
-            lineHeight: 1.35
-          }}>
-            <span style={{ fontWeight: 800, color: 'var(--text-secondary)', display: 'block', marginBottom: 2 }}>
-              Navigation Menu Ready
-            </span>
-            Waiting for menu item configuration.
-          </div>
-        )}
+
       </div>
 
       <div className="drawer-footer">
