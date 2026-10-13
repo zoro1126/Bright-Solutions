@@ -183,3 +183,156 @@ class PatientRepository:
                 return cur.fetchone()
         finally:
             conn.close()
+
+    @staticmethod
+    def get_active_doctor_queue_loads() -> List[Dict[str, Any]]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                query = """
+                    SELECT 
+                        u.id AS doctor_id,
+                        u.full_name AS doctor_name,
+                        COUNT(CASE WHEN v.status NOT IN ('COMPLETED', 'CANCELLED', 'READY_FOR_BILLING') THEN v.id ELSE NULL END) AS active_load
+                    FROM users u
+                    LEFT JOIN visits v ON v.doctor_id = u.id AND DATE(v.visit_date) = CURDATE()
+                    WHERE u.role = 'DOCTOR' AND u.is_active = 1
+                    GROUP BY u.id, u.full_name
+                    ORDER BY active_load ASC, u.id ASC;
+                """
+                cur.execute(query)
+                return cur.fetchall()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_receptionist_queue_records(search_term: Optional[str] = None) -> List[Dict[str, Any]]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                query = """
+                    SELECT 
+                        v.id AS visit_id,
+                        v.patient_id,
+                        v.queue_token,
+                        v.status AS visit_status,
+                        v.visit_date,
+                        v.chief_complaint,
+                        p.uhid,
+                        p.first_name,
+                        p.last_name,
+                        CONCAT(p.first_name, ' ', p.last_name) AS full_name,
+                        p.dob,
+                        TIMESTAMPDIFF(YEAR, p.dob, CURDATE()) AS age,
+                        p.gender,
+                        p.phone,
+                        p.address,
+                        p.emergency_contact,
+                        p.insurance_type,
+                        p.insurance_provider,
+                        p.policy_number,
+                        u_doc.id AS doctor_id,
+                        u_doc.full_name AS doctor_name,
+                        vt.id AS vital_id,
+                        vt.systolic_bp,
+                        vt.diastolic_bp,
+                        vt.pulse_rate,
+                        vt.temperature_f,
+                        vt.resp_rate,
+                        vt.spo2_pct,
+                        vt.weight_kg,
+                        vt.height_cm,
+                        vt.bmi,
+                        vt.bmi_category,
+                        vt.bp_stage,
+                        (SELECT COUNT(*) FROM intake_questionnaires iq WHERE iq.visit_id = v.id) AS questionnaire_count,
+                        (SELECT COUNT(*) FROM deterministic_insights di WHERE di.visit_id = v.id) AS insight_count
+                    FROM visits v
+                    JOIN patients p ON p.id = v.patient_id
+                    LEFT JOIN users u_doc ON u_doc.id = v.doctor_id
+                    LEFT JOIN vital_signs vt ON vt.visit_id = v.id
+                """
+                params = []
+                where_clauses = ["(DATE(v.visit_date) = CURDATE() OR v.status NOT IN ('COMPLETED', 'CANCELLED'))"]
+
+                if search_term:
+                    where_clauses.append("""
+                        (p.first_name LIKE %s 
+                         OR p.last_name LIKE %s 
+                         OR p.phone LIKE %s 
+                         OR p.uhid LIKE %s 
+                         OR v.queue_token LIKE %s)
+                    """)
+                    t = f"%{search_term}%"
+                    params.extend([t, t, t, t, t])
+
+                query += " WHERE " + " AND ".join(where_clauses)
+                query += " ORDER BY v.id ASC;"
+
+                cur.execute(query, params)
+                return cur.fetchall()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_patient_details(patient_id: int) -> Optional[Dict[str, Any]]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        p.*,
+                        CONCAT(p.first_name, ' ', p.last_name) AS full_name,
+                        TIMESTAMPDIFF(YEAR, p.dob, CURDATE()) AS age
+                    FROM patients p WHERE p.id = %s;
+                """, (patient_id,))
+                patient = cur.fetchone()
+                if not patient:
+                    return None
+
+                cur.execute("""
+                    SELECT 
+                        v.id AS visit_id,
+                        v.queue_token,
+                        v.status,
+                        v.visit_date,
+                        v.chief_complaint,
+                        v.conclusion_notes,
+                        v.conclusion_signed_at,
+                        u_doc.id AS doctor_id,
+                        u_doc.full_name AS doctor_name,
+                        vt.id AS vital_id,
+                        vt.systolic_bp,
+                        vt.diastolic_bp,
+                        vt.pulse_rate,
+                        vt.temperature_f,
+                        vt.resp_rate,
+                        vt.spo2_pct,
+                        vt.weight_kg,
+                        vt.height_cm,
+                        vt.bmi,
+                        vt.bmi_category,
+                        vt.bp_stage,
+                        (SELECT COUNT(*) FROM intake_questionnaires iq WHERE iq.visit_id = v.id) AS questionnaire_count,
+                        (SELECT COUNT(*) FROM deterministic_insights di WHERE di.visit_id = v.id) AS insight_count
+                    FROM visits v
+                    LEFT JOIN users u_doc ON u_doc.id = v.doctor_id
+                    LEFT JOIN vital_signs vt ON vt.visit_id = v.id
+                    WHERE v.patient_id = %s
+                    ORDER BY v.visit_date DESC, v.id DESC;
+                """, (patient_id,))
+                visits = cur.fetchall()
+
+                latest_visit_id = visits[0]["visit_id"] if visits else None
+                questionnaire = None
+                if latest_visit_id:
+                    cur.execute("SELECT * FROM intake_questionnaires WHERE visit_id = %s LIMIT 1;", (latest_visit_id,))
+                    questionnaire = cur.fetchone()
+
+                return {
+                    "patient": patient,
+                    "visits": visits,
+                    "latest_questionnaire": questionnaire
+                }
+        finally:
+            conn.close()
