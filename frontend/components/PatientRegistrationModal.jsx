@@ -152,7 +152,7 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
       address: 'Plot 44, Gandhi Road, Tambaram, Chennai',
       emergencyContactName: 'Murali Krishnan (Son)',
       emergencyContactPhone: '+91 98400 98211',
-      doctorAssigned: 'Dr. Kiran Patel (Medical Oncology)',
+      doctorAssigned: 'Dr. Kiran Patel (General & Internal Medicine)',
       // Vitals
       weight: '58',
       height: '160',
@@ -188,7 +188,7 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
       address: 'Flat 302, Green Meadows, Velachery, Chennai',
       emergencyContactName: 'Radha Sharma (Spouse)',
       emergencyContactPhone: '+91 98840 55124',
-      doctorAssigned: 'Dr. Sneha Roy (Surgical Oncology)',
+      doctorAssigned: 'Dr. Swaminathan (General & Laparoscopic Surgery)',
       // Vitals
       weight: '74',
       height: '172',
@@ -224,7 +224,7 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
       address: '28 Besant Nagar Main Road, Chennai',
       emergencyContactName: 'Ramesh Sundaram (Spouse)',
       emergencyContactPhone: '+91 97909 33211',
-      doctorAssigned: 'Dr. Kiran Patel (Medical Oncology)',
+      doctorAssigned: 'Dr. Kiran Patel (General & Internal Medicine)',
       // Vitals
       weight: '55',
       height: '158',
@@ -281,7 +281,7 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
           <div className="m3-dialog-title-block">
             <h2 className="m3-headline-small">New Patient Registration</h2>
             <p className="m3-body-medium">
-              Enter clinical demographics and insurance coverage to initialize oncology intake.
+              Enter clinical demographics and insurance coverage to initialize clinical intake.
             </p>
           </div>
           <button 
@@ -555,7 +555,7 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
             </div>
 
             <div className="m3-text-field">
-              <label className="m3-field-label">Assigned Medical Oncologist</label>
+              <label className="m3-field-label">Assigned Consultant Doctor</label>
               <div className="m3-input-wrapper">
                 <Stethoscope size={16} className="m3-field-leading-icon" />
                 <select
@@ -897,7 +897,7 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
                 }}>
                   <Award size={18} color="#059669" style={{ flexShrink: 0 }} />
                   <div>
-                    <strong>Ayushman Bharat & Govt Scheme Cashless Billing:</strong> Eligible oncology treatment, diagnostics, and essential medications are 100% cashless under NHA cancer packages with ₹0 patient deductible.
+                    <strong>Ayushman Bharat & Govt Scheme Cashless Billing:</strong> Eligible clinical treatment, diagnostics, and essential medications are 100% cashless under NHA government packages with ₹0 patient deductible.
                   </div>
                 </div>
 

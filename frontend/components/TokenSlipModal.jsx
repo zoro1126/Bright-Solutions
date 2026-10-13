@@ -59,7 +59,7 @@ export default function TokenSlipModal({ isOpen, patient, tokenNumber, onClose }
             <strong style={{ fontSize: 16, fontWeight: 900, color: 'var(--text-primary)' }}>Bright Solutions</strong>
           </div>
           <div style={{ fontSize: 10.5, color: 'var(--text-secondary)' }}>
-            General & Oncology OPD Operating Clinic
+            General & Multispeciality OPD Clinic
           </div>
 
           <div style={{

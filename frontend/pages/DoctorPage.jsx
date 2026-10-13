@@ -59,7 +59,7 @@ export default function DoctorPage({ currentRole = 'doctor', onSwitchRole, onSwi
     { drug: 'Pantoprazole (40mg)', dose: '40mg', qty: '7 Tabs', freq: '1-0-0', days: '7d', mealTiming: 'Before Meals', notes: 'Take 30 mins before breakfast' },
     { drug: 'Amoxicillin (625mg)', dose: '625mg', qty: '10 Tabs', freq: '1-0-1', days: '5d', mealTiming: 'After Meals', notes: 'Complete full course with water' },
     { drug: 'Atorvastatin (10mg)', dose: '10mg', qty: '30 Tabs', freq: '0-0-1', days: '30d', mealTiming: 'After Meals', notes: 'Take at bedtime' },
-    { drug: 'Ondansetron (4mg)', dose: '4mg', qty: '5 Tabs', freq: 'SOS', days: '5d', mealTiming: 'Before Meals', notes: 'Take 30 mins prior to chemotherapy' },
+    { drug: 'Ondansetron (4mg)', dose: '4mg', qty: '5 Tabs', freq: 'SOS', days: '5d', mealTiming: 'Before Meals', notes: 'Take 30 mins before food SOS for nausea' },
     { drug: 'Tramadol (50mg)', dose: '50mg', qty: '6 Tabs', freq: 'SOS', days: '3d', mealTiming: 'After Meals', notes: 'For severe breakthrough pain' },
     { drug: 'Montair-LC', dose: '10mg/5mg', qty: '10 Tabs', freq: '0-0-1', days: '10d', mealTiming: 'After Meals', notes: 'Take at night for respiratory ease' }
   ];
@@ -97,20 +97,21 @@ export default function DoctorPage({ currentRole = 'doctor', onSwitchRole, onSwi
   // Conclusion Draft State
   const [conclusionText, setConclusionText] = useState(() => {
     return `CLINICAL IMPRESSION:
-${patient.fullName}, ${patient.age}yo ${patient.gender.toLowerCase()}, with history of breast carcinoma (2019, post-AC-T and RT), currently presenting with right anterior chest wall discomfort and fatigue.
+${patient.fullName}, ${patient.age}yo ${patient.gender.toLowerCase()}, presenting with Grade 2 Essential Hypertension, Dyslipidemia and tension-type cephalalgia. Patient reports occasional palpitations and morning occipital headaches.
 
-AI RISK ASSESSMENT (OncoInsight v2.1):
-- Elevated recurrence index correlating with constitutional symptoms.
-- Adjuvant aromatase inhibitor (Letrozole) continuation indicated.
+AI CLINICAL RISK ASSESSMENT (${insights?.modelVersion || 'ClinicalInsight-v2.1'}):
+- Overall Cardiovascular Risk: Moderate; BP tracking above 140/90 mmHg.
+- Metabolic & Lipid Profile: Elevated LDL-C and Total Cholesterol requiring statin titration.
 
 RECOMMENDED WORKUP & INVESTIGATIONS:
-1. High-Resolution Contrast CT Chest (verify focal 2.3cm opacity).
-2. Serum CA 15-3 and CEA tumour markers.
-3. Whole-body Tc-99m bone scan.
+1. 12-Lead Electrocardiogram (ECG) & 2D-Echocardiogram.
+2. Fasting Comprehensive Metabolic & Lipid Panel (HbA1c, Serum Creatinine, Electrolytes).
+3. Fundoscopic examination for hypertensive retinopathy.
 
 TREATMENT & FOLLOW-UP PLAN:
-- Continue Letrozole 2.5mg OD.
-- Review CT and biomarker reports in 7 days for restaging.`;
+- Titrate Telmisartan to 40mg OD PO with morning breakfast.
+- Continue Atorvastatin 20mg HS PO; dietary sodium restriction (< 2g/day).
+- Schedule follow-up blood pressure review in 10 days with fasting lab panel.`;
   });
 
   // Sync clinical conclusion draft dynamically when selected patient changes
@@ -118,21 +119,21 @@ TREATMENT & FOLLOW-UP PLAN:
     if (!patient) return;
     const comp = patient.questionnaire?.responses?.chiefComplaint || 'Consultation & Clinical Evaluation';
     setConclusionText(`CLINICAL IMPRESSION:
-${patient.fullName}, ${patient.age}yo ${patient.gender.toLowerCase()}, presenting for oncology review with chief complaint: ${comp}.
+${patient.fullName}, ${patient.age}yo ${patient.gender.toLowerCase()}, presenting for clinical evaluation with chief complaint: ${comp}.
 
-AI RISK ASSESSMENT (${insights?.modelVersion || 'OncoInsight v2.1'}):
-- Overall Risk: ${insights?.overallRisk || 'EVALUATION PENDING'} (${insights?.confidence || 88}% Confidence)
+AI CLINICAL RISK ASSESSMENT (${insights?.modelVersion || 'ClinicalInsight-v2.1'}):
+- Overall Clinical Risk: ${insights?.overallRisk || 'EVALUATION PENDING'} (${insights?.confidence || 88}% Confidence)
 ${(insights?.riskFlags || []).map(f => `- [${f.severity}] ${f.label}: ${f.note}`).join('\n') || '- Routine baseline screening'}
 
 RECOMMENDED WORKUP & INVESTIGATIONS:
 ${(insights?.recommendedInvestigations || [
-  { name: 'Diagnostic Contrast CT / PET-CT Scan', urgency: 'Urgent' },
-  { name: 'Complete Hemogram & Serum Biomarkers', urgency: 'Routine' }
+  { name: '12-Lead Electrocardiogram (ECG)', urgency: 'Routine' },
+  { name: 'Comprehensive Metabolic Panel (HbA1c / LFT / KFT)', urgency: 'Routine' }
 ]).map((inv, idx) => `${idx + 1}. ${inv.name} (${inv.urgency})`).join('\n')}
 
 TREATMENT & FOLLOW-UP PLAN:
-- Initiate medical oncology protocol as indicated.
-- Schedule review in 7 days with pathology & imaging reports.`);
+- Initiate evidence-based pharmacotherapy and lifestyle modifications as indicated.
+- Schedule review in 7-10 days with diagnostic laboratory & imaging reports.`);
   }, [patient?.id]);
 
   // Speech-to-Text (STT) Voice Dictation State & Handler
@@ -212,7 +213,7 @@ TREATMENT & FOLLOW-UP PLAN:
       freq: '1-0-1',
       days: '5d',
       mealTiming: 'After Meals',
-      notes: 'Take as directed by oncologist'
+      notes: 'Take as directed by doctor'
     };
     setPrescriptions(prev => [...prev, newRx]);
     setCustomDrugSearch('');
@@ -312,20 +313,20 @@ TREATMENT & FOLLOW-UP PLAN:
           <main className="page-container doctor-page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: '0', boxSizing: 'border-box' }}>
 
             {/* Active Patient Bar - Styled with Theme Palettes */}
-            <div className="m3-doctor-patient-banner" style={{ border: '1.5px solid var(--doc-banner-border, #bae6fd)', background: 'var(--doc-banner-bg, linear-gradient(120deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 80%, #ffffff 100%))' }}>
+            <div className="m3-doctor-patient-banner" style={{ border: '1.5px solid var(--doc-banner-border, #bfe7f5)', background: 'var(--doc-banner-bg, linear-gradient(135deg, #ffffff 0%, #edf8fc 100%))' }}>
         {/* Ambient Pastel Blob in Top-Right Corner */}
-        <div className="stat-card-accent-blob" style={{ top: -20, right: -20, width: 96, height: 96, opacity: 0.5, background: 'radial-gradient(circle, #bae6fd 0%, rgba(186, 230, 253, 0) 70%)' }} />
+        <div className="stat-card-accent-blob" style={{ top: -20, right: -20, width: 96, height: 96, opacity: 0.65, background: 'radial-gradient(circle, var(--doc-accent-color, #00B4D8) 0%, rgba(0, 180, 216, 0) 70%)' }} />
 
         <div className="m3-patient-banner-info" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="stat-squircle-badge" style={{ width: 42, height: 42, borderRadius: 12, fontSize: 14, fontWeight: 800, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #7dd3fc, #38bdf8))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 14px rgba(56, 189, 248, 0.35))' }}>
+          <div className="stat-squircle-badge" style={{ width: 42, height: 42, borderRadius: 12, fontSize: 14, fontWeight: 800, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #0f172a, #1e3a8a))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(30, 58, 138, 0.35))' }}>
             {patient.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 900, color: 'var(--doc-banner-title, #0369a1)', letterSpacing: '-0.02em', margin: 0 }}>
+              <h2 style={{ fontSize: 17, fontWeight: 900, color: 'var(--doc-banner-title, #0f172a)', letterSpacing: '-0.02em', margin: 0 }}>
                 {patient.fullName}
               </h2>
-              <span className="brand-counter-pill" style={{ fontSize: 10, background: 'var(--doc-pill-bg, #e0f2fe)', color: 'var(--doc-pill-color, #0284c7)', border: '1px solid var(--doc-pill-border, #bae6fd)', fontWeight: 700 }}>{patient.mrn}</span>
+              <span className="brand-counter-pill" style={{ fontSize: 10, background: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 700 }}>{patient.mrn}</span>
               {insights?.overallRisk === 'HIGH' && (
                 <span className="brand-counter-pill" style={{ fontSize: 10.5, padding: '2px 8px', background: 'var(--warning-container, #fef3c7)', color: 'var(--on-warning-container, #78350f)', border: '1px solid var(--warning, #d97706)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                   <AlertTriangle size={11} color="var(--warning, #d97706)" /> High Risk Recurrence
@@ -333,11 +334,11 @@ TREATMENT & FOLLOW-UP PLAN:
               )}
             </div>
             <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <span>{patient.age}y {patient.gender} • Coverage: <strong style={{ color: 'var(--doc-accent-color, #0284c7)' }}>{patient.insurance.provider}</strong> • Appt: {patient.appointmentTime}</span>
+              <span>{patient.age}y {patient.gender} • Coverage: <strong style={{ color: 'var(--doc-accent-color, #2563eb)' }}>{patient.insurance.provider}</strong> • Appt: {patient.appointmentTime}</span>
               {patient.vitals && (
-                <span className="anim-hover-lift" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#f0f9ff', padding: '3px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#0369a1', border: '1px solid #bae6fd', boxShadow: '0 2px 8px rgba(56, 189, 248, 0.12)' }}>
-                  <span className="anim-radar-ping live-dot" style={{ backgroundColor: '#0284c7', width: 7, height: 7, borderRadius: '50%', flexShrink: 0 }} />
-                  <Activity size={12} color="#0284c7" style={{ animation: 'docHeartbeatPulse 1.8s ease-in-out infinite', flexShrink: 0 }} />
+                <span className="anim-hover-lift" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#eff6ff', padding: '3px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#1e3a8a', border: '1px solid #bfdbfe', boxShadow: '0 2px 8px rgba(30, 58, 138, 0.12)' }}>
+                  <span className="anim-radar-ping live-dot" style={{ backgroundColor: '#2563eb', width: 7, height: 7, borderRadius: '50%', flexShrink: 0 }} />
+                  <Activity size={12} color="#2563eb" style={{ animation: 'docHeartbeatPulse 1.8s ease-in-out infinite', flexShrink: 0 }} />
                   <span>BP: {patient.vitals.bp || '120/80'}</span>
                   <span style={{ color: '#94a3b8' }}>•</span>
                   <span>HR: {patient.vitals.pulse || '72'} bpm</span>
@@ -366,7 +367,16 @@ TREATMENT & FOLLOW-UP PLAN:
             className="m3-btn m3-btn-filled"
             onClick={handleFinalizeVisit}
             data-tour="finalize-consult-btn"
-            style={{ height: 32, fontSize: 11.5, padding: '0 14px', border: 'none', color: '#ffffff', fontWeight: 700 }}
+            style={{ 
+              height: 32, 
+              fontSize: 11.5, 
+              padding: '0 14px', 
+              border: 'none', 
+              color: '#ffffff', 
+              fontWeight: 700,
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)',
+              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.35)'
+            }}
           >
             <CheckCircle2 size={15} />
             <span>Finalize & Send to Cashier</span>
@@ -396,9 +406,6 @@ TREATMENT & FOLLOW-UP PLAN:
                   onClick={() => setSelectedPatientId(p.id)}
                   className={`doctor-patient-card ${isSelected ? 'selected' : ''}`}
                 >
-                  {isSelected && (
-                    <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 48, height: 48, opacity: 0.55, background: 'radial-gradient(circle, #bae6fd 0%, rgba(186, 230, 253, 0) 70%)' }} />
-                  )}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
                     <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--text-primary)' }}>
                       {p.fullName}
@@ -481,7 +488,7 @@ TREATMENT & FOLLOW-UP PLAN:
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span className="m3-model-pill" style={{ padding: '3px 10px', fontSize: 10.5 }}>
-                    {insights?.modelVersion || 'OncoInsight v2.1'} • 88% Confidence
+                    {insights?.modelVersion || 'ClinicalInsight-v2.1'} • 94% Confidence
                   </span>
                   <button
                     type="button"
@@ -502,7 +509,7 @@ TREATMENT & FOLLOW-UP PLAN:
                   Physician Executive Summary
                 </span>
                 <p style={{ fontSize: 13.5, color: 'var(--text-primary)', fontWeight: 600, marginTop: 4, lineHeight: 1.5 }}>
-                  {insights?.symptomSummary || `${patient.fullName} presenting for oncology evaluation with chief complaint: ${patient.questionnaire?.responses?.chiefComplaint || 'Consultation'}.`}
+                  {insights?.symptomSummary || `${patient.fullName} presenting for clinical evaluation with chief complaint: ${patient.questionnaire?.responses?.chiefComplaint || 'Consultation'}.`}
                 </p>
               </div>
 
@@ -610,7 +617,7 @@ TREATMENT & FOLLOW-UP PLAN:
               {/* Tool Controls Bar */}
               <div className="dicom-controls-bar">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#f8fafc', fontSize: 13, fontWeight: 700 }}>
-                  <Layers size={16} color="#38bdf8" />
+                  <Layers size={16} color="#2563eb" />
                   <span>{selectedSeries}</span>
                   <span style={{ fontSize: 11, color: '#94a3b8', background: '#1e293b', padding: '2px 8px', borderRadius: 4 }}>
                     Slice {currentSlice} / 148
@@ -651,7 +658,7 @@ TREATMENT & FOLLOW-UP PLAN:
               <div className="dicom-canvas-area">
                 {/* Radiological Crosshair / Overlay */}
                 <div style={{ textAlign: 'center', color: '#cbd5e1' }}>
-                  <div style={{ width: 220, height: 220, border: '2px dashed rgba(56, 189, 248, 0.4)', borderRadius: '50%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%)' }}>
+                  <div style={{ width: 220, height: 220, border: '2px dashed rgba(37, 99, 235, 0.45)', borderRadius: '50%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%)' }}>
                     <div style={{ border: '1.5px solid #22c55e', padding: '4px 10px', borderRadius: 4, background: 'rgba(0,0,0,0.6)', fontSize: 11, color: '#4ade80', fontWeight: 700 }}>
                       📌 2.3 cm Nodular Opacity (RUL)
                     </div>
@@ -673,7 +680,7 @@ TREATMENT & FOLLOW-UP PLAN:
                     max="148" 
                     value={currentSlice} 
                     onChange={(e) => setCurrentSlice(Number(e.target.value))}
-                    style={{ flex: 1, accentColor: '#38bdf8' }}
+                    style={{ flex: 1, accentColor: '#2563eb' }}
                   />
                   <span style={{ fontSize: 11, color: '#94a3b8', whiteSpace: 'nowrap' }}>Slice 148</span>
                 </div>
@@ -706,7 +713,7 @@ TREATMENT & FOLLOW-UP PLAN:
                 <div style={{ background: 'var(--bg-subtle)', padding: 16, borderRadius: 'var(--radius-md)', border: 'none' }}>
                   <span className="section-label">Chief Complaint & Onset</span>
                   <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4 }}>
-                    {patient.questionnaire?.responses?.chiefComplaint || 'Primary Oncology Consultation'}
+                    {patient.questionnaire?.responses?.chiefComplaint || 'Primary Clinical Consultation'}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
                     Duration: {patient.questionnaire?.responses?.durationMonths || 'N/A'} • Site: {patient.questionnaire?.responses?.primarySite || 'General'}
@@ -714,9 +721,9 @@ TREATMENT & FOLLOW-UP PLAN:
                 </div>
 
                 <div style={{ background: 'var(--bg-subtle)', padding: 16, borderRadius: 'var(--radius-md)', border: 'none' }}>
-                  <span className="section-label">Prior Oncology Diagnoses & Treatments</span>
+                  <span className="section-label">Prior Clinical Diagnoses & Treatments</span>
                   <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4 }}>
-                    {patient.questionnaire?.responses?.priorCancer || 'No prior cancer history'}
+                    {patient.questionnaire?.responses?.priorCancer || 'No prior chronic comorbidity history'}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
                     Prior Interventions: {(patient.questionnaire?.responses?.priorTreatments || []).join(', ') || 'None recorded'}
@@ -1150,26 +1157,26 @@ TREATMENT & FOLLOW-UP PLAN:
                         type="button"
                         className="m3-btn m3-btn-outlined"
                         onClick={() => {
-                          setConclusionText(prev => `${prev}\n\nADJUVANT THERAPY & BONE MONITORING:\n- Continue oral Letrozole 2.5mg once daily after meals.\n- Order baseline DEXA bone mineral densitometry scan and liver function panel.`);
-                          addToast('Inserted Letrozole & DEXA plan note', 'info');
+                          setConclusionText(prev => `${prev}\n\nCARDIOVASCULAR & METABOLIC PLAN:\n- Titrate Telmisartan to 40mg OD PO.\n- Continue Atorvastatin 20mg HS; recheck fasting lipid and renal panel in 14 days.`);
+                          addToast('Inserted Statin & BP titration note', 'info');
                         }}
                         style={{ height: 32, fontSize: 11, justifyContent: 'flex-start', textAlign: 'left', padding: '0 10px' }}
                       >
                         <Plus size={13} color="var(--primary)" />
-                        <span>+ Letrozole & DEXA Plan</span>
+                        <span>+ Statin & BP Plan</span>
                       </button>
 
                       <button
                         type="button"
                         className="m3-btn m3-btn-outlined"
                         onClick={() => {
-                          setConclusionText(prev => `${prev}\n\nPATIENT ADVISORY:\n- Advised to report immediately to 24x7 Oncology Triage in case of fever > 100.4°F, acute severe chest pain, or hemoptysis.`);
-                          addToast('Inserted toxicity advisory note', 'info');
+                          setConclusionText(prev => `${prev}\n\nPATIENT ADVISORY:\n- Advised to report immediately to 24x7 Emergency in case of chest discomfort, acute breathlessness, or persistent severe headache.`);
+                          addToast('Inserted emergency warning signs advisory', 'info');
                         }}
                         style={{ height: 32, fontSize: 11, justifyContent: 'flex-start', textAlign: 'left', padding: '0 10px' }}
                       >
                         <Plus size={13} color="var(--primary)" />
-                        <span>+ Toxicity Alert Note</span>
+                        <span>+ Emergency Warning Note</span>
                       </button>
 
                       <button
@@ -1237,7 +1244,7 @@ TREATMENT & FOLLOW-UP PLAN:
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
                     <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
-                      Digitally authenticated by: <strong style={{ color: 'var(--text-secondary)' }}>Dr. Kiran Patel, MD (Medical Oncology)</strong>
+                      Digitally authenticated by: <strong style={{ color: 'var(--text-secondary)' }}>Dr. Kiran Patel, MD (General & Internal Medicine)</strong>
                     </div>
                     <div style={{ fontSize: 11.5, color: '#15803d', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Check size={14} /> Ready for Billing Transmission
@@ -1423,7 +1430,7 @@ TREATMENT & FOLLOW-UP PLAN:
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span className="mrn-tag">{patient.mrn}</span>
                 <span className="m3-model-pill" style={{ padding: '3px 10px', fontSize: 11 }}>
-                  {insights?.modelVersion || 'OncoInsight v2.1'} • 88% Confidence
+                  {insights?.modelVersion || 'ClinicalInsight-v2.1'} • 94% Confidence
                 </span>
                 <span className="badge badge-ready" style={{ fontSize: 11 }}>
                   ABHA: {patient.abhaId || patient.insurance?.abhaId || '91-4820-1928-3819'}
@@ -1433,7 +1440,7 @@ TREATMENT & FOLLOW-UP PLAN:
                 AI Clinical Insights Dossier — {patient.fullName}
               </h3>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-                {patient.age}y {patient.gender} • Consulting Oncologist: {patient.doctorAssigned} • Insurance: {patient.insurance.provider}
+                {patient.age}y {patient.gender} • Consulting Doctor: {patient.doctorAssigned} • Insurance: {patient.insurance.provider}
               </div>
             </div>
 
@@ -1454,7 +1461,7 @@ TREATMENT & FOLLOW-UP PLAN:
                 Physician Executive Summary
               </span>
               <p style={{ fontSize: 13.5, color: 'var(--text-primary)', fontWeight: 600, marginTop: 4, lineHeight: 1.5 }}>
-                {insights?.symptomSummary || `${patient.fullName} presenting for oncology evaluation with chief complaint: ${patient.questionnaire?.responses?.chiefComplaint || 'Consultation'}.`}
+                {insights?.symptomSummary || `${patient.fullName} presenting for multispeciality clinical evaluation with chief complaint: ${patient.questionnaire?.responses?.chiefComplaint || 'Consultation'}.`}
               </p>
             </div>
 
@@ -1547,7 +1554,7 @@ TREATMENT & FOLLOW-UP PLAN:
           {/* Footer */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-default)', paddingTop: 14, marginTop: 12, flexShrink: 0 }}>
             <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
-              OncoInsight AI Assisted Staging • Doctor must confirm all diagnoses.
+              ClinicalInsight AI Assisted Clinical Evaluation • Doctor must confirm all diagnoses.
             </span>
             <button className="m3-btn m3-btn-filled" onClick={() => setIsInsightsModalOpen(false)}>
               Close Dossier
@@ -1568,7 +1575,7 @@ TREATMENT & FOLLOW-UP PLAN:
           {/* DICOM Modal Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #1e293b', paddingBottom: 12, marginBottom: 12, flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Layers size={18} color="#38bdf8" />
+              <Layers size={18} color="#2563eb" />
               <div>
                 <h3 style={{ fontSize: 16, fontWeight: 800, color: '#f8fafc' }}>
                   {selectedSeries} — High-Res Radiological Viewer
@@ -1621,7 +1628,7 @@ TREATMENT & FOLLOW-UP PLAN:
           {/* Large DICOM Canvas */}
           <div style={{ flex: 1, minHeight: 420, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', background: '#020617', borderRadius: 8, border: '1px solid #1e293b', padding: 24 }}>
             <div style={{ textAlign: 'center', color: '#cbd5e1' }}>
-              <div style={{ width: 280, height: 280, border: '2px dashed rgba(56, 189, 248, 0.45)', borderRadius: '50%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, transparent 70%)' }}>
+              <div style={{ width: 280, height: 280, border: '2px dashed rgba(37, 99, 235, 0.45)', borderRadius: '50%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, transparent 70%)' }}>
                 <div style={{ border: '1.5px solid #22c55e', padding: '6px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.75)', fontSize: 12, color: '#4ade80', fontWeight: 800 }}>
                   📌 2.3 cm Focal Nodular Opacity (RUL)
                 </div>
@@ -1643,7 +1650,7 @@ TREATMENT & FOLLOW-UP PLAN:
                 max="148" 
                 value={currentSlice} 
                 onChange={(e) => setCurrentSlice(Number(e.target.value))}
-                style={{ flex: 1, accentColor: '#38bdf8' }}
+                style={{ flex: 1, accentColor: '#2563eb' }}
               />
               <span style={{ fontSize: 11, color: '#94a3b8' }}>Slice 148</span>
             </div>
@@ -1660,7 +1667,7 @@ TREATMENT & FOLLOW-UP PLAN:
                   style={{
                     height: 28,
                     fontSize: 11,
-                    background: selectedSeries === s ? '#0284c7' : '#1e293b',
+                    background: selectedSeries === s ? 'linear-gradient(135deg, #1e3a8a, #2563eb)' : '#1e293b',
                     color: '#f8fafc',
                     border: '1px solid #334155'
                   }}
@@ -1736,25 +1743,25 @@ TREATMENT & FOLLOW-UP PLAN:
                     type="button"
                     className="m3-btn m3-btn-outlined"
                     onClick={() => {
-                      setConclusionText(prev => `${prev}\n\nRECOMMENDED IMAGING:\n- Contrast CT Chest within 7 days for restaging parenchymal density.`);
-                      addToast('Inserted Restaging CT snippet', 'info');
+                      setConclusionText(prev => `${prev}\n\nRECOMMENDED INVESTIGATIONS:\n- Baseline diagnostic panel and metabolic profile repeat within 14 days.`);
+                      addToast('Inserted Diagnostics snippet', 'info');
                     }}
                     style={{ height: 30, fontSize: 11, justifyContent: 'flex-start', padding: '0 8px' }}
                   >
                     <Plus size={12} color="var(--primary)" />
-                    <span>+ Restaging CT (7 Days)</span>
+                    <span>+ Repeat Diagnostic Panel</span>
                   </button>
                   <button
                     type="button"
                     className="m3-btn m3-btn-outlined"
                     onClick={() => {
-                      setConclusionText(prev => `${prev}\n\nADJUVANT PLAN:\n- Continue Letrozole 2.5mg OD.\n- Schedule baseline DEXA bone mineral scan.`);
-                      addToast('Inserted Letrozole plan snippet', 'info');
+                      setConclusionText(prev => `${prev}\n\nPHARMACOTHERAPY PLAN:\n- Continue prescribed oral antihypertensive & metabolic therapy as charted.\n- Schedule follow-up visit in 30 days.`);
+                      addToast('Inserted Pharmacotherapy plan snippet', 'info');
                     }}
                     style={{ height: 30, fontSize: 11, justifyContent: 'flex-start', padding: '0 8px' }}
                   >
                     <Plus size={12} color="var(--primary)" />
-                    <span>+ Letrozole & DEXA Plan</span>
+                    <span>+ Pharmacotherapy Care Plan</span>
                   </button>
                   <button
                     type="button"

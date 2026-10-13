@@ -49,19 +49,19 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
   const [selectedCaseMix, setSelectedCaseMix] = useState(null);
   const [selectedBiomarker, setSelectedBiomarker] = useState(null);
 
-  // State: Daycare Chemotherapy Active Chairs
+  // State: Daycare & Observation Ward Active Beds
   const [infusions, setInfusions] = useState([
     {
       id: 'chair-1',
-      chair: 'Chair C-01',
+      chair: 'Bed D-01',
       patient: 'Rajan Pillai',
       mrn: 'MRN-2026-0143',
       patientId: 'pat-002',
       age: 67,
       gender: 'M',
-      regimen: 'Pemetrexed (500mg/m²) + Carboplatin (AUC 5)',
-      indication: 'Non-Small Cell Lung Carcinoma (Stage IIIA)',
-      cycle: 'Cycle 3 of 6',
+      regimen: 'Normal Saline (500ml) + IV Ciprofloxacin (200mg)',
+      indication: 'Type 2 Diabetes with Lower Limb Cellulitis & Dehydration',
+      cycle: 'Dose 3 of 5',
       bagVolumeMl: 500,
       flowRateMlHr: 125,
       elapsedMinutes: 95,
@@ -70,58 +70,58 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       status: 'Infusing',
       isPaused: false,
       premeds: [
-        { name: 'Ondansetron 8mg IV Push', done: true },
-        { name: 'Dexamethasone 10mg IV Infusion', done: true },
-        { name: 'Ranitidine 50mg IV Infusion', done: true },
-        { name: 'Folic Acid 1mg oral daily', done: true }
+        { name: 'Pantoprazole 40mg IV Push', done: true },
+        { name: 'Normal Saline 100ml Flush', done: true },
+        { name: 'Blood Glucose Glucometer Check (148 mg/dL)', done: true },
+        { name: 'Vitals Sign-off & Fluid Charting', done: true }
       ]
     },
     {
       id: 'chair-2',
-      chair: 'Chair C-03',
+      chair: 'Bed D-02',
       patient: 'Devendra Kapoor',
       mrn: 'MRN-2026-0145',
       patientId: 'pat-004',
       age: 58,
       gender: 'M',
-      regimen: 'mFOLFOX-6 (Oxaliplatin 85mg/m² + LV + 5-FU)',
-      indication: 'Colorectal Adenocarcinoma (Stage II High-Risk)',
-      cycle: 'Cycle 5 of 12',
-      bagVolumeMl: 1000,
-      flowRateMlHr: 140,
+      regimen: 'IV Methylprednisolone (40mg) + Levosalbutamol Nebulization',
+      indication: 'Bronchial Asthma Acute Exacerbation & Wheeze Relief',
+      cycle: 'Session 2 of 3',
+      bagVolumeMl: 250,
+      flowRateMlHr: 100,
       elapsedMinutes: 40,
-      totalMinutes: 180,
+      totalMinutes: 90,
       vitals: { bp: '132/84', hr: 80, spo2: 98, temp: '98.6°F' },
-      status: 'Pre-Meds Done',
+      status: 'In Progress',
       isPaused: false,
       premeds: [
-        { name: 'Palonosetron 0.25mg IV Push', done: true },
-        { name: 'Dexamethasone 12mg IV', done: true },
-        { name: 'Atropine 0.5mg SC available SOS', done: true }
+        { name: 'Duolin (Ipratropium + Levosalbutamol) Nebulization', done: true },
+        { name: 'Hydrocortisone 100mg IV Stat', done: true },
+        { name: 'Peak Expiratory Flow Rate (PEFR) Recorded', done: true }
       ]
     },
     {
       id: 'chair-3',
-      chair: 'Chair C-04',
-      patient: 'Meera Nair',
-      mrn: 'MRN-2026-0146',
-      patientId: 'pat-005',
-      age: 61,
+      chair: 'Bed D-03',
+      patient: 'Ananya Sharma',
+      mrn: 'MRN-2026-0142',
+      patientId: 'pat-001',
+      age: 52,
       gender: 'F',
-      regimen: 'Weekly Paclitaxel (Taxol 80mg/m²)',
-      indication: 'High-Grade Serous Ovarian Carcinoma',
-      cycle: 'Cycle 6 of 6 (Final Cycle)',
-      bagVolumeMl: 250,
-      flowRateMlHr: 100,
+      regimen: 'IV Iron Sucrose (200mg in 200ml Normal Saline)',
+      indication: 'Microcytic Hypochromic Anemia with Chronic Fatigue',
+      cycle: 'Dose 2 of 3',
+      bagVolumeMl: 200,
+      flowRateMlHr: 80,
       elapsedMinutes: 110,
       totalMinutes: 120,
-      vitals: { bp: '118/76', hr: 70, spo2: 100, temp: '98.2°F' },
+      vitals: { bp: '124/78', hr: 72, spo2: 100, temp: '98.2°F' },
       status: 'Near Complete',
       isPaused: false,
       premeds: [
-        { name: 'Dexamethasone 20mg IV (30m prior)', done: true },
-        { name: 'Diphenhydramine 50mg IV', done: true },
-        { name: 'Famotidine 20mg IV', done: true }
+        { name: 'Test Dose Iron Sucrose (15 mins prior)', done: true },
+        { name: 'Baseline Blood Pressure Verified (124/78)', done: true },
+        { name: 'Anaphylaxis Kit & Hydrocortisone on Standby', done: true }
       ]
     }
   ]);
@@ -143,12 +143,12 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       gender: 'F',
       mrn: 'MRN-2026-0142',
       confidence: '92%',
-      title: 'High Risk Recurrence & Letrozole Adherence Gap',
-      desc: '2-month progressive chest wall pain post-lumpectomy (2019). Elevated serum CA 15-3. Adherence caution flagged on Letrozole.',
+      title: 'Stage 2 Hypertension Spike & Statin Adherence Gap',
+      desc: 'Persistent systolic BP elevation (150/95 mmHg) with recurrent morning headaches. Lipid panel shows LDL 158 mg/dL.',
       recommendations: [
-        'Order STAT Contrast PET-CT Torso / Thoracic re-staging',
-        'Review aromatase inhibitor adherence & consider bone scan',
-        'Check liver function panel & serum CA 15-3 kinetics'
+        'Titrate Telmisartan to 80mg OD or add Amlodipine 5mg',
+        'Order 12-Lead ECG & 2D Doppler Echocardiography',
+        'Review renal artery duplex & fasting lipid profile'
       ],
       acknowledged: false
     },
@@ -161,30 +161,30 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       gender: 'M',
       mrn: 'MRN-2026-0145',
       confidence: '89%',
-      title: 'Bone Marrow Toxicity / Neutropenia Watch',
-      desc: 'Post-cycle 2 ANC 1,180/µL. Monitor CBC panel prior to Oxaliplatin dosage release today.',
+      title: 'Acute Bronchospasm & Decreased Peak Flow Watch',
+      desc: 'PEFR dropped 28% from baseline with nocturnal cough. Expiratory wheeze noted on chest auscultation.',
       recommendations: [
-        'Confirm pre-infusion ANC >= 1,500/µL and Platelets >= 100,000/µL',
-        'Consider prophylactic G-CSF (Pegfilgrastim 6mg) if Grade 2+ neutropenia persists',
-        'Evaluate 20% dose reduction of Oxaliplatin if symptomatic'
+        'Initiate short course oral Prednisolone 30mg x 5 days',
+        'Upgrade to Budesonide + Formoterol 400mcg DPI twice daily',
+        'Schedule formal Pulmonary Function Test (Spirometry)'
       ],
       acknowledged: false
     },
     {
       id: 3,
       level: 'GENOMIC',
-      patientId: 'pat-001',
-      patientName: 'Ananya Sharma',
-      age: 52,
-      gender: 'F',
-      mrn: 'MRN-2026-0142',
+      patientId: 'pat-002',
+      patientName: 'Rajan Pillai',
+      age: 67,
+      gender: 'M',
+      mrn: 'MRN-2026-0143',
       confidence: '95%',
-      title: 'Hereditary Breast & Ovarian Cancer (HBOC) Cluster',
-      desc: 'First-degree maternal ovarian malignancy at age 49. Comprehensive BRCA1/BRCA2 genetic sequencing indicated.',
+      title: 'Diabetic Nephropathy & Microalbuminuria Risk',
+      desc: 'Spot urine albumin-creatinine ratio (UACR) 180 mg/g with eGFR 54 mL/min/1.73m². Nephroprotective protocol indicated.',
       recommendations: [
-        'Refer for specialized cancer genetics pre-test counseling',
-        'Order Multi-gene hereditary cancer panel (BRCA1, BRCA2, PALB2, TP53)',
-        'Inform surveillance recommendations for at-risk first-degree relatives'
+        'Add SGLT2 inhibitor (Dapagliflozin 10mg OD) for renal protection',
+        'Maintain strict glycemic target (HbA1c < 7.0%)',
+        'Repeat serum creatinine & potassium in 4 weeks'
       ],
       acknowledged: false
     }
@@ -195,133 +195,133 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
   const [savedMemos, setSavedMemos] = useState([
     {
       id: 'memo-1',
-      text: 'MDT Tumor Board note: Discuss Ananya Sharma PET-CT findings on Thursday morning conference.',
+      text: 'Clinical Rounds note: Review Ananya Sharma 24-hr ambulatory BP log on Thursday morning clinic.',
       timestamp: '11:15 AM'
     },
     {
       id: 'memo-2',
-      text: 'Order repeat CBC with differential for Devendra Kapoor before Cycle 6 FOLFOX.',
+      text: 'Order repeat serum electrolytes and KFT for Rajan Pillai before titrating ACE inhibitor.',
       timestamp: '12:30 PM'
     }
   ]);
 
-  // Oncology Case Mix Breakdown — Image 3 & Image 2 Palettes
+  // General Hospital Case Mix Breakdown — Multispeciality OPD
   const caseMix = [
     { 
-      id: 'breast', 
-      site: 'Invasive Ductal Carcinoma (Breast)', 
-      shortSite: 'Breast IDC', 
+      id: 'cardio', 
+      site: 'Cardiovascular & Essential Hypertension', 
+      shortSite: 'Cardiology', 
       count: 2, 
       percent: 40, 
-      color: '#03045E', // Deep Twilight
-      stage: 'Stage IIB - III',
+      color: '#1e3a8a', // Royal Navy Blue
+      stage: 'Stage 1 - 2 HTN',
       stages: [
-        { label: 'Stage I', pct: 15 },
-        { label: 'Stage II', pct: 50 },
-        { label: 'Stage III', pct: 25 },
-        { label: 'Stage IV', pct: 10 }
+        { label: 'Mild', pct: 25 },
+        { label: 'Stage 1', pct: 45 },
+        { label: 'Stage 2', pct: 20 },
+        { label: 'Severe', pct: 10 }
       ],
-      protocols: ['AC-T (Dose-Dense)', 'TC (Docetaxel + Cyclo)', 'Letrozole + Abemaciclib'],
+      protocols: ['Telmisartan 40mg + Amlodipine 5mg', 'Atorvastatin 20mg HS', 'Lifestyle & DASH Diet'],
       patientsMatched: ['Ananya Sharma']
     },
     { 
-      id: 'lung', 
-      site: 'Non-Small Cell Lung Carcinoma (Thoracic)', 
-      shortSite: 'Lung NSCLC', 
+      id: 'diabetes', 
+      site: 'Type 2 Diabetes & Metabolic Disorders', 
+      shortSite: 'Diabetology', 
       count: 1, 
-      percent: 20, 
-      color: '#0077B6', // Bright Teal Blue
-      stage: 'Stage IIIA (EGFR+)',
+      percent: 25, 
+      color: '#2563eb', // Royal Cobalt Blue
+      stage: 'Moderate Glycemic Risk',
       stages: [
-        { label: 'Stage I', pct: 20 },
-        { label: 'Stage II', pct: 20 },
-        { label: 'Stage III', pct: 40 },
-        { label: 'Stage IV', pct: 20 }
+        { label: 'Pre-DM', pct: 20 },
+        { label: 'Well-Controlled', pct: 35 },
+        { label: 'Uncontrolled', pct: 30 },
+        { label: 'Complicated', pct: 15 }
       ],
-      protocols: ['Pemetrexed + Carboplatin', 'Osimertinib 80mg', 'Pembrolizumab + Chemo'],
+      protocols: ['Metformin 1000mg + Glimepiride 2mg', 'Dapagliflozin 10mg OD', 'Basal Insulin Glargine'],
       patientsMatched: ['Rajan Pillai']
     },
     { 
-      id: 'gi', 
-      site: 'Colorectal Adenocarcinoma (GI)', 
-      shortSite: 'Colorectal', 
+      id: 'pulmo', 
+      site: 'Pulmonology & Bronchial Asthma / COPD', 
+      shortSite: 'Pulmonology', 
       count: 1, 
       percent: 20, 
-      color: '#00B4D8', // Turquoise Surf
-      stage: 'Stage II (MSI-High)',
+      color: '#1d4ed8', // Deep Royal Blue
+      stage: 'Asthma-COPD Overlap',
       stages: [
-        { label: 'Stage I', pct: 25 },
-        { label: 'Stage II', pct: 45 },
-        { label: 'Stage III', pct: 20 },
-        { label: 'Stage IV', pct: 10 }
+        { label: 'Intermittent', pct: 25 },
+        { label: 'Mild Persist', pct: 35 },
+        { label: 'Moderate', pct: 25 },
+        { label: 'Severe', pct: 15 }
       ],
-      protocols: ['mFOLFOX-6', 'CAPOX (Capecitabine + Oxaliplatin)', 'FOLFIRI + Bevacizumab'],
+      protocols: ['Budesonide + Formoterol 400mcg', 'Montelukast 10mg + Levocetirizine', 'SOS Levosalbutamol Inhaler'],
       patientsMatched: ['Devendra Kapoor']
     },
     { 
-      id: 'heme', 
-      site: 'Diffuse Large B-Cell Lymphoma (Heme)', 
-      shortSite: 'DLBCL Lymphoma', 
+      id: 'gastro', 
+      site: 'Gastroenterology & General Surgery', 
+      shortSite: 'General Surgery', 
       count: 1, 
-      percent: 20, 
-      color: '#34908B', // Deep Eucalyptus Teal
-      stage: 'Stage I (Ann Arbor)',
+      percent: 15, 
+      color: '#0f172a', // Midnight Navy
+      stage: 'Post-Cholecystectomy',
       stages: [
-        { label: 'Stage I', pct: 35 },
-        { label: 'Stage II', pct: 35 },
-        { label: 'Stage III', pct: 20 },
-        { label: 'Stage IV', pct: 10 }
+        { label: 'Pre-Op', pct: 30 },
+        { label: 'Acute Colic', pct: 30 },
+        { label: 'Post-Op Day 1', pct: 20 },
+        { label: 'Recovered', pct: 20 }
       ],
-      protocols: ['R-CHOP (21-Day Cycle)', 'Pola-R-CHP', 'High-Dose Methotrexate'],
-      patientsMatched: ['Meera Nair']
+      protocols: ['Elective Laparoscopic Cholecystectomy', 'Pantoprazole 40mg IV/Oral', 'Post-Op Low-Fat Regimen'],
+      patientsMatched: ['Sunita Rao', 'Meera Nair']
     },
   ];
 
-  // Biomarkers List — Harmonious Integration of Image 3 & Image 2
+  // Clinical Biomarkers & Panels List
   const biomarkers = [
-    { id: 'er_pr', label: 'ER+/PR+', prevalence: '55%', color: '#03045E', bg: '#CAF0F8', border: '#90E0EF', drug: 'Endocrine (Letrozole / Tamoxifen)' },
-    { id: 'her2', label: 'HER2 Amplified', prevalence: '20%', color: '#0077B6', bg: '#e0f2fe', border: '#00B4D8', drug: 'Trastuzumab + Pertuzumab' },
-    { id: 'tnbc', label: 'Triple Negative', prevalence: '15%', color: '#5c4e04', bg: '#FDF4AF', border: '#e8dc7e', drug: 'Platinum + Immunotherapy' },
-    { id: 'egfr', label: 'FGFR Exon 19 Del', prevalence: '10%', color: '#1b4b48', bg: '#A5E9DD', border: '#6FBEB2', drug: 'Osimertinib 3rd Gen TKI' }
+    { id: 'er_pr', label: 'HbA1c & Fasting Glucose', prevalence: '50%', color: '#1e3a8a', bg: '#dbeafe', border: '#93c5fd', drug: 'Metformin + SGLT2i Protocol' },
+    { id: 'her2', label: 'Cardiac Troponin & BNP', prevalence: '25%', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', drug: 'Cardioprotective Therapy' },
+    { id: 'tnbc', label: 'Lipid Profile (LDL/HDL)', prevalence: '15%', color: '#0f172a', bg: '#dbeafe', border: '#93c5fd', drug: 'Atorvastatin 20mg Statin' },
+    { id: 'egfr', label: 'Renal Panel (eGFR/KFT)', prevalence: '10%', color: '#10b981', bg: '#dcfce7', border: '#86efac', drug: 'Nephroprotective Regimen' }
   ];
 
   // Diagnostic Studies Mock Data
   const pendingDiagnostics = [
     {
       id: 'diag-1',
-      title: 'Contrast 18F-FDG PET-CT Whole Body',
+      title: '12-Lead Electrocardiogram (ECG) & 2D Doppler Echo',
       patient: 'Ananya Sharma',
       mrn: 'MRN-2026-0142',
       patientId: 'pat-001',
-      modality: 'PET-CT',
-      facility: 'Nuclear Medicine Dept',
+      modality: 'ECG / Echo',
+      facility: 'Non-Invasive Cardiology Suite',
       status: 'Ready for Review',
       urgency: 'HIGH',
-      summary: 'Suspected recurrence scan. Avid uptake reported in right parasternal internal mammary node chain.'
+      summary: 'Evaluation of left ventricular hypertrophy (LVH) in chronic Stage 2 hypertension. Normal EF 62%.'
     },
     {
       id: 'diag-2',
-      title: 'High-Resolution Diagnostic Breast MRI with Dynamic Contrast',
-      patient: 'Ananya Sharma',
-      mrn: 'MRN-2026-0142',
-      patientId: 'pat-001',
-      modality: 'MRI',
-      facility: 'Advanced Breast Imaging Suite',
+      title: 'Digital High-Resolution Chest Radiograph (PA & Lateral)',
+      patient: 'Devendra Kapoor',
+      mrn: 'MRN-2026-0145',
+      patientId: 'pat-004',
+      modality: 'Digital X-Ray',
+      facility: 'Radiology Imaging Station 01',
       status: 'Ready for Review',
       urgency: 'HIGH',
-      summary: 'Evaluation of right lumpectomy bed architectural distortion vs post-radiation fibrosis.'
+      summary: 'Bilateral hyperinflated lung fields consistent with obstructive airway disease. No focal consolidation.'
     },
     {
       id: 'diag-3',
-      title: 'Diagnostic Contrast Chest CT (64-Slice)',
+      title: 'Whole Abdomen Ultrasound (Hepatobiliary & Renal)',
       patient: 'Rajan Pillai',
       mrn: 'MRN-2026-0143',
       patientId: 'pat-002',
-      modality: 'CT',
-      facility: 'Thoracic Radiology Station 02',
+      modality: 'Ultrasound',
+      facility: 'Ultrasonography Dept 03',
       status: 'Prelim Available',
       urgency: 'ROUTINE',
-      summary: 'Post-Cycle 2 response assessment for right upper lobe primary lesion.'
+      summary: 'Grade 1 fatty liver changes with bilateral normal kidney corticomedullary differentiation.'
     }
   ];
 
@@ -366,7 +366,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
     };
     setSavedMemos(prev => [newMemo, ...prev]);
     setQuickNote('');
-    addToast('Oncologist shift memo saved.', 'success');
+    addToast('Physician shift memo saved.', 'success');
   };
 
   // Handler: Delete Memo
@@ -459,25 +459,25 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       {/* =========================================================================
           Top Welcome & Shift Banner - Reception Stat-Card Standard
           ========================================================================= */}
-      <div className="m3-doctor-patient-banner" style={{ padding: '12px 18px', border: '1.5px solid var(--doc-banner-border, #bae6fd)', background: 'var(--doc-banner-bg, linear-gradient(120deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 80%, #ffffff 100%))', flexShrink: 0 }}>
-        <div className="stat-card-accent-blob" style={{ top: -20, right: -20, width: 110, height: 110, opacity: 0.5, background: 'radial-gradient(circle, var(--doc-accent-color, #bae6fd) 0%, rgba(186, 230, 253, 0) 70%)' }} />
+      <div className="m3-doctor-patient-banner" style={{ padding: '12px 18px', border: '1.5px solid var(--doc-banner-border, #bfdbfe)', background: 'var(--doc-banner-bg, linear-gradient(135deg, #ffffff 0%, #eff6ff 100%))', flexShrink: 0 }}>
+        <div className="stat-card-accent-blob" style={{ top: -20, right: -20, width: 110, height: 110, opacity: 0.65, background: 'radial-gradient(circle, var(--doc-accent-color, #2563eb) 0%, rgba(37, 99, 235, 0) 70%)' }} />
         
         <div className="m3-patient-banner-info" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="stat-squircle-badge" style={{ width: 44, height: 44, borderRadius: 13, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #7dd3fc, #38bdf8))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 14px rgba(56, 189, 248, 0.35))' }}>
+          <div className="stat-squircle-badge" style={{ width: 44, height: 44, borderRadius: 13, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #0f172a, #1e3a8a))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(30, 58, 138, 0.35))' }}>
             <Stethoscope size={22} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 900, color: 'var(--doc-banner-title, #0369a1)', letterSpacing: '-0.02em', margin: 0 }}>
+              <h2 style={{ fontSize: 17, fontWeight: 900, color: 'var(--doc-banner-title, #0f172a)', letterSpacing: '-0.02em', margin: 0 }}>
                 Dr. Kiran Patel, MD
               </h2>
-              <span className="brand-counter-pill" style={{ textTransform: 'none', fontSize: 10, background: 'var(--doc-pill-bg, #e0f2fe)', color: 'var(--doc-pill-color, #0284c7)', border: '1px solid var(--doc-pill-border, #bae6fd)', fontWeight: 700 }}>
-                Senior Medical Oncologist
+              <span className="brand-counter-pill" style={{ textTransform: 'none', fontSize: 10, background: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 700 }}>
+                Senior Consultant Physician
               </span>
-              <span style={{ fontSize: 11, color: 'var(--doc-accent-color, #0284c7)', fontWeight: 600 }}>• Station 03 • OPD Session Active</span>
+              <span style={{ fontSize: 11, color: 'var(--doc-accent-color, #0077B6)', fontWeight: 600 }}>• OPD Suite 03 • General & Internal Medicine</span>
             </div>
             <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2, fontWeight: 500 }}>
-              Cancer Center Care Stream • <strong>{patients.length} Consultations Booked</strong> • <strong style={{ color: 'var(--doc-accent-color, #0284c7)' }}>{sentinelAlerts.length} Sentinel AI Warnings</strong>
+              General Medicine & Multispeciality Care Stream • <strong>{patients.length} Consultations Booked</strong> • <strong style={{ color: 'var(--doc-accent-color, #0077B6)' }}>{sentinelAlerts.length} Sentinel AI Warnings</strong>
             </div>
           </div>
         </div>
@@ -487,7 +487,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
             className="m3-btn"
             onClick={onSwitchToReception}
             title="Switch to Reception Desk"
-            style={{ height: 32, fontSize: 11.5, padding: '0 12px', background: '#f0f9ff', color: '#0284c7', border: '1px solid #bae6fd', fontWeight: 700 }}
+            style={{ height: 32, fontSize: 11.5, padding: '0 12px', background: '#edf8fc', color: '#0077B6', border: '1px solid #bfe7f5', fontWeight: 700 }}
           >
             ← Reception Desk
           </button>
@@ -495,7 +495,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
             className="m3-btn"
             onClick={() => onOpenWorkspace(selectedPatientId || 'pat-001', 'insights')}
             title="Open Station 03 Clinical Consultation Workspace"
-            style={{ height: 32, fontSize: 11.5, padding: '0 12px', gap: 5, background: 'var(--doc-pill-bg, #e0f2fe)', color: 'var(--doc-pill-color, #0284c7)', border: '1px solid var(--doc-pill-border, #bae6fd)', fontWeight: 700 }}
+            style={{ height: 32, fontSize: 11.5, padding: '0 12px', gap: 5, background: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 700 }}
           >
             <Stethoscope size={14} />
             <span>Clinical Workspace →</span>
@@ -504,14 +504,14 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
             className="m3-btn anim-hover-lift"
             onClick={() => onOpenWorkspace('pat-001', 'insights')}
             style={{ 
-              background: 'var(--doc-brand-gradient, linear-gradient(135deg, #38bdf8, #0284c7))', 
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)', 
               color: '#ffffff', 
               height: 34, 
               fontSize: 12, 
               padding: '0 16px',
               border: 'none',
               borderRadius: 'var(--radius-sm)',
-              boxShadow: 'var(--doc-brand-shadow, 0 3px 14px rgba(14, 165, 233, 0.35))',
+              boxShadow: '0 4px 10px rgba(15, 23, 42, 0.35)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: 6,
@@ -526,27 +526,27 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       </div>
 
       {/* =========================================================================
-          4 Top Stat Cards Row — Ultra-Light Crystal Sky Blue Palette
+          4 Top Stat Cards Row — Sovereign Midnight Navy & Royal Cobalt Palette
           ========================================================================= */}
       <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 4, flexShrink: 0 }}>
         
-        {/* Card 1: Today's OPD Consults — Crystal Sky Blue */}
+        {/* Card 1: Today's OPD Consults — Sovereign Midnight Navy */}
         <div 
           className="stat-card anim-hover-lift doc-glass-shimmer" 
           style={{ cursor: 'pointer' }} 
           onClick={() => {
             setScheduleFilter('ALL');
-            addToast('Viewing all scheduled oncology patients.', 'info');
+            addToast('Viewing all scheduled general hospital patients.', 'info');
           }}
           title="Click to view all scheduled patients"
         >
-          <div className="stat-card-accent-blob" style={{ background: 'radial-gradient(circle, #e0f2fe 0%, rgba(224, 242, 254, 0) 70%)' }} />
-          <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #7dd3fc, #38bdf8)', color: '#ffffff', boxShadow: '0 4px 12px rgba(56, 189, 248, 0.35)' }}>
+          <div className="stat-card-accent-blob" style={{ background: 'radial-gradient(circle, #CAF0F8 0%, rgba(202, 240, 248, 0) 70%)' }} />
+          <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #0f172a, #1e3a8a)', color: '#ffffff', boxShadow: '0 4px 10px rgba(30, 58, 138, 0.35)' }}>
             <Users size={16} strokeWidth={2.4} />
           </div>
-          <div className="stat-card-value" style={{ color: 'var(--doc-banner-title, #0369a1)' }}>{patients.length}</div>
+          <div className="stat-card-value" style={{ color: 'var(--doc-banner-title, #0f172a)' }}>{patients.length}</div>
           <div className="stat-card-label">Scheduled Patients</div>
-          <div style={{ fontSize: 10.5, color: 'var(--doc-accent-color, #0284c7)', marginTop: 4, fontWeight: 700 }}>
+          <div style={{ fontSize: 10.5, color: 'var(--doc-accent-color, #0077B6)', marginTop: 4, fontWeight: 700 }}>
             3 AI Ready • 1 In Consultation
           </div>
         </div>
@@ -565,28 +565,28 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           <div className="stat-card-value" style={{ color: '#b91c1c' }}>{sentinelAlerts.length}</div>
           <div className="stat-card-label">Critical Sentinel Alerts</div>
           <div style={{ fontSize: 10.5, color: '#dc2626', marginTop: 4, fontWeight: 700 }}>
-            Recurrence Watch & Toxicity
+            Hypertension & Airway Watch
           </div>
         </div>
 
-        {/* Card 3: Active Chemotherapy — Luminous Cyan & Sky Blue */}
+        {/* Card 3: Active Daycare / Observation Beds — Teal / Turquoise Palette */}
         <div 
           className="stat-card anim-hover-lift doc-glass-shimmer"
           style={{ cursor: 'pointer' }}
           onClick={() => {
             setSelectedChair(infusions[0]);
-            addToast('Opening Chemotherapy Daycare infusion manager.', 'info');
+            addToast('Opening Daycare Observation Unit manager.', 'info');
           }}
-          title="Click to inspect Daycare Chemotherapy Suite"
+          title="Click to inspect Daycare Observation Unit"
         >
-          <div className="stat-card-accent-blob" style={{ background: 'radial-gradient(circle, #e0f2fe 0%, rgba(224, 242, 254, 0) 70%)' }} />
-          <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #38bdf8, #0284c7)', color: '#ffffff', boxShadow: '0 4px 12px rgba(14, 165, 233, 0.35)' }}>
+          <div className="stat-card-accent-blob" style={{ background: 'radial-gradient(circle, #CAF0F8 0%, rgba(202, 240, 248, 0) 70%)' }} />
+          <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #0077B6, #00B4D8)', color: '#ffffff', boxShadow: '0 4px 10px rgba(0, 119, 182, 0.35)' }}>
             <Pill size={16} strokeWidth={2.4} />
           </div>
-          <div className="stat-card-value" style={{ color: '#0284c7' }}>{infusions.length}</div>
-          <div className="stat-card-label">Active Chemo Protocols</div>
-          <div style={{ fontSize: 10.5, color: '#0284c7', marginTop: 4, fontWeight: 700 }}>
-            {infusions.filter(c => !c.isPaused).length} Pumps Running
+          <div className="stat-card-value" style={{ color: '#0077B6' }}>{infusions.length}</div>
+          <div className="stat-card-label">Active Daycare Beds</div>
+          <div style={{ fontSize: 10.5, color: '#0077B6', marginTop: 4, fontWeight: 700 }}>
+            {infusions.filter(c => !c.isPaused).length} Beds Monitored • IV Fluids Running
           </div>
         </div>
 
@@ -595,7 +595,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           className="stat-card anim-hover-lift doc-glass-shimmer"
           style={{ cursor: 'pointer' }}
           onClick={() => setIsDiagnosticsModalOpen(true)}
-          title="Click to inspect pending radiology & imaging studies"
+          title="Click to inspect pending cardiology & radiology studies"
         >
           <div className="stat-card-accent-blob" style={{ background: 'radial-gradient(circle, #fef3c7 0%, rgba(254, 243, 199, 0) 70%)' }} />
           <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #d97706, #b45309)', color: '#ffffff', boxShadow: '0 4px 10px rgba(217, 119, 6, 0.35)' }}>
@@ -604,7 +604,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           <div className="stat-card-value" style={{ color: '#b45309' }}>{pendingDiagnostics.length}</div>
           <div className="stat-card-label">Pending Diagnostic Studies</div>
           <div style={{ fontSize: 10.5, color: '#b45309', marginTop: 4, fontWeight: 700 }}>
-            2 Contrast PET-CT • 1 Breast MRI
+            1 ECG / Echo • 1 Chest X-Ray • 1 USG
           </div>
         </div>
 
@@ -629,25 +629,25 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
         {/* LEFT COLUMN: Visual Case Mix & Live Daycare Infusion Monitoring */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           
-          {/* VISUAL 1: Oncological Case Mix & Cancer Staging Distribution */}
+          {/* VISUAL 1: General Hospital Case Mix & Clinical Triage Distribution */}
           <div className="card anim-hover-lift doc-glass-shimmer" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
-            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #e0f2fe) 0%, rgba(224, 242, 254, 0) 70%)' }} />
+            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #CAF0F8) 0%, rgba(202, 240, 248, 0) 70%)' }} />
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className="stat-squircle-badge" style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #7dd3fc, #38bdf8))', color: '#ffffff' }}>
+                <div className="stat-squircle-badge" style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #0f172a, #1e3a8a))', color: '#ffffff' }}>
                   <TrendingUp size={15} />
                 </div>
                 <div>
                   <h3 style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                    Active Oncology Case Mix & Staging Breakdown
+                    Multispeciality Clinical Case Mix & Triage Distribution
                   </h3>
                   <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>
-                    Click any tumor category to inspect staging & NCCN protocols
+                    Click any specialty to inspect clinical protocols & guidelines
                   </span>
                 </div>
               </div>
-              <span className="brand-counter-pill" style={{ fontSize: 9.5, background: 'var(--doc-pill-bg, #e0f2fe)', color: 'var(--doc-pill-color, #0284c7)', border: '1px solid var(--doc-pill-border, #bae6fd)', fontWeight: 700 }}>Interactive Cohort</span>
+              <span className="brand-counter-pill" style={{ fontSize: 9.5, background: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 700 }}>Interactive Cohort</span>
             </div>
 
             {/* Stacked Visual Bar with hover effects */}
@@ -808,26 +808,26 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
             </div>
           </div>
 
-          {/* VISUAL 2: Daycare Chemotherapy Chair Live Infusion Tracker */}
+          {/* VISUAL 2: Daycare & Observation Ward Live Infusion Tracker */}
           <div className="card anim-hover-lift doc-glass-shimmer" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
-            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #e0f2fe) 0%, rgba(224, 242, 254, 0) 70%)' }} />
+            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #dbeafe) 0%, rgba(219, 234, 254, 0) 70%)' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className="stat-squircle-badge" style={{ background: 'var(--doc-brand-gradient, linear-gradient(135deg, #7dd3fc, #38bdf8))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(56, 189, 248, 0.35))' }}>
+                <div className="stat-squircle-badge" style={{ background: 'var(--doc-brand-gradient, linear-gradient(135deg, #0f172a, #1e3a8a))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(30, 58, 138, 0.35))' }}>
                   <Activity size={15} />
                 </div>
                 <div>
                   <h3 style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                    Daycare Chemotherapy Live Infusion Monitor
+                    Daycare & Observation Ward Live Infusion Monitor
                   </h3>
                   <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>
-                    Real-time infusion flow pumps • Click any chair to inspect flowsheet
+                    Real-time infusion flow pumps • Click any bed to inspect flowsheet
                   </span>
                 </div>
               </div>
-              <div className="brand-counter-pill" style={{ height: 22, fontSize: 9.5, background: 'var(--doc-pill-bg, #e0f2fe)', color: 'var(--doc-pill-color, #0284c7)', border: '1px solid var(--doc-pill-border, #bae6fd)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <span className="live-dot" style={{ backgroundColor: 'var(--doc-accent-color, #0284c7)' }} />
+              <div className="brand-counter-pill" style={{ height: 22, fontSize: 9.5, background: 'var(--doc-pill-bg, #dbeafe)', color: 'var(--doc-pill-color, #1e40af)', border: '1px solid var(--doc-pill-border, #93c5fd)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <span className="live-dot" style={{ backgroundColor: 'var(--doc-accent-color, #2563eb)' }} />
                 <span>{infusions.filter(c => !c.isPaused).length} Active Pumps</span>
               </div>
             </div>
@@ -856,7 +856,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                        <span className="mrn-tag" style={{ fontSize: 10, background: '#e0f2fe', color: '#0369a1' }}>
+                        <span className="mrn-tag" style={{ fontSize: 10, background: '#dbeafe', color: '#1e3a8a' }}>
                           {inf.chair}
                         </span>
                         <strong style={{ fontSize: 12, color: 'var(--text-primary)' }}>
@@ -921,7 +921,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
                     <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span>Vitals: {inf.vitals.bp} • HR {inf.vitals.hr} bpm • SpO2 {inf.vitals.spo2}%</span>
-                      <span style={{ color: '#0077B6', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <span style={{ color: '#1e3a8a', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
                         Inspect Flowsheet <ChevronRight size={11} />
                       </span>
                     </div>
@@ -947,7 +947,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                 </div>
                 <div>
                   <h3 style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                    OncoInsight Sentinel AI Watchlist
+                    ClinicalInsight Sentinel AI Watchlist
                   </h3>
                   <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>
                     Immediate physician attention indicated
@@ -961,10 +961,10 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
               {sentinelAlerts.map((alert) => {
                 const isCrit = alert.level === 'CRITICAL';
                 const isGen = alert.level === 'GENOMIC';
-                const bgTint = isCrit ? 'var(--destructive-container, #fee2e2)' : isGen ? 'var(--doc-pill-bg, #e0f2fe)' : 'var(--warning-container, #fef3c7)';
-                const borderTint = isCrit ? 'var(--destructive, #dc2626)' : isGen ? 'var(--doc-accent-color, #0284c7)' : 'var(--warning, #d97706)';
-                const titleColor = isCrit ? 'var(--on-destructive-container, #991b1b)' : isGen ? 'var(--doc-pill-color, #0284c7)' : 'var(--on-warning-container, #78350f)';
-                const btnColor = isCrit ? '#dc2626' : isGen ? '#0284c7' : '#d97706';
+                const bgTint = isCrit ? 'var(--destructive-container, #fee2e2)' : isGen ? 'var(--doc-pill-bg, #dbeafe)' : 'var(--warning-container, #fef3c7)';
+                const borderTint = isCrit ? 'var(--destructive, #dc2626)' : isGen ? 'var(--doc-accent-color, #2563eb)' : 'var(--warning, #d97706)';
+                const titleColor = isCrit ? 'var(--on-destructive-container, #991b1b)' : isGen ? 'var(--doc-pill-color, #1e40af)' : 'var(--on-warning-container, #78350f)';
+                const btnColor = isCrit ? '#dc2626' : isGen ? '#1e3a8a' : '#d97706';
 
                 return (
                   <div 
@@ -1022,11 +1022,11 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
           {/* VISUAL 4: Today's OPD Schedule with Search & Filters */}
           <div className="card anim-hover-lift doc-glass-shimmer" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
-            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #e0f2fe) 0%, rgba(224, 242, 254, 0) 70%)' }} />
+            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #dbeafe) 0%, rgba(219, 234, 254, 0) 70%)' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className="stat-squircle-badge" style={{ background: 'var(--doc-brand-gradient, linear-gradient(135deg, #7dd3fc, #38bdf8))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(56, 189, 248, 0.35))' }}>
+                <div className="stat-squircle-badge" style={{ background: 'var(--doc-brand-gradient, linear-gradient(135deg, #0f172a, #1e3a8a))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(30, 58, 138, 0.35))' }}>
                   <Calendar size={15} />
                 </div>
                 <div>
@@ -1038,7 +1038,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   </span>
                 </div>
               </div>
-              <span className="brand-counter-pill" style={{ fontSize: 10, background: 'var(--doc-pill-bg, #e0f2fe)', color: 'var(--doc-pill-color, #0284c7)', border: '1px solid var(--doc-pill-border, #bae6fd)', fontWeight: 700 }}>{filteredPatients.length} Shown</span>
+              <span className="brand-counter-pill" style={{ fontSize: 10, background: 'var(--doc-pill-bg, #dbeafe)', color: 'var(--doc-pill-color, #1e40af)', border: '1px solid var(--doc-pill-border, #93c5fd)', fontWeight: 700 }}>{filteredPatients.length} Shown</span>
             </div>
 
             {/* Filter Tabs & Search Bar */}
@@ -1059,8 +1059,8 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                       fontSize: 10.5,
                       padding: '0 10px',
                       borderRadius: 9999,
-                      border: scheduleFilter === tab.id ? '1px solid var(--doc-accent-color, #0284c7)' : '1px solid var(--border-default)',
-                      backgroundColor: scheduleFilter === tab.id ? 'var(--doc-accent-color, #0284c7)' : 'var(--bg-subtle)',
+                      border: scheduleFilter === tab.id ? '1px solid var(--doc-accent-color, #2563eb)' : '1px solid var(--border-default)',
+                      backgroundColor: scheduleFilter === tab.id ? 'var(--doc-accent-color, #2563eb)' : 'var(--bg-subtle)',
                       color: scheduleFilter === tab.id ? '#ffffff' : 'var(--text-secondary)',
                       fontWeight: scheduleFilter === tab.id ? 700 : 500,
                       cursor: 'pointer'
@@ -1132,7 +1132,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                       title="Click to start consultation"
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                        <div className="patient-avatar-chip" style={{ width: 26, height: 26, fontSize: 10, background: 'linear-gradient(135deg, #03045E, #0077B6)' }}>
+                        <div className="patient-avatar-chip" style={{ width: 26, height: 26, fontSize: 10, background: 'linear-gradient(135deg, #0f172a, #1e3a8a)' }}>
                           {p.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                         </div>
                         <div style={{ minWidth: 0 }}>
@@ -1150,7 +1150,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                         {hasML ? (
-                          <span className="brand-counter-pill" style={{ fontSize: 9.5, padding: '1.5px 6px', background: '#CAF0F8', color: '#03045E', border: '1px solid #90E0EF', fontWeight: 700 }}>
+                          <span className="brand-counter-pill" style={{ fontSize: 9.5, padding: '1.5px 6px', background: '#dbeafe', color: '#1e40af', border: '1px solid #93c5fd', fontWeight: 700 }}>
                             <Sparkles size={9} /> AI Ready
                           </span>
                         ) : (
@@ -1158,7 +1158,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                             {p.status.replace('_', ' ')}
                           </span>
                         )}
-                        <span style={{ fontSize: 10.5, color: '#0077B6', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <span style={{ fontSize: 10.5, color: '#1e3a8a', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
                           Start <ChevronRight size={13} />
                         </span>
                       </div>
@@ -1173,9 +1173,9 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           <div className="card anim-hover-lift" style={{ padding: '12px 14px', backgroundColor: 'var(--bg-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <FileText size={14} color="#0077B6" />
+                <FileText size={14} color="#1e3a8a" />
                 <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
-                  Oncologist Shift Voice Memo & Dictation
+                  Physician Shift Voice Memo & Dictation
                 </span>
               </div>
               <SpeechMicButton onTranscript={(txt) => setQuickNote(prev => prev ? `${prev} ${txt}` : txt)} />
@@ -1184,7 +1184,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
             <textarea
               value={quickNote}
               onChange={(e) => setQuickNote(e.target.value)}
-              placeholder="Dictate or type quick clinical notes, tumor board points, or patient reminders..."
+              placeholder="Dictate or type quick clinical notes, multispeciality points, or patient reminders..."
               rows={2}
               style={{
                 width: '100%',
@@ -1219,7 +1219,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                 <button
                   onClick={handleSaveMemo}
                   className="m3-btn m3-btn-sm"
-                  style={{ height: 26, fontSize: 10.5, padding: '0 12px', background: 'linear-gradient(135deg, #0077B6, #00B4D8)', color: '#ffffff', border: 'none' }}
+                  style={{ height: 26, fontSize: 10.5, padding: '0 12px', background: 'linear-gradient(135deg, #1e3a8a, #2563eb)', color: '#ffffff', border: 'none' }}
                 >
                   Save Memo
                 </button>
@@ -1278,7 +1278,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       </div>
 
       {/* =========================================================================
-          MODAL 1: Daycare Chemotherapy Chair Flowsheet & Pump Controller
+          MODAL 1: Daycare Observation Bed Flowsheet & Pump Controller
           ========================================================================= */}
       {selectedChair && (
         <div className="modal-overlay m3-dialog-backdrop" onClick={() => setSelectedChair(null)}>
@@ -1295,7 +1295,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                 </div>
                 <div>
                   <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                    {selectedChair.chair} — Chemotherapy Infusion Flowsheet
+                    {selectedChair.chair} — Daycare Observation & IV Flowsheet
                   </h3>
                   <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                     Patient: <strong>{selectedChair.patient}</strong> ({selectedChair.mrn}) • {selectedChair.indication}
@@ -1462,12 +1462,12 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid var(--border-default)', paddingBottom: 12, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div className="stat-squircle-badge" style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #03045E, #0077B6)', color: '#ffffff' }}>
+                <div className="stat-squircle-badge" style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #0f172a, #1e3a8a)', color: '#ffffff', boxShadow: '0 4px 10px rgba(30, 58, 138, 0.35)' }}>
                   <ShieldAlert size={18} />
                 </div>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span className="brand-counter-pill" style={{ fontSize: 9.5, background: '#CAF0F8', color: '#03045E', border: '1px solid #90E0EF', fontWeight: 700 }}>{activeAlertModal.level}</span>
+                    <span className="brand-counter-pill" style={{ fontSize: 9.5, background: '#dbeafe', color: '#1e40af', border: '1px solid #93c5fd', fontWeight: 700 }}>{activeAlertModal.level}</span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Confidence: {activeAlertModal.confidence}</span>
                   </div>
                   <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', margin: '2px 0 0' }}>
@@ -1482,8 +1482,8 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
             {/* Body */}
             <div className="m3-scrollable-body" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ padding: 12, backgroundColor: '#CAF0F833', border: '1.5px solid #0077B6', borderRadius: 10 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#03045E', marginBottom: 4 }}>
+              <div style={{ padding: 12, backgroundColor: '#eff6ff', border: '1.5px solid #bfdbfe', borderRadius: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>
                   Patient: {activeAlertModal.patientName} ({activeAlertModal.age}y {activeAlertModal.gender}) • {activeAlertModal.mrn}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.45 }}>
@@ -1494,7 +1494,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
               {/* Rationale & Actions */}
               <div style={{ padding: '12px 14px', backgroundColor: 'var(--bg-subtle)', borderRadius: 10 }}>
                 <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-primary)', display: 'block', marginBottom: 6 }}>
-                  OncoInsight Model Rationale & Guidance:
+                  ClinicalInsight Model Rationale & Guidance:
                 </span>
                 <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   {activeAlertModal.recommendations.map((rec, idx) => (
@@ -1512,17 +1512,17 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   className="m3-btn m3-btn-tonal"
                   style={{ height: 34, fontSize: 11.5, justifyContent: 'flex-start' }}
                 >
-                  <Plus size={14} color="#0077B6" />
+                  <Plus size={14} color="#1e3a8a" />
                   <span>1-Click: Append Recommendations to Patient Treatment Plan</span>
                 </button>
                 <button
                   onClick={() => {
-                    addToast(`Ordered STAT Biomarker Panel & Re-staging scan for ${activeAlertModal.patientName}.`, 'success');
+                    addToast(`Ordered STAT Biomarker Panel & Diagnostic Scan for ${activeAlertModal.patientName}.`, 'success');
                   }}
                   className="m3-btn m3-btn-tonal"
                   style={{ height: 34, fontSize: 11.5, justifyContent: 'flex-start' }}
                 >
-                  <Layers size={14} color="#00B4D8" />
+                  <Layers size={14} color="#2563eb" />
                   <span>1-Click: Order STAT Re-staging Diagnostic Imaging & Labs</span>
                 </button>
               </div>
@@ -1543,7 +1543,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                   onOpenWorkspace(activeAlertModal.patientId, 'insights');
                   setActiveAlertModal(null);
                 }}
-                style={{ background: 'linear-gradient(135deg, #0077B6, #00B4D8)', height: 34, fontSize: 11.5 }}
+                style={{ background: 'linear-gradient(135deg, #1e3a8a, #2563eb)', height: 34, fontSize: 11.5 }}
               >
                 <span>Jump to Patient Consultation Dossier</span>
                 <ArrowRight size={14} />
@@ -1598,7 +1598,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <span className="mrn-tag" style={{ background: '#e0f2fe', color: '#0369a1', fontSize: 10 }}>
+                      <span className="mrn-tag" style={{ background: '#dbeafe', color: '#1e3a8a', fontSize: 10 }}>
                         {study.modality}
                       </span>
                       <strong style={{ fontSize: 12.5, color: 'var(--text-primary)' }}>
@@ -1656,7 +1656,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-default)', paddingBottom: 12, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div className="stat-squircle-badge" style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #03045E, #0077B6)', color: '#ffffff' }}>
+                <div className="stat-squircle-badge" style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #0f172a, #1e3a8a)', color: '#ffffff', boxShadow: '0 4px 10px rgba(30, 58, 138, 0.35)' }}>
                   <ShieldAlert size={18} />
                 </div>
                 <div>
@@ -1664,7 +1664,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                     Active Sentinel AI Clinical Alerts ({sentinelAlerts.length})
                   </h3>
                   <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                    Continuous safety monitoring across Station 03 oncology patients
+                    Continuous safety monitoring across Station 03 clinic patients
                   </span>
                 </div>
               </div>
@@ -1689,7 +1689,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span className="brand-counter-pill" style={{ fontSize: 9.5, background: '#CAF0F8', color: '#03045E', border: '1px solid #90E0EF', fontWeight: 700 }}>{alert.level}</span>
+                      <span className="brand-counter-pill" style={{ fontSize: 9.5, background: '#dbeafe', color: '#1e40af', border: '1px solid #93c5fd', fontWeight: 700 }}>{alert.level}</span>
                       <strong style={{ fontSize: 12.5, color: 'var(--text-primary)' }}>{alert.title}</strong>
                     </div>
                     <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>Confidence: {alert.confidence}</span>
@@ -1716,7 +1716,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
                         onOpenWorkspace(alert.patientId, 'insights');
                       }}
                       className="m3-btn m3-btn-sm"
-                      style={{ height: 26, fontSize: 10.5, background: 'linear-gradient(135deg, #0077B6, #00B4D8)', color: '#ffffff', border: 'none' }}
+                      style={{ height: 26, fontSize: 10.5, background: 'linear-gradient(135deg, #1e3a8a, #2563eb)', color: '#ffffff', border: 'none' }}
                     >
                       <span>Take Action in Dossier →</span>
                     </button>

@@ -1,4 +1,4 @@
-// Initial oncology patient dataset for CancerCare OS (COS)
+// Initial multispeciality hospital patient dataset for Bright Solutions (General Purpose Hospital)
 
 export const INITIAL_PATIENTS = [
   {
@@ -15,7 +15,7 @@ export const INITIAL_PATIENTS = [
       phone: "+91 98400 12346"
     },
     appointmentTime: "09:00 AM",
-    doctorAssigned: "Dr. Kiran Patel (Medical Oncology)",
+    doctorAssigned: "Dr. Kiran Patel (General & Internal Medicine)",
     status: "INSIGHTS_READY", // REGISTERED | QUESTIONNAIRE_PENDING | INSIGHTS_GENERATING | INSIGHTS_READY | IN_CONSULTATION | COMPLETED
     registeredAt: "08:45 AM",
     abhaId: "91-4820-1928-3819",
@@ -46,36 +46,36 @@ export const INITIAL_PATIENTS = [
       completed: true,
       completedAt: "09:12 AM",
       responses: {
-        chiefComplaint: "Persistent right upper chest pain and progressive fatigue over the last 8 weeks.",
-        durationMonths: "2-3 months",
-        priorCancer: "Yes",
-        cancerType: "Invasive Ductal Carcinoma (Right Breast)",
-        diagnosisYear: "2019",
-        priorTreatments: ["Chemotherapy (AC-T)", "Radiation Therapy", "Lumpectomy"],
-        familyHistory: "Mother diagnosed with breast cancer at age 56. Maternal aunt with ovarian cancer.",
-        currentMedications: "Letrozole 2.5mg OD, Calcium + Vit D3 daily, occasional Paracetamol",
-        allergies: "Penicillin (rash)",
+        chiefComplaint: "Severe recurrent tension-migraine headaches, episodic dizziness, and elevated home blood pressure readings (BP 150/95).",
+        durationMonths: "1-2 months",
+        priorConditions: "Yes",
+        conditionType: "Stage 2 Essential Hypertension & Dyslipidemia",
+        diagnosisYear: "2020",
+        priorTreatments: ["Antihypertensive therapy", "Lipid-lowering regimen", "Lifestyle counseling"],
+        familyHistory: "Father had history of ischemic heart disease (IHD). Mother with Type 2 Diabetes.",
+        currentMedications: "Telmisartan 40mg OD, Atorvastatin 10mg HS, Paracetamol 650mg SOS",
+        allergies: "Penicillin (cutaneous rash)",
         smokingStatus: "Never",
         alcoholUse: "Occasional (social)",
-        ecogPerformance: "1 - Symptomatic but completely ambulatory"
+        generalMobility: "Ambulatory & Fully Active"
       }
     },
     mlInsights: {
       generatedAt: "09:12:28 AM",
-      modelVersion: "OncoInsight-v2.1",
+      modelVersion: "ClinicalInsight-v2.1",
       overallRisk: "HIGH",
       confidence: 88,
       riskFlags: [
-        { label: "High Recurrence / Metastatic Risk", severity: "HIGH", note: "History of IDC with new chest pain symptoms; letrozole adherence check recommended." },
-        { label: "Medication Caution: Letrozole Adherence", severity: "MEDIUM", note: "Monitor bone mineral density and liver function panel." },
-        { label: "Familial Clustering: BRCA Risk", severity: "HIGH", note: "First and second-degree breast/ovarian history suggests genetic screening panel (BRCA1/2)." }
+        { label: "Cardiovascular Risk: Stage 2 Hypertension", severity: "HIGH", note: "Persistent elevated systolic pressure with recurrent headaches; dose titration indicated." },
+        { label: "Lipid Surveillance: Statin Adherence", severity: "MEDIUM", note: "Monitor fasting lipid profile and liver enzymes (ALT/AST) panel." },
+        { label: "Cardiopulmonary Reserve Caution", severity: "HIGH", note: "Family history of coronary disease suggests 12-lead ECG and baseline echocardiography." }
       ],
-      symptomSummary: "52yo female with 2019 right breast carcinoma post-lumpectomy and adjuvant chemoradiation. Presents with 2-month progressive right chest wall discomfort and fatigue. Letrozole therapy ongoing.",
+      symptomSummary: "52yo female with known hypertension and dyslipidemia presenting with 6-week progressive tension headaches and morning dizziness. Telmisartan and Atorvastatin ongoing.",
       recommendedInvestigations: [
-        { id: "inv-1", name: "High-resolution Contrast CT Chest", urgency: "Urgent" },
-        { id: "inv-2", name: "Serum Tumour Markers (CA 15-3, CEA)", urgency: "Routine" },
-        { id: "inv-3", name: "Comprehensive Metabolic Panel + Liver Function", urgency: "Routine" },
-        { id: "inv-4", name: "Whole-Body Bone Scintigraphy (Tc-99m)", urgency: "Recommended" }
+        { id: "inv-1", name: "12-Lead Electrocardiogram (ECG) & 2D Echo", urgency: "Urgent" },
+        { id: "inv-2", name: "Comprehensive Lipid Profile & Fasting Blood Sugar", urgency: "Routine" },
+        { id: "inv-3", name: "Renal Function Panel (eGFR, Creatinine, Electrolytes)", urgency: "Routine" },
+        { id: "inv-4", name: "Digital Cervical Radiograph & Chest X-Ray", urgency: "Recommended" }
       ]
     }
   },
@@ -93,7 +93,7 @@ export const INITIAL_PATIENTS = [
       phone: "+91 94441 55679"
     },
     appointmentTime: "09:30 AM",
-    doctorAssigned: "Dr. Kiran Patel (Medical Oncology)",
+    doctorAssigned: "Dr. Kiran Patel (General & Internal Medicine)",
     status: "QUESTIONNAIRE_PENDING",
     registeredAt: "09:15 AM",
     abhaId: "14-9920-4412-7801",
@@ -143,7 +143,7 @@ export const INITIAL_PATIENTS = [
       phone: "+91 97910 88235"
     },
     appointmentTime: "10:00 AM",
-    doctorAssigned: "Dr. Swaminathan (Surgical Oncology)",
+    doctorAssigned: "Dr. Swaminathan (General & Laparoscopic Surgery)",
     status: "REGISTERED",
     registeredAt: "09:40 AM",
     insurance: {
@@ -187,7 +187,7 @@ export const INITIAL_PATIENTS = [
       phone: "+91 98840 99013"
     },
     appointmentTime: "10:30 AM",
-    doctorAssigned: "Dr. Kiran Patel (Medical Oncology)",
+    doctorAssigned: "Dr. Anand Deshmukh (Pulmonology & Critical Care)",
     status: "IN_CONSULTATION",
     registeredAt: "08:30 AM",
     insurance: {
@@ -214,34 +214,34 @@ export const INITIAL_PATIENTS = [
       completed: true,
       completedAt: "08:50 AM",
       responses: {
-        chiefComplaint: "Unexplained 8kg weight loss over 4 months with chronic dry cough.",
-        durationMonths: "4 months",
-        priorCancer: "No",
-        cancerType: "None",
-        diagnosisYear: "N/A",
-        priorTreatments: [],
-        familyHistory: "Father died of colorectal cancer at age 72.",
-        currentMedications: "Metformin 500mg BD, Telmisartan 40mg OD",
-        allergies: "None known",
-        smokingStatus: "Former (smoked 1 pack/day for 20 years, quit 2 years ago)",
+        chiefComplaint: "Exertional dyspnea, chronic productive morning cough, and wheezing over the last 3 months.",
+        durationMonths: "3 months",
+        priorConditions: "Yes",
+        conditionType: "Bronchial Asthma & COPD Overlap Syndrome (Grade II)",
+        diagnosisYear: "2021",
+        priorTreatments: ["Inhaled Corticosteroids (Budesonide)", "Long-acting Beta Agonists (Formoterol)", "Nebulization SOS"],
+        familyHistory: "Father had chronic obstructive pulmonary disease (COPD).",
+        currentMedications: "Formoterol + Budesonide Inhaler 400mcg BD, Montair-LC OD",
+        allergies: "Dust mites, Cold weather exposure",
+        smokingStatus: "Former (quit 5 years ago)",
         alcoholUse: "Occasional",
-        ecogPerformance: "1 - Restricted in physically strenuous activity"
+        generalMobility: "Ambulatory with mild exertional dyspnea"
       }
     },
     mlInsights: {
       generatedAt: "08:50:35 AM",
-      modelVersion: "OncoInsight-v2.1",
+      modelVersion: "ClinicalInsight-v2.1",
       overallRisk: "HIGH",
       confidence: 84,
       riskFlags: [
-        { label: "High Thoracic Neoplasm Index", severity: "HIGH", note: "Smoking history + rapid unintentional weight loss + dry cough." },
-        { label: "Metabolic Monitoring Required", severity: "MEDIUM", note: "Type 2 diabetes with possible paraneoplastic catabolism." }
+        { label: "Moderate Obstructive Airway Exacerbation", severity: "HIGH", note: "Decreased PEFR and nocturnal cough indicate acute bronchial hyperreactivity." },
+        { label: "Inhaler Technique & Adherence Verification", severity: "MEDIUM", note: "Review correct spacer and dry powder inhaler inhalation mechanics." }
       ],
-      symptomSummary: "58yo male ex-smoker presenting with 8kg weight loss over 4 months and non-productive chronic cough. High suspicion for pulmonary primary malignancy.",
+      symptomSummary: "58yo male with chronic bronchial asthma presenting with 3-month worsening exertional shortness of breath, morning wheeze, and sputum production.",
       recommendedInvestigations: [
-        { id: "inv-201", name: "Low-Dose Helical Chest CT", urgency: "Immediate" },
-        { id: "inv-202", name: "Sputum Cytology x 3 days", urgency: "Routine" },
-        { id: "inv-203", name: "Fasting Blood Glucose & HbA1c", urgency: "Routine" }
+        { id: "inv-201", name: "Spirometry with Pre & Post Bronchodilator Reversibility", urgency: "Immediate" },
+        { id: "inv-202", name: "Digital Chest Radiograph (PA & Lateral)", urgency: "Routine" },
+        { id: "inv-203", name: "Complete Hemogram (Absolute Eosinophil Count) & Serum IgE", urgency: "Routine" }
       ]
     }
   },
@@ -259,7 +259,7 @@ export const INITIAL_PATIENTS = [
       phone: "+91 94440 22335"
     },
     appointmentTime: "11:00 AM",
-    doctorAssigned: "Dr. Swaminathan (Surgical Oncology)",
+    doctorAssigned: "Dr. Swaminathan (General & Laparoscopic Surgery)",
     status: "COMPLETED",
     registeredAt: "08:15 AM",
     insurance: {
@@ -286,32 +286,32 @@ export const INITIAL_PATIENTS = [
       completed: true,
       completedAt: "08:30 AM",
       responses: {
-        chiefComplaint: "Post-operative routine 6-month surveillance follow-up.",
+        chiefComplaint: "Routine 6-month post-operative follow-up following laparoscopic cholecystectomy. Healing well, no biliary symptoms.",
         durationMonths: "6 months",
-        priorCancer: "Yes",
-        cancerType: "Endometrial Carcinoma Stage 1A",
+        priorConditions: "Yes",
+        conditionType: "Symptomatic Cholelithiasis (Calculous Cholecystitis)",
         diagnosisYear: "2024",
-        priorTreatments: ["Total Abdominal Hysterectomy with BSO"],
-        familyHistory: "No known malignancy",
-        currentMedications: "Multivitamins",
+        priorTreatments: ["Laparoscopic Cholecystectomy (4-port technique)"],
+        familyHistory: "No significant surgical history",
+        currentMedications: "Multivitamins, occasional Antacid",
         allergies: "Sulfa drugs",
         smokingStatus: "Never",
         alcoholUse: "Never",
-        ecogPerformance: "0 - Fully active"
+        generalMobility: "Fully active & normal recovery"
       }
     },
     mlInsights: {
       generatedAt: "08:30:19 AM",
-      modelVersion: "OncoInsight-v2.1",
+      modelVersion: "ClinicalInsight-v2.1",
       overallRisk: "LOW",
       confidence: 94,
       riskFlags: [
-        { label: "Low Recurrence Risk", severity: "LOW", note: "Stage 1A clear margins, asymptomatic surveillance visit." }
+        { label: "Optimal Post-Surgical Recovery", severity: "LOW", note: "Clean healed port sites, normal digestive tolerance, no post-cholecystectomy diarrhea." }
       ],
-      symptomSummary: "61yo female 6-months post-TAH-BSO for Stage 1A endometrial cancer. Asymptomatic, excellent functional capacity.",
+      symptomSummary: "61yo female 6 months post-laparoscopic cholecystectomy presenting for routine health check. Fully recovered and asymptomatic.",
       recommendedInvestigations: [
-        { id: "inv-301", name: "Pelvic Ultrasound", urgency: "Routine" },
-        { id: "inv-302", name: "Vault Cytology Pap Smear", urgency: "Routine" }
+        { id: "inv-301", name: "Liver Function Panel (Bilirubin, Alk Phos, ALT)", urgency: "Routine" },
+        { id: "inv-302", name: "Abdominal Ultrasound (Hepatobiliary Surveillance)", urgency: "Routine" }
       ]
     }
   }
@@ -329,18 +329,19 @@ export const COMMON_INSURERS = [
 ];
 
 export const ONCOLOGISTS = [
-  "Dr. Kiran Patel (Medical Oncology)",
-  "Dr. Swaminathan (Surgical Oncology)",
-  "Dr. Radhika Sen (Radiation Oncology)",
-  "Dr. Anand Deshmukh (Hematologic Oncology)"
+  "Dr. Kiran Patel (General & Internal Medicine)",
+  "Dr. Swaminathan (General & Laparoscopic Surgery)",
+  "Dr. Radhika Sen (Cardiology & Interventional Care)",
+  "Dr. Anand Deshmukh (Pulmonology & Critical Care)"
 ];
+
+export const DOCTORS = ONCOLOGISTS;
 
 export const GOVT_SCHEMES = [
   "Ayushman Bharat — PM-JAY (AB-PMJAY)",
   "CGHS (Central Government Health Scheme)",
   "ECHS (Ex-Servicemen Contributory Health Scheme)",
-  "State Govt CM Cancer Scheme (CMCHIS / Aarogyasri)",
+  "State Govt CM Health Scheme (CMCHIS / Aarogyasri)",
   "ESIC (Employees' State Insurance Corporation)",
   "Rashtriya Arogya Nidhi (RAN - BPL Grant)"
 ];
-

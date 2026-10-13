@@ -1,5 +1,5 @@
 /* ==========================================================================
-   CancerCare OS — Google Material 3 (M3) Clinical Design System
+   Bright Solutions OS — Google Material 3 (M3) Clinical Design System
    Fixed:
    - Sidebar collapsed header overlap resolved with dedicated M3 Rail icon
    - Top App Bar title and Counter 01 pill separation with clean spacing
@@ -156,33 +156,32 @@
   --duration-normal: 0.25s;
 
   /* =========================================================================
-     ROLE 1: DOCTOR DESK — Ultra-Lightest Crystal Sky Blue Medical Aesthetic
-     Sidebar: Luminous Ice Sky #f0f9ff→#e0f2fe→#bae6fd | Content: #f0f8ff
-     Accent: Bright Sky #0284c7 | Cyan #38bdf8 | Alert Amber: #f59e0b
+     ROLE 1: DOCTOR DESK — Coastal Cyan & Teal Palette (Ditto Admin Theme)
+     Exact match of Admin executive theme (#0077B6, #00B4D8, #CAF0F8, #90E0EF)
      ========================================================================= */
-  --doc-brand-gradient: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 50%, #0284c7 100%);
-  --doc-brand-shadow: 0 4px 18px rgba(56, 189, 248, 0.35);
-  --doc-accent-color: #0284c7;
-  --doc-primary: #0284c7;
-  --doc-secondary: #38bdf8;
-  --doc-cyan: #38bdf8;
+  --doc-brand-gradient: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  --doc-brand-shadow: 0 4px 14px rgba(30, 58, 138, 0.35);
+  --doc-accent-color: #0077B6;
+  --doc-primary: #0077B6;
+  --doc-secondary: #00B4D8;
+  --doc-cyan: #00B4D8;
   --doc-amber: #f59e0b;
   --doc-bg: #ffffff;
   --doc-alert: #f59e0b;
-  --doc-banner-bg: linear-gradient(120deg, #ffffff 0%, #f0f9ff 45%, #e0f2fe 100%);
-  --doc-banner-border: #bae6fd;
-  --doc-banner-title: #0369a1;
-  --doc-pill-bg: #e0f2fe;
-  --doc-pill-color: #0284c7;
-  --doc-pill-border: #bae6fd;
-  --doc-nav-active-bg: #ffffff;
-  --doc-nav-active-color: #0284c7;
-  --doc-nav-active-border: #38bdf8;
-  --doc-card-border-focus: #38bdf8;
+  --doc-banner-bg: linear-gradient(135deg, #ffffff 0%, #edf8fc 100%);
+  --doc-banner-border: #bfe7f5;
+  --doc-banner-title: #0f172a;
+  --doc-pill-bg: #CAF0F8;
+  --doc-pill-color: #0077B6;
+  --doc-pill-border: #90E0EF;
+  --doc-nav-active-bg: #CAF0F8;
+  --doc-nav-active-color: #0077B6;
+  --doc-nav-active-border: #0077B6;
+  --doc-card-border-focus: #0077B6;
   --doc-surface: #ffffff;
-  --doc-surface-subtle: #f0f9ff;
-  --doc-sky-light: #f0f9ff;
-  --doc-sky-medium: #e0f2fe;
+  --doc-surface-subtle: #edf8fc;
+  --doc-sky-light: #edf8fc;
+  --doc-sky-medium: #CAF0F8;
 
   /* =========================================================================
      ROLE 2: ADMIN PORTAL — High-Authority Midnight Navy & Royal Cobalt
@@ -2801,53 +2800,19 @@ html, body {
   50%      { transform: translateY(-7px); }
 }
 
-/* ======================== SIDEBAR — ULTRA-LIGHTEST BRIGHT SKY BLUE ======================== */
+/* ======================== SIDEBAR — EXACT ADMIN THEME DITTO ======================== */
 .doctor-theme .m3-navigation-drawer {
-  background: linear-gradient(
-    180deg,
-    #f0f9ff 0%,
-    #e0f2fe 35%,
-    #bae6fd 75%,
-    #7dd3fc 100%
-  ) !important;
-  border-right: 1.5px solid #bae6fd !important;
-  box-shadow:
-    6px 0 32px rgba(186, 230, 253, 0.5),
-    2px 0 8px rgba(125, 211, 252, 0.25) !important;
-  animation: docSidebarSlide 0.45s cubic-bezier(0.05, 0.7, 0.1, 1);
-  position: relative;
-  overflow: hidden;
+  background: #ffffff !important;
+  border-right: 1px solid var(--border-default, #e2e8f0) !important;
+  box-shadow: none !important;
+  position: sticky;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* Soft luminous sheen on top of sidebar */
-.doctor-theme .m3-navigation-drawer::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 45%;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  pointer-events: none;
-  z-index: 0;
-  border-radius: inherit;
-}
-
-/* Subtle crystal orb bottom-right for luminous depth */
+.doctor-theme .m3-navigation-drawer::before,
 .doctor-theme .m3-navigation-drawer::after {
-  content: '';
-  position: absolute;
-  bottom: -40px;
-  right: -40px;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.7) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  animation: docSidebarGlow 4s ease-in-out infinite;
+  display: none !important;
 }
 
 .doctor-theme .m3-navigation-drawer > * {
@@ -2857,40 +2822,39 @@ html, body {
 
 /* Header */
 .doctor-theme .drawer-header {
-  background: rgba(255, 255, 255, 0.65) !important;
-  border-bottom: 1px solid rgba(186, 230, 253, 0.8) !important;
-  backdrop-filter: blur(12px);
+  background: #ffffff !important;
+  border-bottom: none !important;
+  backdrop-filter: none !important;
 }
 
 .doctor-theme .drawer-title {
-  color: #0284c7 !important;
+  color: #0f172a !important;
   font-weight: 900;
   letter-spacing: -0.025em;
-  text-shadow: 0 1px 4px rgba(2, 132, 199, 0.15);
+  text-shadow: none !important;
 }
 
 .doctor-theme .drawer-tag {
-  color: #0369a1 !important;
+  color: #0077B6 !important;
   font-size: 9.5px;
   font-weight: 700;
 }
 
 .doctor-theme .drawer-toggle-btn {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border-color: #bae6fd !important;
-  color: #0284c7 !important;
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
   transition: all 0.2s ease;
 }
 
 .doctor-theme .drawer-toggle-btn:hover {
-  background: #ffffff !important;
-  color: #0369a1 !important;
-  border-color: #7dd3fc !important;
-  transform: scale(1.1);
+  background: #edf8fc !important;
+  color: #0077B6 !important;
+  border-color: #bfe7f5 !important;
 }
 
 .doctor-theme .drawer-section-label span {
-  color: #0284c7 !important;
+  color: #0077B6 !important;
   font-size: 8.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -2899,170 +2863,159 @@ html, body {
 
 /* Nav Items */
 .doctor-theme .m3-nav-item {
-  color: #082f49 !important;
+  color: #334155 !important;
   border-radius: 10px;
-  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  transition: all 0.18s ease;
   margin-bottom: 3px;
   position: relative;
   overflow: hidden;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .doctor-theme .m3-nav-item .nav-label {
-  color: #082f49 !important;
-  font-weight: 700 !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
 }
 
 .doctor-theme .m3-nav-item .m3-nav-icon,
 .doctor-theme .m3-nav-item .nav-icon-container,
 .doctor-theme .m3-nav-item svg {
-  color: #0284c7 !important;
-  transition: all 0.2s ease;
+  color: #475569 !important;
+  transition: all 0.18s ease;
 }
 
 .doctor-theme .m3-nav-item:hover {
-  background: rgba(255, 255, 255, 0.85) !important;
-  color: #0284c7 !important;
-  transform: translateX(4px);
-  box-shadow: 0 2px 10px rgba(186, 230, 253, 0.4);
+  background: #edf8fc !important;
+  color: #0077B6 !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .doctor-theme .m3-nav-item:hover .nav-label,
 .doctor-theme .m3-nav-item:hover .nav-icon-container,
 .doctor-theme .m3-nav-item:hover svg {
-  color: #0284c7 !important;
+  color: #0077B6 !important;
 }
 
+/* Active Nav Item - Ditto Admin Style (Image 1 & 4) */
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active,
 .doctor-theme .m3-nav-item.active {
-  background: #ffffff !important;
-  color: #0284c7 !important;
-  border-left: none !important;
-  box-shadow:
-    0 4px 16px rgba(56, 189, 248, 0.28),
-    0 1px 3px rgba(3, 105, 161, 0.08),
-    inset 0 1px 0 #ffffff !important;
-  font-weight: 800 !important;
+  background: #CAF0F8 !important;
+  color: #0077B6 !important;
+  border-left: 3px solid #0077B6 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
 }
 
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active .nav-label,
 .doctor-theme .m3-nav-item.active .nav-label {
-  color: #0284c7 !important;
-  font-weight: 800 !important;
+  color: #0077B6 !important;
+  font-weight: 700 !important;
 }
 
-.doctor-theme .m3-nav-item.active .m3-nav-icon,
-.doctor-theme .m3-nav-item.active .nav-icon-container,
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active .m3-nav-icon,
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active .nav-icon-container,
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active svg,
 .doctor-theme .m3-nav-item.active svg {
-  color: #0284c7 !important;
+  color: #0077B6 !important;
 }
 
 .doctor-theme .m3-nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 18%;
-  bottom: 18%;
-  width: 3.5px;
-  background: #38bdf8;
-  border-radius: 0 4px 4px 0;
-  animation: docNavPop 0.28s cubic-bezier(0.05, 0.7, 0.1, 1) forwards;
-  transform-origin: center top;
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+  display: none !important;
 }
 
-/* Staff card */
+/* Staff card - Ditto Admin Style (Image 1 & 5) */
 .doctor-theme .staff-name {
-  color: #0369a1 !important;
+  color: #0f172a !important;
   font-weight: 800;
 }
 
 .doctor-theme .staff-role {
-  color: #0284c7 !important;
+  color: #0077B6 !important;
   font-weight: 600;
 }
 
 .doctor-theme .drawer-staff-card {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border: 1.5px solid #bae6fd !important;
+  background: rgba(202, 240, 248, 0.4) !important;
+  border: 1px solid #bfe7f5 !important;
   border-radius: 12px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 16px rgba(186, 230, 253, 0.45), inset 0 1px 0 #ffffff !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
 }
 
 .doctor-theme .staff-avatar {
-  background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%) !important;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important;
   color: #ffffff !important;
   font-weight: 900 !important;
-  box-shadow: 0 0 0 2.5px #ffffff, 0 4px 12px rgba(56, 189, 248, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3) !important;
 }
 
 .doctor-theme .drawer-expand-indicator {
-  border-color: #bae6fd;
-  color: #0284c7;
+  border-color: #bfe7f5;
+  color: #0077B6;
   background: #ffffff;
 }
 
 /* Collapsed sidebar */
 .doctor-theme .drawer-brand-btn-collapsed .drawer-brand-icon {
-  background: linear-gradient(135deg, #7dd3fc, #38bdf8);
-  box-shadow: 0 3px 12px rgba(56, 189, 248, 0.4);
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  box-shadow: 0 3px 10px rgba(30, 58, 138, 0.35);
 }
 
 /* Nav badge */
 .doctor-theme .nav-badge {
-  background: #e0f2fe !important;
-  color: #0284c7 !important;
-  border: 1px solid #bae6fd !important;
+  background: #CAF0F8 !important;
+  color: #0077B6 !important;
+  border: 1px solid #90E0EF !important;
   font-weight: 800;
   text-shadow: none;
 }
 
 /* Footer nav items */
 .doctor-theme .drawer-footer .m3-nav-item {
-  color: #034674 !important;
+  color: #334155 !important;
 }
 .doctor-theme .drawer-footer .m3-nav-item:hover {
-  color: #0284c7 !important;
-  background: rgba(255, 255, 255, 0.75) !important;
+  color: #0077B6 !important;
+  background: #edf8fc !important;
 }
 
 /* ======================== TOP APP BAR ======================== */
 .doctor-theme .m3-top-app-bar {
   background: #ffffff;
-  border-bottom: 1.5px solid rgba(14, 165, 233, 0.15);
-  box-shadow:
-    0 1px 20px rgba(14, 165, 233, 0.09),
-    0 1px 4px rgba(3, 105, 161, 0.05);
+  border-bottom: 1px solid var(--border-default, #e2e8f0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .doctor-theme .m3-top-app-bar::after {
-  background: radial-gradient(circle at 100% 100%, transparent 12px, #ffffff 12.5px);
+  display: none;
 }
 
 .doctor-theme .brand-counter-pill {
-  background: rgba(14, 165, 233, 0.1);
-  color: #0284c7;
-  border-color: rgba(14, 165, 233, 0.28);
+  background: #CAF0F8;
+  color: #0077B6;
+  border-color: #90E0EF;
   font-weight: 800;
 }
 
 .doctor-theme .icon-btn:hover {
-  background-color: rgba(14, 165, 233, 0.1);
-  color: #0ea5e9;
-  border-color: rgba(14, 165, 233, 0.3);
+  background-color: #edf8fc;
+  color: #0077B6;
+  border-color: #bfe7f5;
 }
 
 /* Live beacon */
 .doctor-theme .m3-live-beacon {
-  background: rgba(14, 165, 233, 0.1);
-  color: #0369a1;
-  border-color: rgba(14, 165, 233, 0.35);
+  background: #edf8fc;
+  color: #0077B6;
+  border-color: #bfe7f5;
   font-weight: 700;
 }
 
 .doctor-theme .live-dot {
-  background-color: #0ea5e9;
-  box-shadow: 0 0 10px rgba(14, 165, 233, 1);
-  animation: docSkyBeacon 2s ease-in-out infinite;
+  background-color: #0077B6;
+  box-shadow: 0 0 8px rgba(0, 119, 182, 0.6);
 }
 
 /* ======================== CONTENT AREA ======================== */
@@ -3070,414 +3023,199 @@ html, body {
 .doctor-theme .doctor-dashboard-container,
 .doctor-theme .m3-main-viewport,
 .doctor-theme.m3-app-shell {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
+  background: #f5fbfe !important;
+  background-color: #f5fbfe !important;
 }
 
 /* ======================== PATIENT BANNER ======================== */
 .doctor-theme .m3-doctor-patient-banner {
-  background: linear-gradient(
-    120deg,
-    #ffffff 0%,
-    #f0f9ff 35%,
-    #e0f2fe 70%,
-    #f0f9ff 100%
-  ) !important;
-  border: 1.5px solid rgba(14, 165, 233, 0.38) !important;
-  box-shadow:
-    0 4px 28px rgba(14, 165, 233, 0.12),
-    0 1px 4px rgba(3, 105, 161, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  animation: docFadeUp 0.4s cubic-bezier(0.05, 0.7, 0.1, 1) both;
-  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #edf8fc 100%) !important;
+  border: 1.5px solid #bfe7f5 !important;
+  box-shadow: 0 4px 16px rgba(0, 119, 182, 0.08) !important;
+  border-radius: 16px;
   position: relative;
   overflow: hidden;
 }
 
-/* Animated sky shimmer bar at top of banner */
 .doctor-theme .m3-doctor-patient-banner::after {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(
-    90deg,
-    #0369a1 0%,
-    #0ea5e9 25%,
-    #38bdf8 50%,
-    #06b6d4 75%,
-    #0369a1 100%
-  );
-  background-size: 200% auto;
-  animation: docBannerRainbow 3.5s linear infinite;
-  border-radius: 14px 14px 0 0;
+  background: linear-gradient(90deg, #0f172a 0%, #0077B6 50%, #00B4D8 100%);
+  border-radius: 16px 16px 0 0;
 }
 
-.doctor-theme .m3-doctor-patient-banner:hover {
-  box-shadow:
-    0 10px 36px rgba(14, 165, 233, 0.18),
-    0 2px 8px rgba(3, 105, 161, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-  transform: translateY(-2px);
-}
-
-/* ======================== CARDS ======================== */
+/* ======================== CARDS — DITTO ADMIN THEME (Image 5) ======================== */
 .doctor-theme .card {
-  border: 1px solid rgba(14, 165, 233, 0.14);
-  box-shadow:
-    0 2px 14px rgba(14, 165, 233, 0.07),
-    0 1px 3px rgba(3, 105, 161, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  background: #ffffff;
-  animation: docCardPop 0.42s cubic-bezier(0.05, 0.7, 0.1, 1) both;
-  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
-  border-radius: 16px;
+  border: 1px solid #bfe7f5 !important;
+  box-shadow: 0 2px 8px rgba(0, 119, 182, 0.06) !important;
+  background: #ffffff !important;
+  border-radius: 14px !important;
 }
 
 .doctor-theme .card:hover {
-  border-color: rgba(14, 165, 233, 0.28);
-  box-shadow:
-    0 8px 28px rgba(14, 165, 233, 0.13),
-    0 2px 6px rgba(3, 105, 161, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-  transform: translateY(-1.5px);
+  border-color: #90E0EF !important;
+  box-shadow: 0 4px 16px rgba(0, 119, 182, 0.1) !important;
 }
 
 .doctor-theme .card-header {
-  background: linear-gradient(90deg, rgba(240, 249, 255, 0.8) 0%, rgba(224, 242, 254, 0.4) 100%);
-  border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+  background: linear-gradient(90deg, #ffffff 0%, #edf8fc 100%);
+  border-bottom: 1px solid #bfe7f5;
 }
 
-/* ======================== VIEW TABS ======================== */
+/* ======================== VIEW TABS (Image 3 Right Card Header) ======================== */
 .doctor-theme .m3-view-tabs-container {
-  background: #ffffff;
-  border: 1.5px solid rgba(14, 165, 233, 0.18);
-  box-shadow:
-    0 2px 12px rgba(14, 165, 233, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  border-radius: 999px;
+  background: #ffffff !important;
+  border: 1px solid #bfe7f5 !important;
+  box-shadow: 0 1px 4px rgba(0, 119, 182, 0.05) !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  display: inline-flex !important;
+  gap: 4px !important;
 }
 
 .doctor-theme .m3-view-tab {
-  color: #64748b;
-  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
-  border-radius: 999px;
+  color: #475569 !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  padding: 6px 14px !important;
+  background: transparent !important;
+  border: none !important;
 }
 
 .doctor-theme .m3-view-tab:hover {
-  background: rgba(14, 165, 233, 0.09);
-  color: #0284c7;
+  background: #edf8fc !important;
+  color: #0077B6 !important;
 }
 
 .doctor-theme .m3-view-tab.active {
-  background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow:
-    0 3px 14px rgba(14, 165, 233, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-  animation: docTabIn 0.22s ease both;
-  text-shadow: 0 1px 3px rgba(3, 105, 161, 0.3);
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.3) !important;
+  transform: none !important;
+  text-shadow: none !important;
 }
 
-/* ======================== PATIENT QUEUE CARDS ======================== */
-.doctor-theme .doctor-patient-card:hover {
-  background: rgba(14, 165, 233, 0.06);
-  border-color: rgba(14, 165, 233, 0.16);
-  transform: translateX(3px);
-}
-
-.doctor-theme .doctor-patient-card.selected {
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
-  border: 1.5px solid rgba(14, 165, 233, 0.35) !important;
-  box-shadow:
-    0 4px 20px rgba(14, 165, 233, 0.16),
-    0 1px 4px rgba(3, 105, 161, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
-}
-
-/* ======================== BUTTONS ======================== */
-.doctor-theme .m3-btn-filled {
-  background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
-  color: #ffffff;
-  border: none;
-  box-shadow: 0 3px 14px rgba(14, 165, 233, 0.42);
-  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.doctor-theme .m3-btn-filled:hover {
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-  box-shadow: 0 6px 22px rgba(14, 165, 233, 0.55);
-  transform: translateY(-2px);
-}
-
-/* Finalize button — warm amber */
-.doctor-theme .m3-btn-filled[data-tour="finalize-consult-btn"] {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-  box-shadow: 0 3px 14px rgba(245, 158, 11, 0.42) !important;
-  animation: docAmberBreathe 2.2s ease infinite;
-}
-
-.doctor-theme .m3-btn-filled[data-tour="finalize-consult-btn"]:hover {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
-  box-shadow: 0 6px 24px rgba(245, 158, 11, 0.6) !important;
-  transform: translateY(-2px);
-  animation: none;
-}
-
-.doctor-theme .m3-btn-tonal {
-  background: rgba(14, 165, 233, 0.08);
-  border-color: rgba(14, 165, 233, 0.22);
-  color: #0284c7;
-  transition: all 0.2s ease;
-}
-
-.doctor-theme .m3-btn-tonal:hover {
-  background: rgba(14, 165, 233, 0.15);
-  border-color: #0ea5e9;
-  color: #0369a1;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(14, 165, 233, 0.2);
-}
-
-/* ======================== PRESCRIPTION MED CARDS ======================== */
-.doctor-theme .prescription-med-card {
-  border: 1px solid rgba(14, 165, 233, 0.13);
-  box-shadow:
-    0 2px 12px rgba(14, 165, 233, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  background: #ffffff;
-  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
-  animation: docFadeUp 0.35s ease both;
-  border-radius: 14px;
-}
-
-.doctor-theme .prescription-med-card:hover {
-  border-color: rgba(14, 165, 233, 0.28);
-  box-shadow:
-    0 7px 24px rgba(14, 165, 233, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-  transform: translateY(-2.5px);
-}
-
-/* ======================== STAT CARDS ======================== */
-.doctor-theme .stat-card {
-  background: #ffffff;
-  border: 1px solid rgba(14, 165, 233, 0.1);
-  border-radius: 18px;
-  transition: all 0.26s cubic-bezier(0.2, 0, 0, 1);
-  animation: docCardPop 0.5s cubic-bezier(0.05, 0.7, 0.1, 1) both;
-  box-shadow: 0 2px 12px rgba(14, 165, 233, 0.07);
-}
-
-.doctor-theme .stat-card:hover {
-  transform: translateY(-6px) scale(1.008);
-  box-shadow:
-    0 14px 40px rgba(14, 165, 233, 0.18),
-    0 4px 12px rgba(3, 105, 161, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
-  border-color: rgba(14, 165, 233, 0.25);
-  animation: docSkyFloat 3s ease-in-out infinite;
-}
-
-/* ======================== PATIENT TABLE ======================== */
-.doctor-theme .m3-row-animate.selected {
-  background: linear-gradient(90deg, rgba(240,249,255,0.95), rgba(224,242,254,0.7));
-  border-left: 3px solid #0ea5e9;
-}
-
-.doctor-theme .m3-row-animate:hover {
-  background: rgba(14, 165, 233, 0.05);
-}
-
-/* ======================== SCROLLBARS ======================== */
-.doctor-theme .m3-scrollable-body::-webkit-scrollbar-thumb,
-.doctor-theme .patient-overview-scroll-body::-webkit-scrollbar-thumb {
-  background-color: rgba(14, 165, 233, 0.3);
-  border-radius: 4px;
-}
-
-.doctor-theme .m3-scrollable-body::-webkit-scrollbar-thumb:hover,
-.doctor-theme .patient-overview-scroll-body::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(14, 165, 233, 0.55);
-}
-
-/* ======================== DOCTOR KEYFRAME ANIMATIONS ======================== */
-@keyframes docFadeUp {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes docChartDraw {
-  0% {
-    stroke-dashoffset: 1200;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes docAreaFadeIn {
-  0% {
-    opacity: 0;
-    transform: scaleY(0.92);
-    transform-origin: bottom;
-  }
-  100% {
-    opacity: 1;
-    transform: scaleY(1);
-    transform-origin: bottom;
-  }
-}
-
-@keyframes docPulseRing {
-  0% {
-    r: 4;
-    opacity: 0.9;
-    stroke-width: 2;
-  }
-  50% {
-    r: 10;
-    opacity: 0.4;
-    stroke-width: 3.5;
-  }
-  100% {
-    r: 16;
-    opacity: 0;
-    stroke-width: 1;
-  }
-}
-
-@keyframes docEcgScan {
-  0% {
-    stroke-dashoffset: 240;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes docShimmerGlint {
-  0% {
-    transform: translateX(-150%) rotate(25deg);
-  }
-  100% {
-    transform: translateX(150%) rotate(25deg);
-  }
-}
-
-@keyframes docHeartbeatPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  14% {
-    transform: scale(1.22);
-  }
-  28% {
-    transform: scale(1);
-  }
-  42% {
-    transform: scale(1.14);
-  }
-  70% {
-    transform: scale(1);
-  }
-}
-
-@keyframes docFloatSubtle {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
-}
-
-@keyframes docRadarPing {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.45);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 7px rgba(2, 132, 199, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0);
-  }
-}
-
-/* ======================== PAGE ANIMATIONS ======================== */
-.doctor-theme .m3-page-animate {
-  animation: docFadeUp 0.38s cubic-bezier(0.05, 0.7, 0.1, 1) both;
-}
-
-/* ======================== DOCTOR PATIENT QUEUE ITEM STYLING ======================== */
+/* ======================== PATIENT QUEUE ITEM STYLING (Image 3) ======================== */
 .doctor-theme .doctor-patient-card {
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: 12px !important;
   cursor: pointer;
-  background: #ffffff;
-  border: 1px solid #e0f2fe;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
   position: relative;
   overflow: hidden;
-  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .doctor-theme .doctor-patient-card:hover {
-  border-color: #38bdf8;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.16);
-  background: #f0f9ff;
+  border-color: #bfe7f5 !important;
+  background: #f8fafc !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 119, 182, 0.08) !important;
 }
 
+/* Clean, crisp selected state without buggy overlapping borders (Image 3 fix) */
 .doctor-theme .doctor-patient-card.selected {
-  border: 1.5px solid #0284c7;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.18);
+  border: 1.5px solid #0077B6 !important;
+  background: linear-gradient(135deg, #ffffff 0%, #edf8fc 100%) !important;
+  box-shadow: 0 2px 10px rgba(0, 119, 182, 0.15) !important;
+  transform: none !important;
 }
 
-.doctor-theme .anim-radar-ping {
-  animation: docRadarPing 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+.doctor-theme .doctor-patient-card.selected::before,
+.doctor-theme .doctor-patient-card.selected::after {
+  display: none !important;
 }
 
-/* ======================== SIDEBAR NAV HOVER OVERRIDE ======================== */
-.doctor-theme .m3-navigation-drawer .drawer-nav-list .m3-nav-item:hover {
-  background: rgba(255, 255, 255, 0.75) !important;
+/* ======================== BUTTONS (Image 2 & 5) ======================== */
+.doctor-theme .m3-btn-filled {
+  background: linear-gradient(135deg, #0077B6 0%, #00B4D8 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 119, 182, 0.3) !important;
+  transition: all 0.2s ease !important;
 }
 
-/* ======================== DOCTOR DASHBOARD CONTAINER ======================== */
-.doctor-theme .doctor-dashboard-container {
-  height: calc(100vh - 50px);
-  max-height: calc(100vh - 50px);
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 14px 18px 24px;
-  box-sizing: border-box;
-  width: 100%;
+.doctor-theme .m3-btn-filled:hover {
+  background: linear-gradient(135deg, #005f92 0%, #0096b7 100%) !important;
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.4) !important;
+  transform: translateY(-1.5px) !important;
 }
 
-/* ======================== MODERN ANALYTICAL GRAPHS & INTERACTIVE WIDGETS ======================== */
+/* Finalize button — Changed from Orange to Admin Panel Navy Style */
+.doctor-theme .m3-btn-filled[data-tour="finalize-consult-btn"] {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.35) !important;
+  animation: none !important;
+}
+
+.doctor-theme .m3-btn-filled[data-tour="finalize-consult-btn"]:hover {
+  background: linear-gradient(135deg, #1e3a8a 0%, #0077B6 100%) !important;
+  box-shadow: 0 4px 14px rgba(30, 58, 138, 0.45) !important;
+  transform: translateY(-1.5px) !important;
+  animation: none !important;
+}
+
+.doctor-theme .m3-btn-tonal {
+  background: #CAF0F8 !important;
+  border: 1px solid #90E0EF !important;
+  color: #0077B6 !important;
+  transition: all 0.2s ease !important;
+}
+
+.doctor-theme .m3-btn-tonal:hover {
+  background: #b6ebf5 !important;
+  color: #005f92 !important;
+  transform: translateY(-1px);
+}
+
+/* ======================== METRIC CHIPS / BUTTONS (Image 2 Fix) ======================== */
+.doctor-theme .doc-metric-chip {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #bfe7f5 !important;
+  background: #ffffff !important;
+  color: #1e293b !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.doctor-theme .doc-metric-chip:hover {
+  background: #edf8fc !important;
+  color: #0077B6 !important;
+  border-color: #90E0EF !important;
+}
+
+/* Active metric chip matches Admin tab button style (Image 5) */
+.doctor-theme .doc-metric-chip.active {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.35) !important;
+}
+
+/* Analytics Card */
 .doctor-theme .doc-analytics-card {
   background: #ffffff;
-  border: 1.5px solid #bae6fd;
+  border: 1px solid #bfe7f5 !important;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.08), 0 1px 3px rgba(3, 105, 161, 0.04);
-  transition: all 0.28s cubic-bezier(0.2, 0, 0, 1);
+  box-shadow: 0 2px 10px rgba(0, 119, 182, 0.06);
   position: relative;
   overflow: hidden;
   flex-shrink: 0 !important;
@@ -3487,76 +3225,19 @@ html, body {
 }
 
 .doctor-theme .doc-analytics-card:hover {
-  border-color: #38bdf8;
-  box-shadow: 0 10px 32px rgba(56, 189, 248, 0.16), 0 2px 8px rgba(3, 105, 161, 0.06);
-  transform: translateY(-2px);
-}
-
-.doctor-theme .doc-chart-svg {
-  filter: drop-shadow(0 4px 12px rgba(2, 132, 199, 0.15));
-}
-
-.doctor-theme .doc-chart-line {
-  stroke-dasharray: 1200;
-  stroke-dashoffset: 0;
-  animation: docChartDraw 1.2s cubic-bezier(0.2, 0, 0, 1) forwards;
-}
-
-.doctor-theme .doc-chart-area {
-  animation: docAreaFadeIn 0.8s ease-out forwards;
-}
-
-.doctor-theme .doc-chart-node {
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-  cursor: pointer;
-}
-
-.doctor-theme .doc-chart-node:hover {
-  transform: scale(1.4);
-  filter: drop-shadow(0 0 6px rgba(2, 132, 199, 0.8));
-}
-
-.doctor-theme .doc-pulse-marker {
-  animation: docPulseRing 2.2s infinite ease-out;
+  border-color: #90E0EF !important;
+  box-shadow: 0 6px 20px rgba(0, 119, 182, 0.1) !important;
 }
 
 .doctor-theme .doc-chart-tooltip {
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(14px);
-  border: 1.5px solid #bae6fd;
-  border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(2, 132, 199, 0.18), 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #bfe7f5;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 119, 182, 0.15);
   pointer-events: none;
   transition: all 0.15s ease-out;
   z-index: 10;
-}
-
-.doctor-theme .doc-metric-chip {
-  padding: 5px 12px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-  border: 1px solid #bae6fd;
-  background: #f0f9ff;
-  color: #0369a1;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.doctor-theme .doc-metric-chip:hover {
-  background: #e0f2fe;
-  color: #0284c7;
-  transform: translateY(-1px);
-}
-
-.doctor-theme .doc-metric-chip.active {
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-  color: #ffffff;
-  border-color: #0284c7;
-  box-shadow: 0 3px 12px rgba(56, 189, 248, 0.35);
 }
 
 .doctor-theme .doc-ecg-svg {
@@ -4806,124 +4487,128 @@ html, body {
 }
 
 /* ==========================================================================
-   DOCTOR PORTAL THEME — Ultra-Lightest Crystal Sky Blue Medical Aesthetic
-   #f0f8ff | Luminous Light Ice-Sky Canvas
-   #e0f2fe | Lightest Powder Blue Container
-   #bae6fd | Soft Crisp Sky Blue Border
-   #38bdf8 | Luminous Cyan Sky Highlight
-   #0284c7 | Vivid High-Contrast Sky Blue Accent
-   #0369a1 | Deep Sapphire Slate Clinical Text
+/* ==========================================================================
+   DOCTOR PORTAL THEME — Exact Ditto Copy of Admin Coastal Cyan & Turquoise Palette
+   #0077B6 (Bright Teal Blue)
+   #00B4D8 (Turquoise Surf)
+   #90E0EF (Frosted Blue)
+   #CAF0F8 (Light Cyan)
    ========================================================================== */
 
 .doctor-theme {
-  --primary: #0284c7;
-  --primary-hover: #0369a1;
-  --primary-active: #075985;
-  --primary-container: #e0f2fe;
-  --on-primary-container: #0369a1;
-  --primary-border: #bae6fd;
-  --primary-text: #0284c7;
+  --primary: #0077B6;
+  --primary-hover: #005f92;
+  --primary-container: #CAF0F8;
+  --on-primary-container: #003652;
+  --primary-border: #90E0EF;
+  --primary-text: #0077B6;
 
-  --secondary: #0ea5e9;
-  --secondary-container: #f0f9ff;
-  --on-secondary-container: #0369a1;
+  --secondary: #00B4D8;
+  --secondary-container: #90E0EF;
+  --on-secondary-container: #004b73;
 
-  --tertiary-container: #e0f2fe;
-  --on-tertiary-container: #0284c7;
+  --tertiary-container: #CAF0F8;
+  --on-tertiary-container: #003652;
 
-  --bg-page: #ffffff;
-  --background: #ffffff;
+  --bg-page: #f5fbfe;
+  --background: #f5fbfe;
   --bg-surface: #ffffff;
-  --bg-subtle: #f0f9ff;
-  --bg-hover: #e0f2fe;
-  --bg-active: #bae6fd;
+  --bg-subtle: #edf8fc;
+  --bg-hover: #e2f4fb;
+  --bg-active: #d2eefa;
 
-  --border-subtle: #f0f9ff;
-  --border-default: #bae6fd;
-  --border-focus: #38bdf8;
+  --border-subtle: #e0f2f9;
+  --border-default: #bfe7f5;
+  --border-focus: #00B4D8;
 
-  --status-ready-bg: #e0f2fe;
-  --status-ready-text: #0284c7;
-  --status-ready-border: #bae6fd;
+  --status-ready-bg: #CAF0F8;
+  --status-ready-text: #0077B6;
+  --status-ready-border: #90E0EF;
 
   --status-pending-bg: #fef3c7;
   --status-pending-text: #b45309;
   --status-pending-border: #fcd34d;
 
-  --status-active-bg: #e0f2fe;
-  --status-active-text: #0284c7;
-  --status-active-border: #7dd3fc;
+  --status-active-bg: #90E0EF;
+  --status-active-text: #004b73;
+  --status-active-border: #00B4D8;
 }
 
 .doctor-theme .m3-btn-filled,
 .doctor-theme .btn-primary {
-  background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
+  background: linear-gradient(135deg, #0077B6, #00B4D8) !important;
   color: #ffffff !important;
   border: none !important;
-  box-shadow: 0 3px 14px rgba(56, 189, 248, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(0, 119, 182, 0.3) !important;
 }
 
 .doctor-theme .m3-btn-filled:hover,
 .doctor-theme .btn-primary:hover {
-  background: linear-gradient(135deg, #0ea5e9, #0369a1) !important;
-  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45) !important;
+  background: linear-gradient(135deg, #005f92, #0096b7) !important;
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.4) !important;
 }
 
 .doctor-theme .m3-btn-tonal {
-  background: #e0f2fe !important;
-  color: #0284c7 !important;
-  border: 1px solid #bae6fd !important;
+  background: #CAF0F8 !important;
+  color: #005f92 !important;
+  border: 1px solid #90E0EF !important;
 }
 
 .doctor-theme .m3-btn-tonal:hover {
-  background: #bae6fd !important;
-  color: #0369a1 !important;
+  background: #b6ebf5 !important;
 }
 
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active {
-  background: #ffffff !important;
-  color: #0284c7 !important;
-  font-weight: 800 !important;
-  border-left: 3.5px solid #38bdf8 !important;
-  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25) !important;
+  background: #CAF0F8 !important;
+  color: #0077B6 !important;
+  font-weight: 700 !important;
+  border-left: 3px solid #0077B6 !important;
 }
 
-.doctor-theme .m3-navigation-drawer .m3-nav-item.active .m3-nav-icon {
-  color: #0284c7 !important;
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active .m3-nav-icon,
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active .nav-icon-container,
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active svg {
+  color: #0077B6 !important;
+}
+
+.doctor-theme .m3-navigation-drawer .m3-nav-item.active .nav-label {
+  color: #0077B6 !important;
+  font-weight: 700 !important;
 }
 
 .doctor-theme .m3-navigation-drawer .m3-nav-item:hover {
-  background: rgba(255, 255, 255, 0.75) !important;
-  color: #0284c7 !important;
+  background: #edf8fc !important;
+  color: #0077B6 !important;
 }
 
-.doctor-theme .tab-item.active,
-.doctor-theme .m3-tab.active {
-  color: #0284c7 !important;
-  border-bottom: 2.5px solid #0284c7 !important;
-  background: #e0f2fe !important;
+.doctor-theme .m3-view-tab.active {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.3) !important;
+  border: none !important;
 }
 
 .doctor-theme .m3-doctor-patient-banner {
-  background: linear-gradient(120deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 80%, #ffffff 100%) !important;
-  border: 1.5px solid #bae6fd !important;
-  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.12) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #edf8fc 100%) !important;
+  border: 1.5px solid #bfe7f5 !important;
+  box-shadow: 0 4px 16px rgba(0, 119, 182, 0.08) !important;
 }
 
 .doctor-theme .doctor-patient-card.selected {
-  border-color: #38bdf8 !important;
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
-  box-shadow: 0 0 0 1.5px #38bdf8, 0 3px 12px rgba(56, 189, 248, 0.15) !important;
+  border: 1.5px solid #0077B6 !important;
+  background: linear-gradient(135deg, #ffffff 0%, #edf8fc 100%) !important;
+  box-shadow: 0 2px 8px rgba(0, 119, 182, 0.15) !important;
 }
 
 .doctor-theme .doctor-patient-card.selected .doctor-patient-name {
-  color: #0369a1 !important;
+  color: #0077B6 !important;
 }
 
 .doctor-theme .badge-ready {
-  background: #e0f2fe !important;
-  color: #0284c7 !important;
-  border-color: #bae6fd !important;
+  background: #CAF0F8 !important;
+  color: #0077B6 !important;
+  border-color: #90E0EF !important;
 }
 
 .doctor-theme .badge-pending {
@@ -4933,33 +4618,33 @@ html, body {
 }
 
 .doctor-theme .badge-active {
-  background: #e0f2fe !important;
-  color: #0284c7 !important;
-  border-color: #7dd3fc !important;
+  background: #90E0EF !important;
+  color: #004b73 !important;
+  border-color: #00B4D8 !important;
 }
 
 .doctor-theme .m3-dialog-header {
-  background: linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #0284c7 100%) !important;
-  border-bottom: 3px solid #e0f2fe !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 14px rgba(56, 189, 248, 0.25) !important;
+  background: linear-gradient(90deg, #0077B6 0%, #00B4D8 50%, #0077B6 100%) !important;
+  border-bottom: 3px solid #CAF0F8 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 14px rgba(0, 119, 182, 0.25) !important;
 }
 
 .doctor-theme .stat-squircle-badge.badge-bg-blue {
-  background: linear-gradient(135deg, #7dd3fc, #38bdf8) !important;
-  box-shadow: 0 4px 10px rgba(56, 189, 248, 0.35) !important;
+  background: linear-gradient(135deg, #0077B6, #00B4D8) !important;
+  box-shadow: 0 4px 10px rgba(0, 119, 182, 0.35) !important;
 }
 
 .doctor-theme .stat-squircle-badge.badge-bg-green {
-  background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
-  box-shadow: 0 4px 10px rgba(14, 165, 233, 0.35) !important;
+  background: linear-gradient(135deg, #00B4D8, #0077B6) !important;
+  box-shadow: 0 4px 10px rgba(0, 180, 216, 0.35) !important;
 }
 
 .doctor-theme .stat-card-accent-blob.blob-blue {
-  background: radial-gradient(circle, #bae6fd 0%, rgba(186, 230, 253, 0) 70%) !important;
+  background: radial-gradient(circle, #00B4D8 0%, rgba(0, 180, 216, 0) 70%) !important;
 }
 
 .doctor-theme .stat-card-accent-blob.blob-yellow {
-  background: radial-gradient(circle, #e0f2fe 0%, rgba(224, 242, 254, 0) 70%) !important;
+  background: radial-gradient(circle, #90E0EF 0%, rgba(144, 224, 239, 0) 70%) !important;
 }
 
 
@@ -5219,64 +4904,131 @@ html, body {
 }
 
 /* ==========================================================================
-   CASHIER PORTAL THEME — Fiscal Slate & Emerald Palette
+   CASHIER PORTAL THEME — Elegant Light Rose Pink & Soft Amethyst Orchid
+   Very light, attractive, and elegant medical fiscal palette
    ========================================================================== */
 
 .cashier-theme {
-  --primary: #047857;
-  --primary-hover: #065f46;
-  --primary-active: #064e3b;
-  --primary-container: #d1fae5;
-  --on-primary-container: #064e3b;
-  --primary-border: #6ee7b7;
-  --primary-text: #047857;
+  --primary: #be185d;
+  --primary-hover: #9d174d;
+  --primary-active: #831843;
+  --primary-container: #fdf2f8;
+  --on-primary-container: #831843;
+  --primary-border: #fbcfe8;
+  --primary-text: #be185d;
 
-  --secondary-container: #fef3c7;
-  --on-secondary-container: #78350f;
+  --secondary: #d946ef;
+  --secondary-container: #fae8ff;
+  --on-secondary-container: #701a75;
 
-  --bg-page: #f0fdf4;
+  --tertiary-container: #fdf2f8;
+  --on-tertiary-container: #9d174d;
+
+  --bg-page: #fff7fa;
+  --background: #fff7fa;
   --bg-surface: #ffffff;
-  --bg-subtle: #ecfdf5;
-  --bg-hover: #d1fae5;
-  --bg-active: #a7f3d0;
+  --bg-subtle: #fdf2f8;
+  --bg-hover: #fce7f3;
+  --bg-active: #fbcfe8;
 
-  --border-subtle: #ecfdf5;
-  --border-default: #a7f3d0;
-  --border-focus: #059669;
+  --border-subtle: #fdf2f8;
+  --border-default: #fbcfe8;
+  --border-focus: #f472b6;
 
-  --status-ready-bg: #d1fae5;
-  --status-ready-text: #064e3b;
-  --status-ready-border: #6ee7b7;
+  --status-ready-bg: #fdf2f8;
+  --status-ready-text: #be185d;
+  --status-ready-border: #fbcfe8;
+
+  --status-pending-bg: #fef3c7;
+  --status-pending-text: #b45309;
+  --status-pending-border: #fcd34d;
+
+  --status-active-bg: #fae8ff;
+  --status-active-text: #86198f;
+  --status-active-border: #f0abfc;
 }
 
 .cashier-theme .m3-btn-filled,
 .cashier-theme .btn-primary {
-  background: linear-gradient(135deg, #059669, #047857) !important;
+  background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%) !important;
   color: #ffffff !important;
   border: none !important;
-  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3) !important;
+  box-shadow: 0 2px 10px rgba(236, 72, 153, 0.28) !important;
 }
 
 .cashier-theme .m3-btn-filled:hover,
 .cashier-theme .btn-primary:hover {
-  background: linear-gradient(135deg, #047857, #064e3b) !important;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4) !important;
+  background: linear-gradient(135deg, #db2777 0%, #9333ea 100%) !important;
+  box-shadow: 0 4px 14px rgba(219, 39, 119, 0.38) !important;
+}
+
+.cashier-theme .m3-btn-tonal {
+  background: #fdf2f8 !important;
+  color: #be185d !important;
+  border: 1px solid #fbcfe8 !important;
+}
+
+.cashier-theme .m3-btn-tonal:hover {
+  background: #fce7f3 !important;
+  color: #9d174d !important;
 }
 
 .cashier-theme .m3-navigation-drawer .m3-nav-item.active {
-  background: #d1fae5 !important;
-  color: #064e3b !important;
+  background: #fdf2f8 !important;
+  color: #be185d !important;
   font-weight: 700 !important;
-  border-left: 3px solid #059669 !important;
+  border-left: 3px solid #ec4899 !important;
 }
 
 .cashier-theme .m3-navigation-drawer .m3-nav-item.active .m3-nav-icon {
-  color: #059669 !important;
+  color: #ec4899 !important;
 }
 
 .cashier-theme .m3-navigation-drawer .m3-nav-item:hover {
-  background: #ecfdf5 !important;
-  color: #047857 !important;
+  background: #fff0f6 !important;
+  color: #be185d !important;
+}
+
+.cashier-theme .m3-doctor-patient-banner {
+  background: linear-gradient(135deg, #ffffff 0%, #fdf2f8 50%, #fae8ff 100%) !important;
+  border: 1.5px solid #fbcfe8 !important;
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.08) !important;
+}
+
+.cashier-theme .stat-squircle-badge.badge-bg-blue {
+  background: linear-gradient(135deg, #ec4899, #a855f7) !important;
+  box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3) !important;
+}
+
+.cashier-theme .stat-squircle-badge.badge-bg-green {
+  background: linear-gradient(135deg, #f43f5e, #ec4899) !important;
+  box-shadow: 0 4px 10px rgba(244, 63, 94, 0.3) !important;
+}
+
+.cashier-theme .stat-card-accent-blob.blob-blue {
+  background: radial-gradient(circle, #fbcfe8 0%, rgba(251, 207, 232, 0) 70%) !important;
+}
+
+.cashier-theme .stat-card-accent-blob.blob-yellow {
+  background: radial-gradient(circle, #fae8ff 0%, rgba(250, 232, 255, 0) 70%) !important;
+}
+
+.cashier-theme .badge-ready {
+  background: #fdf2f8 !important;
+  color: #be185d !important;
+  border-color: #fbcfe8 !important;
+}
+
+.cashier-theme .badge-active {
+  background: #fae8ff !important;
+  color: #86198f !important;
+  border-color: #f0abfc !important;
+}
+
+.cashier-theme .m3-dialog-header {
+  background: linear-gradient(90deg, #ec4899 0%, #a855f7 100%) !important;
+  border-bottom: 3px solid #fdf2f8 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 14px rgba(236, 72, 153, 0.25) !important;
 }
 
 /* ==========================================================================

@@ -9,7 +9,7 @@ export const WALKTHROUGH_STEPS = [
     role: 'receptionist',
     selector: '[data-tour="new-patient-btn"]',
     targetDescription: '+ New Patient Registration',
-    description: 'Click "+ New Patient Registration" to initiate registration of a new oncology patient into the clinic care stream.',
+    description: 'Click "+ New Patient Registration" to initiate registration of a new patient into the clinic care stream.',
     hint: 'Opens the clinical demographics, vital signs triage, and insurance modal with Ayushman Bharat ABHA integration.'
   },
   {
@@ -37,16 +37,16 @@ export const WALKTHROUGH_STEPS = [
     selector: '[data-tour="register-submit-btn"]',
     targetDescription: 'Register & Start Intake Button',
     description: 'Click "Register & Start Intake" to submit the demographics and vitals, immediately transitioning to the clinical triage questionnaire.',
-    hint: 'Commits the patient with vital signs into the clinic queue and launches the 6-step oncology screening modal.'
+    hint: 'Commits the patient with vital signs into the clinic queue and launches the 6-step clinical screening modal.'
   },
   {
     step: 5,
     title: 'Submit Questionnaire & Run AI Model',
     role: 'receptionist',
     selector: '[data-tour="submit-intake-btn"]',
-    targetDescription: '⚡ Submit & Run OncoInsight AI Button',
-    description: 'Click "⚡ Submit & Run OncoInsight AI" to execute real-time deep learning classification on symptoms, family history, and ECOG score.',
-    hint: 'Generates instant recurrence risk stratification, flags high-risk biomarkers, and alerts Dr. Patel.'
+    targetDescription: '⚡ Submit & Run ClinicalInsight AI Button',
+    description: 'Click "⚡ Submit & Run ClinicalInsight AI" to execute real-time deep learning classification on symptoms, medical history, and clinical score.',
+    hint: 'Generates instant clinical risk stratification, flags priorities, and alerts Dr. Patel.'
   },
   {
     step: 6,
@@ -54,8 +54,8 @@ export const WALKTHROUGH_STEPS = [
     role: 'receptionist',
     selector: '[data-tour="role-doctor-btn"]',
     targetDescription: 'Doctor Role Switcher Button',
-    description: 'Click "Doctor" in the top navigation bar to switch to Dr. Kiran Patel\'s Oncologist Clinical Workspace.',
-    hint: 'Demonstrates real-time inter-departmental patient handoff from reception to oncology consult.'
+    description: 'Click "Doctor" in the top navigation bar to switch to Dr. Kiran Patel\'s Physician Clinical Workspace.',
+    hint: 'Demonstrates real-time inter-departmental patient handoff from reception to doctor consult.'
   },
   {
     step: 7,
@@ -68,7 +68,7 @@ export const WALKTHROUGH_STEPS = [
   },
   {
     step: 8,
-    title: 'Review Digital Oncology Prescription',
+    title: 'Review Digital Clinical Prescription',
     role: 'doctor',
     selector: '[data-tour="doctor-tab-rx"]',
     targetDescription: 'Prescription Tab Button',
@@ -100,7 +100,7 @@ export const WALKTHROUGH_STEPS = [
     selector: '[data-tour="settle-bill-btn"]',
     targetDescription: 'Settle Bill Button',
     description: 'Click "Settle Bill" to open the comprehensive itemized charge sheet breakdown of clinical procedures and pharmacy medicines.',
-    hint: 'Displays procedure fees, oral chemo medicines, GST breakout, and PM-JAY government claim deduction.'
+    hint: 'Displays procedure fees, prescribed medicines, GST breakout, and PM-JAY government claim deduction.'
   },
   {
     step: 12,
@@ -109,7 +109,7 @@ export const WALKTHROUGH_STEPS = [
     selector: '[data-tour="settle-payment-btn"]',
     targetDescription: 'Settle 100% Cashless Button',
     description: 'Click "Settle 100% Cashless" to authorize zero-balance PM-JAY claim and generate the official GST Tax Invoice and dispensing slip!',
-    hint: 'Completes the entire care cycle: Demographics & Triage Vitals → AI Triage → Oncologist Cockpit → 100% Cashless Invoice!'
+    hint: 'Completes the entire care cycle: Demographics & Triage Vitals → AI Triage → Doctor Cockpit → 100% Cashless Invoice!'
   }
 ];
 

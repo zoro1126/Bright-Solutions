@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 
 export default function DoctorAnalyticsHub() {
-  // Active Analytical Stream: 'biomarker' | 'infusion' | 'hematology'
-  const [activeStream, setActiveStream] = useState('biomarker');
+  // Active Analytical Stream: 'glycemic' | 'infusion' | 'renal'
+  const [activeStream, setActiveStream] = useState('glycemic');
   
   // Scrubber Hover Index (0 to n)
   const [hoverIndex, setHoverIndex] = useState(null);
@@ -29,46 +29,46 @@ export default function DoctorAnalyticsHub() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [pinnedPoint, setPinnedPoint] = useState(null);
 
-  // Selected Genomic Segment in Donut Chart
-  const [selectedGenomicIndex, setSelectedGenomicIndex] = useState(0);
+  // Selected Department Segment in Donut Chart
+  const [selectedCaseIndex, setSelectedCaseIndex] = useState(0);
 
-  // Data Stream 1: Longitudinal Tumor Burden / Biomarker Response (CEA / CA 15-3)
-  const biomarkerData = useMemo(() => [
-    { label: 'Baseline', value: 52.4, target: 3.0, date: 'Oct 14', note: 'Pre-treatment diagnostic baseline', stage: 'Stage IIIA', reduction: '0%' },
-    { label: 'Cycle 1',  value: 41.8, target: 3.0, date: 'Nov 04', note: 'AC-T Chemo Cycle 1 administered', stage: 'Early Response', reduction: '-20.2%' },
-    { label: 'Cycle 2',  value: 30.5, target: 3.0, date: 'Nov 25', note: 'Dose-dense schedule confirmed', stage: 'Partial Regress', reduction: '-41.8%' },
-    { label: 'Cycle 3',  value: 21.0, target: 3.0, date: 'Dec 16', note: 'Mid-treatment restaging PET-CT', stage: 'Significant Response', reduction: '-59.9%' },
-    { label: 'Cycle 4',  value: 13.6, target: 3.0, date: 'Jan 06', note: 'Paclitaxel weekly sequence started', stage: 'Tumor Shrinkage', reduction: '-74.0%' },
-    { label: 'Cycle 5',  value: 8.2,  target: 3.0, date: 'Jan 27', note: 'Minimal residual biomarker activity', stage: 'Near Complete', reduction: '-84.3%' },
-    { label: 'Cycle 6',  value: 4.5,  target: 3.0, date: 'Feb 17', note: 'Final chemotherapy cycle complete', stage: 'Metabolic Remission', reduction: '-91.4%' },
+  // Data Stream 1: Longitudinal Glycemic & Metabolic Control (HbA1c Kinetics %)
+  const glycemicData = useMemo(() => [
+    { label: 'Baseline', value: 9.8, target: 6.5, date: 'Oct 14', note: 'Uncontrolled Type 2 Diabetes; HbA1c baseline 9.8%', stage: 'Severe Hyperglycemia', reduction: '0%' },
+    { label: 'Month 1',  value: 8.9, target: 6.5, date: 'Nov 14', note: 'Initiated Metformin 1000mg + Dietary counseling', stage: 'Early Glycemic Drop', reduction: '-9.2%' },
+    { label: 'Month 2',  value: 8.1, target: 6.5, date: 'Dec 14', note: 'Added Empagliflozin 10mg morning dose', stage: 'Dual Oral Therapy', reduction: '-17.3%' },
+    { label: 'Month 3',  value: 7.4, target: 6.5, date: 'Jan 14', note: 'Fasting glucose normalized to 110 mg/dL', stage: 'Significant Progress', reduction: '-24.5%' },
+    { label: 'Month 4',  value: 6.9, target: 6.5, date: 'Feb 14', note: 'Excellent glycemic stability; no hypoglycemia', stage: 'Near Target', reduction: '-29.6%' },
+    { label: 'Month 5',  value: 6.6, target: 6.5, date: 'Mar 14', note: 'Weight reduction 3.5kg; blood pressure 122/78', stage: 'Target Achieved', reduction: '-32.7%' },
+    { label: 'Month 6',  value: 6.4, target: 6.5, date: 'Apr 14', note: 'Optimal glycemic control maintained below ADA threshold', stage: 'Clinical Remission', reduction: '-34.7%' },
     // Forecasted AI Point
     ...(isSimulating ? [
-      { label: 'Cycle 7 (AI)', value: 2.7, target: 3.0, date: 'Mar 10', note: 'AI Projected: Normalization below 3.0', stage: 'Complete Remission', reduction: '-94.8%', isForecast: true }
+      { label: 'Month 7 (AI)', value: 6.2, target: 6.5, date: 'May 14', note: 'AI Projected: Sustained HbA1c plateau at 6.2%', stage: 'Long-term Stability', reduction: '-36.7%', isForecast: true }
     ] : [])
   ], [isSimulating]);
 
-  // Data Stream 2: Daycare Infusion Hourly Volumetric Telemetry
+  // Data Stream 2: Daycare Observation Ward Hourly Volumetric Fluid Flow
   const infusionData = useMemo(() => [
-    { label: '08:00', value: 45, target: 60, rate: '80 ml/h', date: 'Session Start', note: 'Pre-med antiemetics IV infusion' },
-    { label: '09:00', value: 120, target: 140, rate: '125 ml/h', date: 'Active Phase', note: 'Pemetrexed primary bag loaded' },
-    { label: '10:00', value: 235, target: 240, rate: '130 ml/h', date: 'Peak Flow', note: 'Carboplatin AUC 5 infusion steady' },
-    { label: '11:00', value: 360, target: 360, rate: '125 ml/h', date: 'Mid Check', note: 'Vitals verified: BP 124/80, SpO2 99%' },
-    { label: '12:00', value: 480, target: 480, rate: '120 ml/h', date: 'Post-Hydration', note: 'Normal saline 500ml post-flush' },
-    { label: '13:00', value: 575, target: 600, rate: '95 ml/h', date: 'Tapering', note: 'Final line flush & vitals sign-off' }
+    { label: '08:00', value: 50, target: 75, rate: '75 ml/h', date: 'Session Start', note: 'Pre-hydration Normal Saline 500mL started' },
+    { label: '09:00', value: 125, target: 150, rate: '100 ml/h', date: 'Active Phase', note: 'IV Antibiotic Ceftriaxone 1g infusion' },
+    { label: '10:00', value: 240, target: 250, rate: '120 ml/h', date: 'Peak Flow', note: 'Maintenance electrolyte Ringers Lactate' },
+    { label: '11:00', value: 360, target: 360, rate: '120 ml/h', date: 'Mid Check', note: 'Vitals stable: BP 124/80, SpO2 99%, Pulse 72' },
+    { label: '12:00', value: 475, target: 480, rate: '115 ml/h', date: 'Observation', note: 'IV Pantoprazole + Fluid bolus nearing end' },
+    { label: '13:00', value: 580, target: 600, rate: '90 ml/h', date: 'Completion', note: 'Line flush complete, vitals clear for discharge' }
   ], []);
 
-  // Data Stream 3: Hematology ANC & Toxicity Reserve Index
-  const hematologyData = useMemo(() => [
-    { label: 'Wk 0', value: 4.8, target: 1.5, date: 'Pre-Chemo', note: 'Normal baseline bone marrow reserve', status: 'Optimal' },
-    { label: 'Wk 2', value: 3.6, target: 1.5, date: 'Post-C1', note: 'Mild asymptomatic nadir', status: 'Safe' },
-    { label: 'Wk 4', value: 2.2, target: 1.5, date: 'Post-C2', note: 'Acceptable count; proceed without delay', status: 'Monitored' },
-    { label: 'Wk 6', value: 1.8, target: 1.5, date: 'Post-C3 Nadir', note: 'Filgrastim G-CSF 300mcg support given', status: 'G-CSF Assisted' },
-    { label: 'Wk 8', value: 3.4, target: 1.5, date: 'Post-C4', note: 'Strong bone marrow reconstitution', status: 'Rebound' },
-    { label: 'Wk 10', value: 4.1, target: 1.5, date: 'Post-C5', note: 'Robust hematopoiesis maintained', status: 'Optimal' }
+  // Data Stream 3: Renal Reserve & eGFR Recovery Index
+  const renalData = useMemo(() => [
+    { label: 'Day 1', value: 54, target: 60, date: 'Admission', note: 'Mild acute kidney injury secondary to dehydration', status: 'Impaired (Stage 3a)' },
+    { label: 'Day 2', value: 58, target: 60, date: 'Post-Fluids', note: 'IV rehydration initiated, serum creatinine 1.4 mg/dL', status: 'Improving' },
+    { label: 'Day 3', value: 64, target: 60, date: 'Hydrated', note: 'eGFR normalized above safe boundary > 60 mL/min', status: 'Normal Reserve' },
+    { label: 'Day 5', value: 72, target: 60, date: 'Therapy Mid', note: 'Serum potassium 4.2 mEq/L, excellent clearance', status: 'Optimal' },
+    { label: 'Day 7', value: 81, target: 60, date: 'Pre-Discharge', note: 'Stable renal hemodynamics, creatinine 0.9 mg/dL', status: 'Fully Recovered' },
+    { label: 'Day 14', value: 88, target: 60, date: 'Follow-up', note: 'Renal function completely restored to baseline', status: 'Excellent' }
   ], []);
 
   // Current Dataset based on Stream
-  const currentData = activeStream === 'biomarker' ? biomarkerData : activeStream === 'infusion' ? infusionData : hematologyData;
+  const currentData = activeStream === 'glycemic' ? glycemicData : activeStream === 'infusion' ? infusionData : renalData;
 
   // Chart Coordinate Calculations
   const chartWidth = 560;
@@ -115,12 +115,12 @@ export default function DoctorAnalyticsHub() {
   const activePoint = hoverIndex !== null ? currentData[hoverIndex] : pinnedPoint || currentData[currentData.length - 1];
   const activePointIndex = hoverIndex !== null ? hoverIndex : currentData.indexOf(activePoint);
 
-  // Precision Genomic Distribution Data (Donut Chart)
-  const genomicSegments = [
-    { label: 'ER+/PR+ Luminal', pct: 55, count: 11, color: '#0284c7', therapy: 'Letrozole + CDK4/6i (Abemaciclib)', response: 'High Sensitivity' },
-    { label: 'HER2 Amplified', pct: 20, count: 4, color: '#38bdf8', therapy: 'Trastuzumab + Pertuzumab IV', response: 'Rapid Regress' },
-    { label: 'Triple Negative', pct: 15, count: 3, color: '#f59e0b', therapy: 'Pembrolizumab + Carboplatin', response: 'Immune Monitored' },
-    { label: 'BRCA1/2 Mutant', pct: 10, count: 2, color: '#10b981', therapy: 'Olaparib PARP Inhibitor', response: 'Dna Repair Target' }
+  // Multispeciality Patient Case Distribution (Donut Chart)
+  const caseSegments = [
+    { label: 'Cardiology & Vascular', pct: 40, count: 16, color: '#1e3a8a', therapy: 'ACEi / ARB + Statin Regimen', response: 'Target BP Achieved' },
+    { label: 'Diabetology & Endocrine', pct: 30, count: 12, color: '#2563eb', therapy: 'Metformin + SGLT2i Protocol', response: 'HbA1c Optimized' },
+    { label: 'Pulmonology & Respiratory', pct: 18, count: 7, color: '#3b82f6', therapy: 'ICS-LABA Inhaler Therapy', response: 'FEV1 Restored' },
+    { label: 'General & Lap Surgery', pct: 12, count: 5, color: '#10b981', therapy: 'Post-Op Observation & Care', response: 'Recovery Track' }
   ];
 
   return (
@@ -129,20 +129,20 @@ export default function DoctorAnalyticsHub() {
       {/* Top Header & Stream Mode Switchers */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div className="stat-squircle-badge" style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)', color: '#ffffff', boxShadow: '0 4px 14px rgba(56, 189, 248, 0.4)' }}>
+          <div className="stat-squircle-badge" style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)', color: '#ffffff', boxShadow: '0 4px 14px rgba(30, 58, 138, 0.35)' }}>
             <TrendingUp size={18} strokeWidth={2.4} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 900, color: '#0369a1', margin: 0, letterSpacing: '-0.02em' }}>
-                Clinical Intelligence & Oncology Response Analytics
+              <h3 style={{ fontSize: 14, fontWeight: 900, color: '#0f172a', margin: 0, letterSpacing: '-0.02em' }}>
+                Clinical Intelligence & Patient Recovery Analytics
               </h3>
-              <span className="brand-counter-pill" style={{ background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd', fontSize: 9.5, fontWeight: 800 }}>
-                Live 60fps Telemetry
+              <span className="brand-counter-pill" style={{ background: '#CAF0F8', color: '#0077B6', border: '1px solid #90E0EF', fontSize: 9.5, fontWeight: 800 }}>
+                Live Telemetry
               </span>
             </div>
             <p style={{ fontSize: 11, color: '#64748b', margin: '2px 0 0 0' }}>
-              Interactive biomarker kinetics, daycare infusion throughput, and AI-modeled response curves
+              Interactive glycemic kinetics, observation fluid throughput, and AI-modeled recovery curves
             </p>
           </div>
         </div>
@@ -150,11 +150,11 @@ export default function DoctorAnalyticsHub() {
         {/* Stream Switcher Chips */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           <button 
-            className={`doc-metric-chip ${activeStream === 'biomarker' ? 'active' : ''}`}
-            onClick={() => { setActiveStream('biomarker'); setHoverIndex(null); }}
+            className={`doc-metric-chip ${activeStream === 'glycemic' ? 'active' : ''}`}
+            onClick={() => { setActiveStream('glycemic'); setHoverIndex(null); }}
           >
             <Sparkles size={12} />
-            <span>Tumor Biomarkers</span>
+            <span>Glycemic Kinetics</span>
           </button>
           <button 
             className={`doc-metric-chip ${activeStream === 'infusion' ? 'active' : ''}`}
@@ -164,30 +164,30 @@ export default function DoctorAnalyticsHub() {
             <span>Infusion Flow</span>
           </button>
           <button 
-            className={`doc-metric-chip ${activeStream === 'hematology' ? 'active' : ''}`}
-            onClick={() => { setActiveStream('hematology'); setHoverIndex(null); }}
+            className={`doc-metric-chip ${activeStream === 'renal' ? 'active' : ''}`}
+            onClick={() => { setActiveStream('renal'); setHoverIndex(null); }}
           >
             <ShieldCheck size={12} />
-            <span>ANC Toxicity</span>
+            <span>Renal Reserve</span>
           </button>
         </div>
       </div>
 
-      {/* Main Grid: Interactive Curve Chart (Left) + Precision Genomic Profile (Right) */}
+      {/* Main Grid: Interactive Curve Chart (Left) + Multispeciality Profile (Right) */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.75fr) minmax(0, 1fr)', gap: 16, alignItems: 'stretch' }}>
         
         {/* LEFT STAGE: Interactive Area/Line Graph */}
-        <div style={{ display: 'flex', flexDirection: 'column', background: '#f8fafc', borderRadius: 14, border: '1px solid #e0f2fe', padding: '12px 14px', position: 'relative' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', background: '#f5fbfe', borderRadius: 14, border: '1px solid #bfe7f5', padding: '12px 14px', position: 'relative' }}>
           
           {/* Chart Header Metrics Bar */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div>
                 <span style={{ fontSize: 10, color: '#64748b', fontWeight: 600, display: 'block' }}>
-                  {activeStream === 'biomarker' ? 'CURRENT BURDEN (CEA)' : activeStream === 'infusion' ? 'DELIVERED VOLUME' : 'CURRENT ANC'}
+                  {activeStream === 'glycemic' ? 'CURRENT HbA1c' : activeStream === 'infusion' ? 'DELIVERED VOLUME' : 'CURRENT eGFR'}
                 </span>
-                <span style={{ fontSize: 18, fontWeight: 900, color: '#0369a1', letterSpacing: '-0.03em' }}>
-                  {activePoint?.value} {activeStream === 'biomarker' ? 'ng/mL' : activeStream === 'infusion' ? 'mL' : 'k/µL'}
+                <span style={{ fontSize: 18, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.03em' }}>
+                  {activePoint?.value} {activeStream === 'glycemic' ? '%' : activeStream === 'infusion' ? 'mL' : 'mL/min'}
                 </span>
               </div>
               {activePoint?.reduction && (
@@ -199,7 +199,7 @@ export default function DoctorAnalyticsHub() {
             </div>
 
             {/* AI Simulate Button */}
-            {activeStream === 'biomarker' && (
+            {activeStream === 'glycemic' && (
               <button 
                 onClick={() => setIsSimulating(!isSimulating)}
                 style={{
@@ -211,15 +211,15 @@ export default function DoctorAnalyticsHub() {
                   fontSize: 10.5,
                   fontWeight: 700,
                   cursor: 'pointer',
-                  border: isSimulating ? '1.5px solid #0284c7' : '1px solid #bae6fd',
-                  backgroundColor: isSimulating ? '#e0f2fe' : '#ffffff',
-                  color: isSimulating ? '#0284c7' : '#0369a1',
+                  border: isSimulating ? '1.5px solid #0077B6' : '1px solid #90E0EF',
+                  backgroundColor: isSimulating ? '#CAF0F8' : '#ffffff',
+                  color: '#0077B6',
                   transition: 'all 0.2s ease'
                 }}
-                title="Forecast Cycle 7 biomarker response using deep predictive kinetic models"
+                title="Forecast Month 7 glycemic response using predictive metabolic models"
               >
-                <Sparkles size={12} color="#0284c7" />
-                <span>{isSimulating ? 'Simulation Active' : 'AI Forecast +1 Cycle'}</span>
+                <Sparkles size={12} color="#0077B6" />
+                <span>{isSimulating ? 'Simulation Active' : 'AI Forecast +1 Month'}</span>
               </button>
             )}
           </div>
@@ -232,18 +232,18 @@ export default function DoctorAnalyticsHub() {
               className="doc-chart-svg"
             >
               <defs>
-                {/* Luminous Sky Gradient Area Fill */}
+                {/* Luminous Area Fill matching Admin Palette */}
                 <linearGradient id="docSkyAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.45" />
-                  <stop offset="60%" stopColor="#bae6fd" stopOpacity="0.18" />
+                  <stop offset="0%" stopColor="#0077B6" stopOpacity="0.28" />
+                  <stop offset="60%" stopColor="#90E0EF" stopOpacity="0.12" />
                   <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0" />
                 </linearGradient>
 
-                {/* Stroke Gradient Line */}
+                {/* Stroke Gradient Line matching Admin Palette */}
                 <linearGradient id="docSkyStrokeGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#0284c7" />
-                  <stop offset="50%" stopColor="#0ea5e9" />
-                  <stop offset="100%" stopColor="#38bdf8" />
+                  <stop offset="0%" stopColor="#0f172a" />
+                  <stop offset="50%" stopColor="#0077B6" />
+                  <stop offset="100%" stopColor="#00B4D8" />
                 </linearGradient>
               </defs>
 
@@ -310,7 +310,7 @@ export default function DoctorAnalyticsHub() {
                   y1={paddingY} 
                   x2={getX(hoverIndex)} 
                   y2={chartHeight - paddingY} 
-                  stroke="#0284c7" 
+                  stroke="#0077B6" 
                   strokeWidth="1.5" 
                   strokeDasharray="2 3"
                 />
@@ -330,7 +330,7 @@ export default function DoctorAnalyticsHub() {
                         cx={cx} 
                         cy={cy} 
                         r="12" 
-                        fill="rgba(56, 189, 248, 0.25)" 
+                        fill="rgba(0, 119, 182, 0.22)" 
                         className="doc-pulse-marker"
                       />
                     )}
@@ -338,8 +338,8 @@ export default function DoctorAnalyticsHub() {
                       cx={cx} 
                       cy={cy} 
                       r={isSelected ? 6 : 4} 
-                      fill={pt.isForecast ? '#38bdf8' : '#ffffff'} 
-                      stroke={pt.isForecast ? '#0284c7' : '#0284c7'} 
+                      fill={pt.isForecast ? '#00B4D8' : '#ffffff'} 
+                      stroke={pt.isForecast ? '#0077B6' : '#0077B6'} 
                       strokeWidth={isSelected ? 3 : 2}
                       className="doc-chart-node"
                       onMouseEnter={() => setHoverIndex(i)}
@@ -349,7 +349,7 @@ export default function DoctorAnalyticsHub() {
                     <text 
                       x={cx} 
                       y={chartHeight - 6} 
-                      fill={isSelected ? '#0284c7' : '#64748b'} 
+                      fill={isSelected ? '#0077B6' : '#64748b'} 
                       fontSize="9.5" 
                       fontWeight={isSelected ? '800' : '600'} 
                       textAnchor="middle"
@@ -375,10 +375,10 @@ export default function DoctorAnalyticsHub() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
-                  <span style={{ fontSize: 11, fontWeight: 900, color: '#0369a1' }}>
+                  <span style={{ fontSize: 11, fontWeight: 900, color: '#0f172a' }}>
                     {activePoint.label} • {activePoint.date}
                   </span>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: '#0284c7', background: '#e0f2fe', padding: '1px 6px', borderRadius: 4 }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: '#0077B6', background: '#CAF0F8', padding: '1px 6px', borderRadius: 4 }}>
                     {activePoint.stage || activePoint.status || 'Verified'}
                   </span>
                 </div>
@@ -392,27 +392,27 @@ export default function DoctorAnalyticsHub() {
           {/* Interactive Scrub Guide Footer */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6, fontSize: 10, color: '#64748b' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-              <Info size={11} color="#0284c7" /> Hover over any node to scrub trajectory and inspect clinical milestones
+              <Info size={11} color="#0077B6" /> Hover over any node to scrub trajectory and inspect clinical milestones
             </span>
-            <span style={{ fontWeight: 700, color: '#0284c7' }}>
-              6-Cycle Kinetic Trend • R² = 0.984
+            <span style={{ fontWeight: 700, color: '#0077B6' }}>
+              6-Month Kinetic Trend • R² = 0.984
             </span>
           </div>
         </div>
 
-        {/* RIGHT STAGE: Precision Genomic Architecture & Live Donut Arc */}
-        <div style={{ display: 'flex', flexDirection: 'column', background: '#f8fafc', borderRadius: 14, border: '1px solid #e0f2fe', padding: '12px 14px', justifyContent: 'space-between' }}>
+        {/* RIGHT STAGE: Multispeciality Case Distribution & Live Donut Arc */}
+        <div style={{ display: 'flex', flexDirection: 'column', background: '#f5fbfe', borderRadius: 14, border: '1px solid #bfe7f5', padding: '12px 14px', justifyContent: 'space-between' }}>
           
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Dna size={15} color="#0284c7" />
-                <span style={{ fontSize: 12, fontWeight: 800, color: '#0369a1' }}>
-                  Genomic Cohort & Biomarkers
+                <Activity size={15} color="#0077B6" />
+                <span style={{ fontSize: 12, fontWeight: 800, color: '#0f172a' }}>
+                  Multispeciality Case Mix
                 </span>
               </div>
-              <span className="brand-counter-pill" style={{ fontSize: 9.5, background: '#e0f2fe', color: '#0284c7', border: '1px solid #bae6fd' }}>
-                4 Clusters
+              <span className="brand-counter-pill" style={{ fontSize: 9.5, background: '#CAF0F8', color: '#0077B6', border: '1px solid #90E0EF' }}>
+                4 Streams
               </span>
             </div>
 
@@ -427,11 +427,11 @@ export default function DoctorAnalyticsHub() {
                   {(() => {
                     const circumference = 2 * Math.PI * 38;
                     let accumulatedPct = 0;
-                    return genomicSegments.map((seg, i) => {
+                    return caseSegments.map((seg, i) => {
                       const strokeDash = (seg.pct / 100) * circumference;
                       const strokeOffset = -((accumulatedPct / 100) * circumference);
                       accumulatedPct += seg.pct;
-                      const isSegSelected = selectedGenomicIndex === i;
+                      const isSegSelected = selectedCaseIndex === i;
 
                       return (
                         <circle
@@ -449,7 +449,7 @@ export default function DoctorAnalyticsHub() {
                             transition: 'all 0.3s ease',
                             opacity: isSegSelected ? 1 : 0.65
                           }}
-                          onMouseEnter={() => setSelectedGenomicIndex(i)}
+                          onMouseEnter={() => setSelectedCaseIndex(i)}
                         />
                       );
                     });
@@ -466,8 +466,8 @@ export default function DoctorAnalyticsHub() {
                   justifyContent: 'center',
                   pointerEvents: 'none'
                 }}>
-                  <span style={{ fontSize: 15, fontWeight: 900, color: genomicSegments[selectedGenomicIndex].color, lineHeight: 1 }}>
-                    {genomicSegments[selectedGenomicIndex].pct}%
+                  <span style={{ fontSize: 15, fontWeight: 900, color: caseSegments[selectedCaseIndex].color, lineHeight: 1 }}>
+                    {caseSegments[selectedCaseIndex].pct}%
                   </span>
                   <span style={{ fontSize: 8.5, color: '#64748b', fontWeight: 700 }}>
                     SHARE
@@ -475,41 +475,41 @@ export default function DoctorAnalyticsHub() {
                 </div>
               </div>
 
-              {/* Selected Genomic Segment Details */}
+              {/* Selected Case Segment Details */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 11.5, fontWeight: 900, color: genomicSegments[selectedGenomicIndex].color, display: 'block' }}>
-                  {genomicSegments[selectedGenomicIndex].label}
+                <span style={{ fontSize: 11.5, fontWeight: 900, color: caseSegments[selectedCaseIndex].color, display: 'block' }}>
+                  {caseSegments[selectedCaseIndex].label}
                 </span>
                 <span style={{ fontSize: 10, color: '#334155', fontWeight: 600, display: 'block', marginTop: 2 }}>
-                  {genomicSegments[selectedGenomicIndex].therapy}
+                  {caseSegments[selectedCaseIndex].therapy}
                 </span>
-                <span style={{ display: 'inline-block', marginTop: 4, background: '#ffffff', border: `1px solid ${genomicSegments[selectedGenomicIndex].color}55`, padding: '2px 6px', borderRadius: 6, fontSize: 9.5, fontWeight: 800, color: genomicSegments[selectedGenomicIndex].color }}>
-                  {genomicSegments[selectedGenomicIndex].response}
+                <span style={{ display: 'inline-block', marginTop: 4, background: '#ffffff', border: `1px solid ${caseSegments[selectedCaseIndex].color}55`, padding: '2px 6px', borderRadius: 6, fontSize: 9.5, fontWeight: 800, color: caseSegments[selectedCaseIndex].color }}>
+                  {caseSegments[selectedCaseIndex].response}
                 </span>
               </div>
             </div>
 
-            {/* Genomic Clusters List Items */}
+            {/* Case Streams List Items */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {genomicSegments.map((seg, idx) => (
+              {caseSegments.map((seg, idx) => (
                 <div 
                   key={idx}
-                  onMouseEnter={() => setSelectedGenomicIndex(idx)}
+                  onMouseEnter={() => setSelectedCaseIndex(idx)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '3px 8px',
                     borderRadius: 6,
-                    backgroundColor: selectedGenomicIndex === idx ? '#ffffff' : 'transparent',
-                    border: `1px solid ${selectedGenomicIndex === idx ? seg.color : 'transparent'}`,
+                    backgroundColor: selectedCaseIndex === idx ? '#ffffff' : 'transparent',
+                    border: `1px solid ${selectedCaseIndex === idx ? seg.color : 'transparent'}`,
                     cursor: 'pointer',
                     transition: 'all 0.18s ease'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: seg.color }} />
-                    <span style={{ fontSize: 10.5, fontWeight: selectedGenomicIndex === idx ? 800 : 600, color: '#0f172a' }}>
+                    <span style={{ fontSize: 10.5, fontWeight: selectedCaseIndex === idx ? 800 : 600, color: '#0f172a' }}>
                       {seg.label}
                     </span>
                   </div>
@@ -526,15 +526,15 @@ export default function DoctorAnalyticsHub() {
             marginTop: 8, 
             padding: '6px 10px', 
             borderRadius: 8, 
-            background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', 
-            border: '1px solid #bae6fd',
+            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', 
+            border: '1px solid #bfdbfe',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span className="live-dot" style={{ backgroundColor: '#0284c7' }} />
-              <span style={{ fontSize: 10, fontWeight: 800, color: '#0369a1' }}>
+              <span className="live-dot" style={{ backgroundColor: '#2563eb' }} />
+              <span style={{ fontSize: 10, fontWeight: 800, color: '#1e3a8a' }}>
                 Cardiac Telemetry: 74 BPM
               </span>
             </div>
@@ -544,10 +544,10 @@ export default function DoctorAnalyticsHub() {
               <path 
                 d="M 0 8 L 15 8 L 20 2 L 25 14 L 30 8 L 35 8 L 40 4 L 45 12 L 50 8 L 70 8" 
                 fill="none" 
-                stroke="#0284c7" 
+                stroke="#2563eb" 
                 strokeWidth="1.8" 
                 strokeLinecap="round" 
-                strokeLinejoin="round"
+                strokeLinejoin="round" 
                 className="doc-ecg-svg"
               />
             </svg>

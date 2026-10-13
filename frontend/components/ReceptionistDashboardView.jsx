@@ -294,7 +294,7 @@ export default function ReceptionistDashboardView({ onOpenRegister, onSelectPati
                 </h3>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '3px 0 0' }}>
-                Balanced patient routing prevents room crowding and ensures smooth oncologist handover
+                Balanced patient routing prevents room crowding and ensures smooth physician handover
               </p>
             </div>
             <span className="badge badge-active">4 Stations Active</span>

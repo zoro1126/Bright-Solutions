@@ -33,7 +33,7 @@ export const QUICK_PERSONAS = [
     role: 'doctor',
     username: 'dr_kiran',
     displayName: 'Dr. Kiran Patel',
-    title: 'Oncologist',
+    title: 'Consultant Physician',
     dept: 'Room 03',
     icon: Stethoscope,
     color: '#15803d',
@@ -432,7 +432,7 @@ export default function LoginPage({ onLoginSuccess }) {
                       boxSizing: 'border-box'
                     }}
                   >
-                    <option value="doctor">Oncology Doctor</option>
+                    <option value="doctor">Doctor (Consultant)</option>
                     <option value="receptionist">Receptionist</option>
                     <option value="cashier">Cashier</option>
                     <option value="admin">Administrator</option>

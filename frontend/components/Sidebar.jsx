@@ -68,19 +68,19 @@ export default function Sidebar({
     brandTag = 'Doctor Desk';
     BrandIcon = Stethoscope;
     brandLogoIcon = Stethoscope;
-    brandGradient = 'linear-gradient(135deg, #7dd3fc, #38bdf8)';
-    brandShadow = '0 2px 10px rgba(56, 189, 248, 0.4)';
+    brandGradient = 'var(--doc-brand-gradient, linear-gradient(135deg, #0f172a, #1e3a8a))';
+    brandShadow = 'var(--doc-brand-shadow, 0 4px 12px rgba(30, 58, 138, 0.35))';
     staffName = 'Dr. Kiran Patel';
-    staffRole = 'Oncologist • Station 03';
+    staffRole = 'Consultant Physician • Station 03';
     staffAvatar = 'KP';
-    avatarGradient = 'linear-gradient(135deg, #7dd3fc, #38bdf8)';
+    avatarGradient = 'linear-gradient(135deg, #0f172a, #1e3a8a)';
     sectionLabel = 'Clinical Navigation';
-    activeNavBg = '#ffffff';
-    activeNavColor = '#0284c7';
-    activeNavBorder = '#38bdf8';
+    activeNavBg = 'var(--doc-nav-active-bg, #CAF0F8)';
+    activeNavColor = 'var(--doc-nav-active-color, #0077B6)';
+    activeNavBorder = 'var(--doc-nav-active-border, #0077B6)';
     navItems = [
       { id: 'dashboard', label: 'Clinical Dashboard', icon: LayoutDashboard },
-      { id: 'workspace', label: 'Consultation & e-Rx', icon: Stethoscope, badge: stats?.total || 5, badgeBg: '#e0f2fe', badgeColor: '#0284c7' },
+      { id: 'workspace', label: 'Consultation & e-Rx', icon: Stethoscope, badge: stats?.total || 5, badgeBg: '#CAF0F8', badgeColor: '#0077B6' },
       { id: 'dossier', label: 'Patient Dossier', icon: FileText },
       { id: 'viewer', label: 'Diagnostic Scans', icon: Layers }
     ];
@@ -142,7 +142,7 @@ export default function Sidebar({
                 <LogoIcon size={16} strokeWidth={2.4} />
               </div>
               <div className="drawer-brand-text">
-                <span className="drawer-title" style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em', color: role === 'doctor' ? '#0284c7' : (role === 'admin' ? '#03045E' : 'var(--text-primary)') }}>Bright</span>
+                <span className="drawer-title" style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em', color: (role === 'doctor' || role === 'admin') ? '#0f172a' : 'var(--text-primary)' }}>Bright</span>
               </div>
             </div>
             <button 
@@ -161,7 +161,7 @@ export default function Sidebar({
       <div className="drawer-nav-list">
         {!collapsed && (
           <div className="drawer-section-label">
-            <span style={{ color: role === 'doctor' ? '#0284c7' : (role === 'admin' ? '#0077B6' : undefined), fontWeight: 700 }}>{sectionLabel}</span>
+            <span style={{ color: (role === 'doctor' || role === 'admin') ? '#0077B6' : undefined, fontWeight: 700 }}>{sectionLabel}</span>
           </div>
         )}
 
@@ -191,20 +191,20 @@ export default function Sidebar({
               }}
               title={collapsed ? item.label : undefined}
             >
-              <div className="nav-icon-container" style={{ color: isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? '#0284c7' : undefined) }}>
+              <div className="nav-icon-container" style={{ color: isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? (isActive ? '#0077B6' : '#475569') : undefined) }}>
                 <Icon size={17} strokeWidth={isActive ? 2.5 : 2.2} />
               </div>
               {!collapsed && (
                 <>
-                  <span className="nav-label" style={{ color: isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? '#082f49' : undefined), fontWeight: isActive ? 800 : 700 }}>{item.label}</span>
+                  <span className="nav-label" style={{ color: isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? (isActive ? '#0077B6' : '#334155') : undefined), fontWeight: isActive ? 800 : 600 }}>{item.label}</span>
                   {item.badge !== undefined && item.badge > 0 && (
                     <span 
                       className="nav-badge"
                       style={{ 
-                        color: item.badgeColor || (isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? '#0284c7' : 'inherit')), 
-                        backgroundColor: item.badgeBg || (role === 'doctor' ? '#e0f2fe' : 'var(--bg-subtle)'),
+                        color: item.badgeColor || (isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? '#0077B6' : 'inherit')), 
+                        backgroundColor: item.badgeBg || (role === 'doctor' ? '#CAF0F8' : 'var(--bg-subtle)'),
                         fontWeight: 700,
-                        border: role === 'doctor' ? '1px solid #bae6fd' : (item.badgeBg === '#FDF4AF' ? '1px solid #e6dc7e' : undefined)
+                        border: role === 'doctor' ? '1px solid #90E0EF' : (item.badgeBg === '#FDF4AF' ? '1px solid #e6dc7e' : undefined)
                       }}
                     >
                       {item.badge}
@@ -242,23 +242,23 @@ export default function Sidebar({
             className="m3-nav-item"
             title={collapsed ? `${brandTag} Settings` : undefined}
           >
-            <div className="nav-icon-container" style={{ color: role === 'doctor' ? '#0284c7' : undefined }}>
+            <div className="nav-icon-container" style={{ color: '#475569' }}>
               <Settings size={17} strokeWidth={2.2} />
             </div>
-            {!collapsed && <span className="nav-label" style={{ color: role === 'doctor' ? '#082f49' : undefined, fontWeight: 700 }}>Settings</span>}
+            {!collapsed && <span className="nav-label" style={{ color: '#334155', fontWeight: 600 }}>Settings</span>}
           </button>
         </div>
 
         {collapsed ? (
           <div className="drawer-staff-collapsed" title={`${staffName} • ${staffRole}`}>
-            <div className="staff-avatar" style={{ background: avatarGradient, color: '#ffffff', boxShadow: (role === 'doctor' || role === 'admin') ? '0 2px 8px rgba(3, 4, 94, 0.3)' : undefined }}>{staffAvatar}</div>
+            <div className="staff-avatar" style={{ background: avatarGradient, color: '#ffffff', boxShadow: (role === 'doctor' || role === 'admin') ? '0 2px 8px rgba(30, 58, 138, 0.3)' : undefined }}>{staffAvatar}</div>
           </div>
         ) : (
-          <div className="drawer-staff-card" style={{ backgroundColor: role === 'doctor' ? 'rgba(255, 255, 255, 0.85)' : (role === 'admin' ? '#CAF0F833' : undefined), border: role === 'doctor' ? '1.5px solid #bae6fd' : (role === 'admin' ? '1px solid #90E0EF66' : undefined) }}>
-            <div className="staff-avatar" style={{ background: avatarGradient, color: '#ffffff', boxShadow: role === 'doctor' ? '0 0 0 2.5px #ffffff, 0 4px 12px rgba(56,189,248,0.35)' : (role === 'admin' ? '0 2px 8px rgba(3, 4, 94, 0.3)' : undefined) }}>{staffAvatar}</div>
+          <div className="drawer-staff-card" style={{ backgroundColor: (role === 'doctor' || role === 'admin') ? 'rgba(202, 240, 248, 0.4)' : undefined, border: (role === 'doctor' || role === 'admin') ? '1px solid #bfe7f5' : undefined }}>
+            <div className="staff-avatar" style={{ background: avatarGradient, color: '#ffffff', boxShadow: (role === 'doctor' || role === 'admin') ? '0 2px 8px rgba(30, 58, 138, 0.3)' : undefined }}>{staffAvatar}</div>
             <div className="staff-info">
-              <div className="staff-name" style={{ color: role === 'doctor' ? '#0369a1' : (role === 'admin' ? '#03045E' : undefined) }}>{staffName}</div>
-              <div className="staff-role" style={{ color: role === 'doctor' ? '#0284c7' : (role === 'admin' ? '#0077B6' : undefined) }}>{staffRole}</div>
+              <div className="staff-name" style={{ color: '#0f172a' }}>{staffName}</div>
+              <div className="staff-role" style={{ color: '#0077B6' }}>{staffRole}</div>
             </div>
           </div>
         )}

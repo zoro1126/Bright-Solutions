@@ -41,18 +41,18 @@ const AVATAR_COLORS = [
 ];
 
 const CLINICAL_PROCEDURES = [
-  { id: 'proc-1', desc: 'Specialist Medical Oncology Consultation (Dr. Kiran Patel)', code: 'ONC-CONS-01', dept: 'Clinical Oncology', qty: 1, unitPrice: 2500, coveredByInsurance: true },
-  { id: 'proc-2', desc: 'High-Resolution Contrast CT Chest Scan (148 Slices)', code: 'RAD-CT-CHEST', dept: 'Radiology Imaging', qty: 1, unitPrice: 6800, coveredByInsurance: true },
-  { id: 'proc-3', desc: 'Oncology Serum Biomarker Panel (CA 15-3 & CEA)', code: 'LAB-BIO-153', dept: 'Clinical Biochemistry', qty: 1, unitPrice: 3200, coveredByInsurance: true },
-  { id: 'proc-4', desc: 'Daycare Oncology Infusion Chair & Clinical Triage Administration', code: 'ADM-DAY-TRIAGE', dept: 'Daycare Chemotherapy', qty: 1, unitPrice: 1500, coveredByInsurance: true }
+  { id: 'proc-1', desc: 'Specialist General Medicine Consultation (Dr. Ananya Sharma)', code: 'MED-CONS-01', dept: 'Internal Medicine', qty: 1, unitPrice: 1200, coveredByInsurance: true },
+  { id: 'proc-2', desc: '12-Lead Electrocardiography (ECG) & 2D Echo Evaluation', code: 'CARD-ECG-02', dept: 'Cardiology Diagnostics', qty: 1, unitPrice: 2800, coveredByInsurance: true },
+  { id: 'proc-3', desc: 'Comprehensive Metabolic Panel (HbA1c, Lipid & Renal Profile)', code: 'LAB-CMP-104', dept: 'Clinical Biochemistry', qty: 1, unitPrice: 1800, coveredByInsurance: true },
+  { id: 'proc-4', desc: 'Daycare Observation Ward Care & IV Medication Administration', code: 'ADM-DAY-CARE', dept: 'Observation & Daycare', qty: 1, unitPrice: 1500, coveredByInsurance: true }
 ];
 
 const PHARMACY_MEDICINES = [
-  { id: 'rx-1', name: 'Letrozole 2.5mg (Femara)', form: 'Tablet (Pack of 30)', batch: 'LT-8841', exp: '12/2027', qty: 90, unitPrice: 35, gstPct: 5, coveredByInsurance: true },
-  { id: 'rx-2', name: 'Calcium Carbonate + Vit D3 (Shelcal 500)', form: 'Tablet (Pack of 15)', batch: 'CD-2029', exp: '08/2027', qty: 180, unitPrice: 6, gstPct: 5, coveredByInsurance: true },
-  { id: 'rx-3', name: 'Ondansetron 4mg (Emeset)', form: 'Tablet (Strip of 10)', batch: 'ON-1140', exp: '05/2028', qty: 15, unitPrice: 18, gstPct: 5, coveredByInsurance: true },
-  { id: 'rx-4', name: 'Paracetamol 650mg SOS (Dolo)', form: 'Tablet (Strip of 15)', batch: 'PC-7712', exp: '03/2028', qty: 20, unitPrice: 3.5, gstPct: 5, coveredByInsurance: true },
-  { id: 'rx-5', name: 'Sterile Oncology Port Needle & Infusion Line Kit', form: 'Sterile Kit', batch: 'SC-4401', exp: '10/2028', qty: 1, unitPrice: 1200, gstPct: 12, coveredByInsurance: true }
+  { id: 'rx-1', name: 'Telmisartan 40mg + Amlodipine 5mg (Telma-AM)', form: 'Tablet (Strip of 15)', batch: 'TM-9041', exp: '12/2027', qty: 30, unitPrice: 12.5, gstPct: 5, coveredByInsurance: true },
+  { id: 'rx-2', name: 'Atorvastatin 20mg (Atorva)', form: 'Tablet (Strip of 10)', batch: 'AT-3312', exp: '09/2027', qty: 30, unitPrice: 18.0, gstPct: 5, coveredByInsurance: true },
+  { id: 'rx-3', name: 'Metformin Hydrochloride 500mg (Glycomet ER)', form: 'Tablet (Strip of 20)', batch: 'MF-8819', exp: '06/2028', qty: 60, unitPrice: 4.2, gstPct: 5, coveredByInsurance: true },
+  { id: 'rx-4', name: 'Pantoprazole 40mg Gastro-Resistant (Pan-40)', form: 'Tablet (Strip of 15)', batch: 'PN-4402', exp: '11/2028', qty: 30, unitPrice: 9.0, gstPct: 5, coveredByInsurance: true },
+  { id: 'rx-5', name: 'Sterile IV Infusion Set & Normal Saline 500mL', form: 'Sterile Infusion Kit', batch: 'NS-1044', exp: '04/2029', qty: 1, unitPrice: 280, gstPct: 12, coveredByInsurance: true }
 ];
 
 export default function CashierPage({ currentRole = 'cashier', onSwitchRole, activeSubTab = 'billing', onLogout }) {
@@ -447,7 +447,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                   <tr>
                     <th style={{ width: 80, minWidth: 70 }}>MRN</th>
                     <th style={{ minWidth: 150 }}>Patient Information</th>
-                    <th style={{ minWidth: 110 }}>Consulting Oncologist</th>
+                    <th style={{ minWidth: 110 }}>Consulting Doctor</th>
                     <th style={{ minWidth: 115 }}>Coverage & ABHA</th>
                     <th style={{ width: 75, minWidth: 70 }}>Total Gross</th>
                     <th style={{ width: 85, minWidth: 80 }}>Patient Payable</th>
@@ -525,7 +525,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                               {p.doctorAssigned.split('(')[0]}
                             </div>
                             <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
-                              {p.doctorAssigned.split('(')[1]?.replace(')', '') || 'Medical Oncology'}
+                              {p.doctorAssigned.split('(')[1]?.replace(')', '') || 'General Medicine'}
                             </div>
                           </td>
                           <td>
@@ -826,12 +826,12 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                 </div>
               </div>
 
-              {/* Part 2: Oncology Pharmacy Medicines */}
+              {/* Part 2: Hospital Pharmacy Medicines */}
               <div style={{ marginBottom: 18 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Pill size={15} color="#059669" />
-                    <span>Dispensed Oncology Pharmacy Medicines</span>
+                    <span>Dispensed Hospital Pharmacy Medicines</span>
                   </div>
                   <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>
                     Subtotal: ₹{pharmacyGross.toLocaleString()} (Incl. ₹{pharmacyGst} GST)
@@ -1013,7 +1013,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                           Dynamic Patient UPI QR Code
                         </div>
                         <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                          VPA: <strong>bright.cancercare@hdfcbank</strong> • Amount: <strong>₹{patientNetPayable.toLocaleString()}</strong>
+                          VPA: <strong>brightsolutions@hdfcbank</strong> • Amount: <strong>₹{patientNetPayable.toLocaleString()}</strong>
                         </div>
                         <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
                           Scan with BHIM, Google Pay, PhonePe, or Paytm
@@ -1235,10 +1235,10 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
             <div className="m3-dialog-header" style={{ padding: '18px 24px 14px', margin: '-28px -28px 18px -28px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div>
                 <h2 style={{ fontSize: 19, fontWeight: 900, color: '#ffffff' }}>
-                  CANCERCARE ONCOLOGY HOSPITAL & RESEARCH INSTITUTE
+                  BRIGHT SOLUTIONS MULTISPECIALITY HOSPITAL
                 </h2>
                 <p style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.92)', marginTop: 2 }}>
-                  NABH Accredited Comprehensive Cancer Centre • GSTIN: 33AAACG1234F1Z8 • DL: 20B/21B-44120
+                  NABH Accredited Multispeciality Medical Centre • GSTIN: 33AAACG1234F1Z8 • DL: 20B/21B-44120
                 </p>
                 <p style={{ fontSize: 10.5, color: 'rgba(255, 255, 255, 0.85)' }}>
                   124 Healthcare Boulevard, Medical District • ABDM Facility ID: IN33000881
@@ -1313,7 +1313,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
             {/* Part 2: Itemized Pharmacy Medicine Dispensing */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 6 }}>
-                2. Itemized Oncology Pharmacy Medicines Dispensed
+                2. Itemized Hospital Pharmacy Medicines Dispensed
               </div>
               <table style={{ width: '100%', fontSize: 11.5, borderCollapse: 'collapse', border: '1px solid var(--border-default)' }}>
                 <thead style={{ background: 'var(--bg-subtle)' }}>

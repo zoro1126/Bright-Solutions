@@ -512,7 +512,7 @@ export default function SpotlightTour({ onSwitchRole, currentRole }) {
             </h2>
             
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.6 }}>
-              You have experienced the complete hospital flow: from <strong>Patient Registration & Triage Vitals</strong>, <strong>AI Triage Screening</strong>, <strong>DICOM CT Radiology</strong>, <strong>Digital Oncology Rx</strong>, through to <strong>100% Cashless PM-JAY Settlement & Official Tax Invoicing</strong>.
+              You have experienced the complete hospital flow: from <strong>Patient Registration & Triage Vitals</strong>, <strong>AI Triage Screening</strong>, <strong>Diagnostic Imaging</strong>, <strong>Digital Clinical Rx</strong>, through to <strong>100% Cashless PM-JAY Settlement & Official Tax Invoicing</strong>.
             </p>
 
             <div className="victory-stats-grid">

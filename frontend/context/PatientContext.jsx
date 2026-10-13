@@ -43,7 +43,7 @@ export function PatientProvider({ children }) {
         phone: patientData.emergencyContactPhone || 'N/A'
       },
       appointmentTime: timeStr,
-      doctorAssigned: patientData.doctorAssigned || "Dr. Kiran Patel (Medical Oncology)",
+      doctorAssigned: patientData.doctorAssigned || "Dr. Ananya Sharma (General & Internal Medicine)",
       status: "QUESTIONNAIRE_PENDING",
       registeredAt: timeStr,
       abhaId: patientData.abhaId || "",
@@ -123,7 +123,7 @@ export function PatientProvider({ children }) {
         if (p.id !== patientId) return p;
 
         // Determine dynamic risk flags based on MCQ choices
-        const hasPriorCancer = responses.priorCancer && !responses.priorCancer.includes('No Prior');
+        const hasPriorChronic = responses.priorCancer && !responses.priorCancer.includes('No Prior');
         const hasSignificantWeightLoss = responses.weightLoss && responses.weightLoss.includes('Significant');
         const hasSmokingRisk = responses.smokingStatus && (responses.smokingStatus.includes('Active') || responses.smokingStatus.includes('Heavy'));
         const hasFamilyHistory = responses.familyHistory && !responses.familyHistory.includes('No Known');
@@ -132,13 +132,13 @@ export function PatientProvider({ children }) {
 
         const flags = [];
         let riskLevel = "LOW";
-        let confidenceScore = 86;
+        let confidenceScore = 88;
 
-        if (hasPriorCancer) {
+        if (hasPriorChronic) {
           flags.push({
-            label: "Prior Malignancy Recurrence Alert",
+            label: "Chronic Comorbidity Management Alert",
             severity: "HIGH",
-            note: `History: ${responses.cancerType || 'previous primary'}. Prior treatment: ${(responses.priorTreatments || []).join(', ') || 'recorded'}. Recurrence risk elevated.`
+            note: `History: ${responses.cancerType || 'diagnosed medical conditions'}. Treatments: ${(responses.priorTreatments || []).join(', ') || 'ongoing'}. Close organ monitoring indicated.`
           });
           riskLevel = "HIGH";
           confidenceScore = 92;
@@ -146,9 +146,9 @@ export function PatientProvider({ children }) {
 
         if (hasSignificantWeightLoss || hasBSymptoms) {
           flags.push({
-            label: "High Constitutional / B-Symptom Index",
+            label: "Constitutional Metabolic Red Flag",
             severity: "HIGH",
-            note: `${hasSignificantWeightLoss ? 'Significant unintentional weight loss' : ''} ${hasBSymptoms ? 'Drenching night sweats' : ''}. Strongly correlates with active advanced disease.`
+            note: `${hasSignificantWeightLoss ? 'Significant unintentional weight loss' : ''} ${hasBSymptoms ? 'Drenching night sweats' : ''}. Requires urgent diagnostic workup.`
           });
           riskLevel = "HIGH";
           confidenceScore = 89;
@@ -156,51 +156,51 @@ export function PatientProvider({ children }) {
 
         if (hasSmokingRisk) {
           flags.push({
-            label: "Tobacco Carcinogen Burden",
+            label: "Cardiovascular & Respiratory Risk (Tobacco)",
             severity: "HIGH",
-            note: `Active tobacco use history: ${responses.smokingStatus}. Correlates with elevated thoracic / upper aerodigestive primary risk.`
+            note: `Tobacco use history: ${responses.smokingStatus}. Correlates with elevated cardiovascular and airway disease risk.`
           });
           if (riskLevel !== "HIGH") riskLevel = "MEDIUM";
         }
 
         if (hasFamilyHistory) {
           flags.push({
-            label: "Familial Malignancy Clustering",
+            label: "Familial Cardiovascular / Metabolic Clustering",
             severity: "MEDIUM",
-            note: `${responses.familyHistory}. Family tumor sites: ${(responses.familyTumors || []).join(', ') || 'Specified'}. Genetic germline consult recommended.`
+            note: `${responses.familyHistory}. Family conditions: ${(responses.familyTumors || []).join(', ') || 'Specified'}. Preventive risk scoring advised.`
           });
           if (riskLevel !== "HIGH") riskLevel = "MEDIUM";
         }
 
         if (hasSeverePain) {
           flags.push({
-            label: "Urgent Palliative Analgesia Required",
+            label: "Acute Analgesia & Pain Stabilization Required",
             severity: "HIGH",
-            note: "Patient reports severe/excruciating pain score (7-10/10). Immediate oncologist pain management review needed."
+            note: "Patient reports severe/excruciating pain score (7-10/10). Immediate physician review and analgesic titration needed."
           });
         }
 
         if (flags.length === 0) {
           flags.push({
-            label: "Baseline Oncology Triage",
+            label: "Routine Clinical Triage",
             severity: "LOW",
-            note: "No immediate critical flags detected from intake screening. Standard oncology evaluation recommended."
+            note: "No acute critical red flags detected. Standard outpatient clinical consultation recommended."
           });
           riskLevel = "LOW";
-          confidenceScore = 93;
+          confidenceScore = 94;
         }
 
         const generatedInsights = {
           generatedAt: fullTime,
-          modelVersion: "OncoInsight-v2.1",
+          modelVersion: "ClinicalInsight-v2.1",
           overallRisk: riskLevel,
           confidence: confidenceScore,
           riskFlags: flags,
           symptomSummary: `${p.age}yo ${p.gender.toLowerCase()} presenting with ${responses.chiefComplaint} (${responses.primarySite || 'General'}, duration: ${responses.durationMonths || '1-3 months'}). Functional status: ${responses.ecogPerformance || 'ECOG 1'}.`,
           recommendedInvestigations: [
-            { id: `inv-${Date.now()}-1`, name: `Diagnostic Contrast CT / PET-CT (${responses.primarySite || 'Chest/Abdomen'})`, urgency: riskLevel === 'HIGH' ? 'Urgent' : 'Routine' },
-            { id: `inv-${Date.now()}-2`, name: "Complete Hemogram & Serum Biomarkers", urgency: 'Routine' },
-            { id: `inv-${Date.now()}-3`, name: "Metabolic Organ Function Panel", urgency: 'Routine' }
+            { id: `inv-${Date.now()}-1`, name: "12-Lead Electrocardiogram (ECG) & 2D Echo", urgency: riskLevel === 'HIGH' ? 'Urgent' : 'Routine' },
+            { id: `inv-${Date.now()}-2`, name: "Comprehensive Metabolic Panel (HbA1c, LFT, KFT)", urgency: 'Routine' },
+            { id: `inv-${Date.now()}-3`, name: "High-Resolution Chest Radiography / USG Abdomen", urgency: 'Routine' }
           ]
         };
 
@@ -211,7 +211,7 @@ export function PatientProvider({ children }) {
         };
       }));
 
-      addToast(`✨ AI Insights generated & pushed to Oncologist Dashboard for ${patients.find(p => p.id === patientId)?.fullName || 'patient'}!`, 'success');
+      addToast(`✨ AI Insights generated & pushed to Doctor Dashboard for ${patients.find(p => p.id === patientId)?.fullName || 'patient'}!`, 'success');
     }, 1800);
   };
 

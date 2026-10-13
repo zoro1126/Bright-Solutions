@@ -12,15 +12,15 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
   let brandPillBorder = 'var(--border-default)';
 
   if (currentRole === 'doctor') {
-    brandRoleColor = 'var(--doc-accent-color, #0d9488)';
-    brandPillBg = 'var(--doc-pill-bg, #ccfbf1)';
-    brandPillColor = 'var(--doc-pill-color, #0f766e)';
-    brandPillBorder = 'var(--doc-pill-border, #99f6e4)';
+    brandRoleColor = 'var(--doc-accent-color, #0077B6)';
+    brandPillBg = 'var(--doc-pill-bg, #CAF0F8)';
+    brandPillColor = 'var(--doc-pill-color, #0077B6)';
+    brandPillBorder = 'var(--doc-pill-border, #90E0EF)';
   } else if (currentRole === 'admin') {
-    brandRoleColor = 'var(--adm-accent-color, #2563eb)';
-    brandPillBg = 'var(--adm-pill-bg, #dbeafe)';
-    brandPillColor = 'var(--adm-pill-color, #1e40af)';
-    brandPillBorder = 'var(--adm-pill-border, #93c5fd)';
+    brandRoleColor = 'var(--adm-accent-color, #0077B6)';
+    brandPillBg = 'var(--adm-pill-bg, #CAF0F8)';
+    brandPillColor = 'var(--adm-pill-color, #0077B6)';
+    brandPillBorder = 'var(--adm-pill-border, #90E0EF)';
   } else if (currentRole === 'cashier') {
     brandRoleColor = 'var(--csh-accent-color, #059669)';
     brandPillBg = 'var(--csh-pill-bg, #d1fae5)';
@@ -53,7 +53,7 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
             <span style={{ color: 'var(--border-default)', margin: '0 2px' }}>•</span>
             <span className="brand-title-text" style={{ fontSize: 10.5, fontWeight: 700, color: brandRoleColor }}>
               {currentRole === 'doctor' 
-                ? 'Oncologist Clinical Workspace' 
+                ? 'Consultant Clinical Workspace' 
                 : currentRole === 'cashier'
                 ? 'Cashier & Settlement Desk'
                 : currentRole === 'admin'
@@ -101,9 +101,9 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
             <button
               className={`m3-role-btn ${currentRole === 'doctor' ? 'active' : ''}`}
               onClick={() => onRoleChange('doctor')}
-              title="Doctor Desk (Clinical Oncology Teal)"
+              title="Doctor Desk"
               data-tour="role-doctor-btn"
-              style={currentRole === 'doctor' ? { backgroundColor: 'var(--doc-pill-bg, #ccfbf1)', color: 'var(--doc-pill-color, #0f766e)', border: '1px solid var(--doc-pill-border, #99f6e4)', fontWeight: 800 } : undefined}
+              style={currentRole === 'doctor' ? { backgroundColor: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 800 } : undefined}
             >
               <Stethoscope size={11} />
               <span>Doctor</span>
@@ -121,8 +121,8 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
             <button
               className={`m3-role-btn ${currentRole === 'admin' ? 'active' : ''}`}
               onClick={() => onRoleChange('admin')}
-              title="Executive Admin (Sovereign Navy Cobalt)"
-              style={currentRole === 'admin' ? { backgroundColor: 'var(--adm-pill-bg, #dbeafe)', color: 'var(--adm-pill-color, #1e40af)', border: '1px solid var(--adm-pill-border, #93c5fd)', fontWeight: 800 } : undefined}
+              title="Executive Admin"
+              style={currentRole === 'admin' ? { backgroundColor: 'var(--adm-pill-bg, #CAF0F8)', color: 'var(--adm-pill-color, #0077B6)', border: '1px solid var(--adm-pill-border, #90E0EF)', fontWeight: 800 } : undefined}
             >
               <ShieldCheck size={11} />
               <span>Admin</span>

@@ -19,10 +19,10 @@ import {
 const STEPS = [
   { id: 1, title: 'Chief Complaint', short: 'Complaint', icon: ClipboardList },
   { id: 2, title: 'Red Flags', short: 'Red Flags', icon: AlertCircle },
-  { id: 3, title: 'Prior Cancer', short: 'Prior Cancer', icon: History },
-  { id: 4, title: 'Family History', short: 'Family', icon: Users2 },
+  { id: 3, title: 'Medical History', short: 'Medical History', icon: History },
+  { id: 4, title: 'Family History', short: 'Family History', icon: Users2 },
   { id: 5, title: 'Meds & Allergies', short: 'Meds / Allergies', icon: Pill },
-  { id: 6, title: 'ECOG Status', short: 'ECOG & Submit', icon: Gauge }
+  { id: 6, title: 'Functional Status', short: 'Status & Submit', icon: Gauge }
 ];
 
 export default function QuestionnaireModal({ isOpen, patient, onClose }) {
@@ -36,17 +36,17 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
       return { ...patient.questionnaire.responses };
     }
     return {
-      chiefComplaint: 'Palpable Breast Mass / Lump',
-      primarySite: 'Breast / Mammary',
+      chiefComplaint: 'Persistent Headaches & Elevated Blood Pressure',
+      primarySite: 'Cardiology & Vascular',
       durationMonths: '1-3 months',
       weightLoss: 'None (Weight Stable)',
       appetite: 'Normal Food Intake',
-      painScore: 'Level 1-3: Mild Discomfort',
+      painScore: 'Level 1-3: Mild Pain',
       feverSweats: 'Absent',
-      priorCancer: 'No Prior Malignancy (First Cancer Evaluation)',
+      priorCancer: 'No Prior Chronic Comorbidities (First Hospital Evaluation)',
       cancerType: 'None',
-      priorTreatments: ['No Prior Treatments'],
-      familyHistory: 'No Known Family Malignancy',
+      priorTreatments: ['Dietary & Lifestyle Modifications'],
+      familyHistory: 'No Known Family Cardiovascular / Metabolic Disease',
       familyTumors: ['None'],
       familyOnsetAge: 'Not Applicable',
       currentMedications: ['No Chronic Medications'],
@@ -128,7 +128,7 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
           <div className="m3-dialog-title-block">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-                Oncology Clinical Intake & Triage Questionnaire
+                General Multispeciality Clinical Intake & Triage Questionnaire
               </h2>
               <span className="mrn-tag" style={{ fontSize: 10, padding: '1px 6px' }}>{patient.mrn}</span>
             </div>
@@ -190,16 +190,16 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
                 <div className="mcq-question-hint">Select the predominant chief complaint reported by the patient.</div>
                 <div className="mcq-options-grid">
                   {[
-                    'Palpable Breast Mass / Lump',
-                    'Chronic Cough / Hemoptysis',
-                    'Unexplained Weight Loss (> 5kg)',
-                    'Severe Fatigue & Malaise',
-                    'Altered Bowel Habits / Melena',
-                    'Postmenopausal / Abnormal Bleeding',
-                    'Persistent Bone Pain / Backache',
-                    'Enlarged Neck Lymph Node',
-                    'Difficulty Swallowing (Dysphagia)',
-                    'Second Opinion / Staging Review'
+                    'Persistent Headaches & Hypertension Check',
+                    'High Blood Sugar / Diabetic Review',
+                    'Chronic Cough / Breathlessness / Wheezing',
+                    'Acute / Recurrent Abdominal Pain & Dyspepsia',
+                    'Chest Discomfort / Exertional Palpitations',
+                    'Joint Pain / Chronic Lower Back Pain',
+                    'Fever / Generalized Body Ache & Malaise',
+                    'Post-Surgical Follow-up & Wound Check',
+                    'Routine Annual Health Check-Up',
+                    'Medication Refill & Chronic Care Review'
                   ].map(opt => (
                     <div
                       key={opt}
@@ -219,19 +219,19 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
 
               <div className="mcq-question-block">
                 <div className="mcq-question-title">
-                  2. Suspected Anatomical Organ Site
+                  2. Clinical Department & Specialty Stream
                 </div>
                 <div className="mcq-question-hint">Categorises the specialty routing and diagnostic pathway.</div>
                 <div className="mcq-options-grid">
                   {[
-                    'Breast / Mammary',
-                    'Thoracic / Lung',
-                    'Colorectal / GI',
-                    'Gynecologic / Cervical',
-                    'Head & Neck / Oral',
-                    'Hematologic / Lymphoma',
-                    'Urologic / Prostate',
-                    'Other / Undifferentiated'
+                    'Internal / General Medicine',
+                    'Cardiology & Vascular',
+                    'Pulmonology & Chest Medicine',
+                    'General & Laparoscopic Surgery',
+                    'Gastroenterology & Hepatology',
+                    'Endocrinology & Diabetology',
+                    'Nephrology & Urology',
+                    'Preventive & Wellness Care'
                   ].map(site => (
                     <div
                       key={site}
@@ -385,18 +385,18 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
             </div>
           )}
 
-          {/* STEP 3: Prior Cancer History */}
+          {/* STEP 3: Prior Medical History & Comorbidities */}
           {currentStep === 3 && (
             <div className="m3-animate-slide-down">
               <div className="mcq-question-block">
                 <div className="mcq-question-title">
-                  1. Prior Malignancy Status
+                  1. Prior Chronic Disease / Medical History
                 </div>
                 <div className="mcq-options-grid">
                   {[
-                    { label: 'No Prior Malignancy (First Cancer Evaluation)', sub: 'Primary new oncology workup' },
-                    { label: 'Prior Cancer — In Remission (> 5 yrs)', sub: 'Routine surveillance follow-up' },
-                    { label: 'Prior Cancer — Active Suspected Recurrence', sub: 'Known history with new suspicious lesions' }
+                    { label: 'No Prior Chronic Comorbidities (First Hospital Evaluation)', sub: 'Primary evaluation & baseline workup' },
+                    { label: 'Chronic Comorbidities — Under Medical Management', sub: 'Longstanding follow-up (HTN, Diabetes, etc.)' },
+                    { label: 'Recent Acute Episode / Decompensation', sub: 'Exacerbation requiring urgent stabilization' }
                   ].map(opt => (
                     <div
                       key={opt.label}
@@ -415,20 +415,20 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
                 </div>
               </div>
 
-              {formData.priorCancer !== 'No Prior Malignancy (First Cancer Evaluation)' && (
+              {formData.priorCancer !== 'No Prior Chronic Comorbidities (First Hospital Evaluation)' && (
                 <>
                   <div className="mcq-question-block">
                     <div className="mcq-question-title">
-                      2. Prior Primary Cancer Site
+                      2. Primary Diagnosed Condition Category
                     </div>
                     <div className="mcq-options-grid">
                       {[
-                        'Breast Carcinoma',
-                        'Thoracic / Lung Cancer',
-                        'Colorectal / GI Carcinoma',
-                        'Cervical / Endometrial',
-                        'Head & Neck Squamous',
-                        'Lymphoma / Leukemia'
+                        'Essential Hypertension',
+                        'Type 2 Diabetes Mellitus',
+                        'Coronary Artery Disease / Angina',
+                        'Bronchial Asthma / COPD',
+                        'Dyslipidemia & Metabolic Syndrome',
+                        'Gastroesophageal Reflux / PUD'
                       ].map(type => (
                         <div
                           key={type}
@@ -448,15 +448,15 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
 
                   <div className="mcq-question-block">
                     <div className="mcq-question-title">
-                      3. Prior Treatments Received (Select All That Apply)
+                      3. Current / Prior Therapies Received (Select All That Apply)
                     </div>
                     <div className="mcq-options-grid">
                       {[
-                        'Surgical Resection / Mastectomy',
-                        'Systemic Chemotherapy',
-                        'Radiation Therapy',
-                        'Hormonal Therapy (Letrozole/Tamoxifen)',
-                        'Targeted / Immunotherapy'
+                        'Oral Antihypertensives (Telmisartan/Amlodipine)',
+                        'Oral Hypoglycemic Agents (Metformin/SGLT2i)',
+                        'Lipid-Lowering Statins (Atorvastatin)',
+                        'Inhaled Bronchodilators / Corticosteroids',
+                        'Proton Pump Inhibitors (Pantoprazole)'
                       ].map(rx => {
                         const isChecked = (formData.priorTreatments || []).includes(rx);
                         return (
@@ -481,19 +481,19 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
             </div>
           )}
 
-          {/* STEP 4: Family Cancer History */}
+          {/* STEP 4: Family Medical History */}
           {currentStep === 4 && (
             <div className="m3-animate-slide-down">
               <div className="mcq-question-block">
                 <div className="mcq-question-title">
-                  1. Family Degree of Relatedness with Cancer
+                  1. Family Degree of Relatedness with Chronic Disease
                 </div>
                 <div className="mcq-options-grid">
                   {[
-                    { label: 'No Known Family Malignancy', sub: 'Negative hereditary clustering' },
-                    { label: 'First-Degree Relative (Parent, Sibling, Child)', sub: 'High germline risk trigger' },
+                    { label: 'No Known Family Cardiovascular / Metabolic Disease', sub: 'Negative hereditary cluster' },
+                    { label: 'First-Degree Relative (Parent, Sibling, Child)', sub: 'High familial genetic risk index' },
                     { label: 'Second-Degree Relative (Grandparent, Aunt, Uncle)', sub: 'Moderate familial index' },
-                    { label: 'Multiple Family Members Across Generations', sub: 'Syndromic cluster (BRCA / Lynch)' }
+                    { label: 'Multiple Family Members Across Generations', sub: 'Strong polygenic or syndromic pattern' }
                   ].map(opt => (
                     <div
                       key={opt.label}
@@ -512,20 +512,20 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
                 </div>
               </div>
 
-              {formData.familyHistory !== 'No Known Family Malignancy' && (
+              {formData.familyHistory !== 'No Known Family Cardiovascular / Metabolic Disease' && (
                 <>
                   <div className="mcq-question-block">
                     <div className="mcq-question-title">
-                      2. Tumor Sites Present in Family (Multi-Select)
+                      2. Disease Conditions Present in Family (Multi-Select)
                     </div>
                     <div className="mcq-options-grid">
                       {[
-                        'Breast Cancer',
-                        'Ovarian Cancer',
-                        'Colorectal / Polyposis',
-                        'Lung Cancer',
-                        'Prostate Cancer',
-                        'Pancreatic Cancer'
+                        'Early Coronary Artery Disease (< 55 yrs)',
+                        'Type 2 Diabetes Mellitus',
+                        'Severe Essential Hypertension',
+                        'Bronchial Asthma / Allergic Rhinitis',
+                        'Stroke / Cerebrovascular Disease',
+                        'Chronic Kidney Disease'
                       ].map(tumor => {
                         const isChecked = (formData.familyTumors || []).includes(tumor);
                         return (
@@ -552,9 +552,9 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
                     </div>
                     <div className="mcq-options-grid">
                       {[
-                        { label: 'Early Onset (< 50 Years)', sub: 'Strong indication for genetic testing' },
-                        { label: 'Standard Onset (50 to 70 Years)', sub: 'Typical age distribution' },
-                        { label: 'Late Onset (> 70 Years)', sub: 'Likely sporadic malignancy' }
+                        { label: 'Early Onset (< 50 Years)', sub: 'Elevated premature disease risk index' },
+                        { label: 'Standard Onset (50 to 70 Years)', sub: 'Typical adult chronic disease onset' },
+                        { label: 'Late Onset (> 70 Years)', sub: 'Age-associated lifestyle or geriatric pattern' }
                       ].map(ageOpt => (
                         <div
                           key={ageOpt.label}
@@ -584,7 +584,7 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
                 <div className="mcq-question-title">
                   1. Current Active Prescriptions (Select All That Apply)
                 </div>
-                <div className="mcq-question-hint">Identifies drug-drug interactions and pre-chemo organ safety.</div>
+                <div className="mcq-question-hint">Identifies drug-drug interactions and organ safety profile.</div>
                 <div className="mcq-options-grid">
                   {[
                     'No Chronic Medications',
@@ -619,7 +619,7 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
                 <div className="mcq-question-title">
                   2. Known Drug Allergies (Select All That Apply)
                 </div>
-                <div className="mcq-question-hint">Alerts doctor dashboard before chemotherapy or contrast imaging.</div>
+                <div className="mcq-question-hint">Alerts doctor dashboard before medication prescription or contrast imaging.</div>
                 <div className="mcq-options-grid">
                   {[
                     'No Known Drug Allergies (NKDA)',
@@ -657,7 +657,7 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
                 <div className="mcq-question-title">
                   1. ECOG Functional Performance Status
                 </div>
-                <div className="mcq-question-hint">Crucial clinical index determining patient eligibility for chemotherapy and radiation.</div>
+                <div className="mcq-question-hint">Standardized clinical index evaluating patient functional mobility and physical stamina.</div>
                 <div className="mcq-options-grid-2">
                   {[
                     { label: 'ECOG 0: Fully Active', sub: 'Able to carry on all pre-disease performance without restriction' },
@@ -721,7 +721,7 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
                       Ready for Instant DL/NLP Clinical Inference
                     </div>
                     <p className="m3-inference-subtitle">
-                      Submitting triggers the deep-learning classifier and NLP clinical summarizer (OncoInsight v2.1). Results stream directly to Dr. Kiran Patel's oncologist console.
+                      Submitting triggers the deep-learning classifier and NLP clinical summarizer (ClinicalInsight v2.1). Results stream directly to Dr. Kiran Patel's doctor console.
                     </p>
                   </div>
                 </div>
@@ -779,10 +779,10 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
               disabled={isSubmitting}
               data-tour="submit-intake-btn"
               style={{ height: 34, fontSize: 11.5, padding: '0 16px' }}
-              title="Submit intake triage questionnaire and run OncoInsight AI model"
+              title="Submit intake triage questionnaire and run ClinicalInsight AI model"
             >
               <Sparkles size={14} />
-              <span>{isSubmitting ? 'Transmitting...' : '⚡ Submit & Run OncoInsight AI'}</span>
+              <span>{isSubmitting ? 'Transmitting...' : '⚡ Submit & Run ClinicalInsight AI'}</span>
             </button>
           </div>
         </div>

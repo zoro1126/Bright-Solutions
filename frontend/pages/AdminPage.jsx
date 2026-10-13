@@ -29,19 +29,19 @@ import {
 import { usePatients } from '../context/PatientContext';
 
 const INITIAL_STAFF = [
-  { id: 'usr-1', name: 'Dr. Kiran Patel', role: 'Doctor (Medical Oncology)', dept: 'OPD Station 03', shift: 'Morning (08:00 - 14:00)', email: 'kiran.patel@brightcare.in', active: true, consultationsCount: 142 },
-  { id: 'usr-2', name: 'Dr. Swaminathan', role: 'Doctor (Surgical Oncology)', dept: 'Surgical Wing R-07', shift: 'Full Day (09:00 - 17:00)', email: 'swami.s@brightcare.in', active: true, consultationsCount: 98 },
-  { id: 'usr-3', name: 'Dr. Radhika Sen', role: 'Doctor (Radiation Oncology)', dept: 'Linear Accel Lab', shift: 'Evening (14:00 - 20:00)', email: 'radhika.sen@brightcare.in', active: true, consultationsCount: 86 },
+  { id: 'usr-1', name: 'Dr. Kiran Patel', role: 'Doctor (General & Internal Medicine)', dept: 'OPD Station 03', shift: 'Morning (08:00 - 14:00)', email: 'kiran.patel@brightcare.in', active: true, consultationsCount: 142 },
+  { id: 'usr-2', name: 'Dr. Swaminathan', role: 'Doctor (General & Laparoscopic Surgery)', dept: 'Surgical Wing R-07', shift: 'Full Day (09:00 - 17:00)', email: 'swami.s@brightcare.in', active: true, consultationsCount: 98 },
+  { id: 'usr-3', name: 'Dr. Radhika Sen', role: 'Doctor (Cardiology & Interventional Care)', dept: 'Echo & Cath Lab', shift: 'Evening (14:00 - 20:00)', email: 'radhika.sen@brightcare.in', active: true, consultationsCount: 86 },
   { id: 'usr-4', name: 'Priya Raghavan', role: 'Receptionist', dept: 'Counter 01 (Triage)', shift: 'Morning (07:30 - 15:30)', email: 'priya.r@brightcare.in', active: true, consultationsCount: 310 },
   { id: 'usr-5', name: 'Ramesh V.', role: 'Cashier / Billing', dept: 'Counter B-02 (Settlement)', shift: 'Morning (08:00 - 16:00)', email: 'ramesh.v@brightcare.in', active: true, consultationsCount: 290 },
   { id: 'usr-6', name: 'Ananya Deshmukh', role: 'Triage Nurse', dept: 'Vitals & Intake Bay', shift: 'Rotational', email: 'ananya.d@brightcare.in', active: false, consultationsCount: 45 }
 ];
 
 const INITIAL_AUDIT_LOGS = [
-  { id: 'log-101', timestamp: '10:42 AM', user: 'Dr. Kiran Patel', role: 'Doctor', category: 'CDSS_OVERRIDE', severity: 'HIGH', patientMrn: 'MRN-2026-0142', details: 'Overrode mild hepatic transaminase caution to initiate Letrozole 2.5mg OD with scheduled LFT repeat in 14 days.' },
+  { id: 'log-101', timestamp: '10:42 AM', user: 'Dr. Kiran Patel', role: 'Doctor', category: 'CDSS_OVERRIDE', severity: 'HIGH', patientMrn: 'MRN-2026-0142', details: 'Confirmed Telmisartan 40mg + Atorvastatin 20mg initiation with scheduled fasting lipid and renal panel repeat in 14 days.' },
   { id: 'log-102', timestamp: '10:15 AM', user: 'Ramesh V.', role: 'Cashier', category: 'BILLING_ADJUSTMENT', severity: 'MEDIUM', patientMrn: 'MRN-2026-0143', details: 'Applied 100% Cashless Government Scheme package under Ayushman Bharat PM-JAY (AB-PMJAY) golden card verification.' },
   { id: 'log-103', timestamp: '09:50 AM', user: 'Priya Raghavan', role: 'Receptionist', category: 'TRIAGE_EDIT', severity: 'LOW', patientMrn: 'MRN-2026-0144', details: 'Updated emergency contact number and assigned walk-in to Dr. Swaminathan queue.' },
-  { id: 'log-104', timestamp: '09:12 AM', user: 'Dr. Swaminathan', role: 'Doctor', category: 'CDSS_OVERRIDE', severity: 'HIGH', patientMrn: 'MRN-2026-0145', details: 'Approved surgical restaging biopsy despite border baseline INR 1.3 with fresh frozen plasma backup ordered.' },
+  { id: 'log-104', timestamp: '09:12 AM', user: 'Dr. Swaminathan', role: 'Doctor', category: 'CDSS_OVERRIDE', severity: 'HIGH', patientMrn: 'MRN-2026-0145', details: 'Approved laparoscopic cholecystectomy schedule with fresh blood grouping and baseline coagulation panel verified.' },
   { id: 'log-105', timestamp: '08:30 AM', user: 'Admin System', role: 'System', category: 'USER_AUTH', severity: 'INFO', patientMrn: '—', details: 'Staff duty roster shift rollover completed automatically for OPD Morning shift.' }
 ];
 
@@ -55,7 +55,7 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
   const [newStaff, setNewStaff] = useState({
     name: '',
-    role: 'Doctor (Medical Oncology)',
+    role: 'Doctor (General & Internal Medicine)',
     dept: 'OPD Station 01',
     shift: 'Morning (08:00 - 14:00)',
     email: '',
@@ -87,7 +87,7 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
     setIsAddStaffOpen(false);
     setNewStaff({
       name: '',
-      role: 'Doctor (Medical Oncology)',
+      role: 'Doctor (General & Internal Medicine)',
       dept: 'OPD Station 01',
       shift: 'Morning (08:00 - 14:00)',
       email: '',
@@ -428,7 +428,7 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
                     {[
                       { step: '1. Receptionist Intake Registration', time: '3.4 min', target: '< 4 min', pct: 85, color: '#0077B6' },
                       { step: '2. Clinical Vitals & Triage Staging', time: '4.8 min', target: '< 6 min', pct: 80, color: '#00B4D8' },
-                      { step: '3. Oncologist Consultation & CDSS Rx', time: '8.2 min', target: '< 10 min', pct: 82, color: '#0284c7' },
+                      { step: '3. Physician Consultation & CDSS Rx', time: '8.2 min', target: '< 10 min', pct: 82, color: '#0284c7' },
                       { step: '4. Billing Settlement & Token Discharge', time: '1.8 min', target: '< 3 min', pct: 60, color: '#90E0EF' }
                     ].map((step, idx) => (
                       <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-subtle)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
@@ -452,7 +452,7 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
                         Disease Prevalence & Clinical Case Mix (Current Month)
                       </h3>
                       <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0 }}>
-                        ICD-10 clinical oncology diagnostic distribution
+                        ICD-10 clinical multispeciality diagnostic distribution
                       </p>
                     </div>
                     <span className="badge badge-active">ICD-10 Categorized</span>
@@ -460,11 +460,11 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
                     {[
-                      { label: 'Breast Neoplasm (C50)', cases: 54, share: '32%', badge: 'High Footfall', color: '#0077B6' },
-                      { label: 'Thoracic & Lung (C34)', cases: 38, share: '22%', badge: 'Smoker Clustering', color: '#00B4D8' },
-                      { label: 'Colorectal Adenoma (C18)', cases: 31, share: '18%', badge: 'Surgical Workup', color: '#0284c7' },
-                      { label: 'Gynecological / Endometrial', cases: 26, share: '15%', badge: 'Surveillance', color: '#0096c7' },
-                      { label: 'Hematologic / Lymphoma', cases: 22, share: '13%', badge: 'Daycare Chemotherapy', color: '#48cae4' }
+                      { label: 'Essential Hypertension (I10)', cases: 54, share: '32%', badge: 'High Footfall', color: '#0077B6' },
+                      { label: 'Type 2 Diabetes Mellitus (E11)', cases: 38, share: '22%', badge: 'Metabolic Clinic', color: '#00B4D8' },
+                      { label: 'Bronchial Asthma & COPD (J44)', cases: 31, share: '18%', badge: 'Airway Clinic', color: '#0284c7' },
+                      { label: 'Acid Peptic & Gallbladder (K80)', cases: 26, share: '15%', badge: 'GI / Surgery', color: '#0096c7' },
+                      { label: 'Coronary Artery Disease (I25)', cases: 22, share: '13%', badge: 'Cardiology Care', color: '#48cae4' }
                     ].map((c, idx) => (
                       <div key={idx} style={{ padding: 12, borderRadius: 'var(--radius-md)', background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)' }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: c.color, textTransform: 'uppercase' }}>
@@ -732,9 +732,9 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
                   onChange={(e) => setNewStaff(p => ({ ...p, role: e.target.value }))}
                   style={{ width: '100%', padding: '8px 10px', fontSize: 12, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-default)', background: 'var(--bg-surface)', color: 'var(--text-primary)', boxSizing: 'border-box' }}
                 >
-                  <option value="Doctor (Medical Oncology)">Doctor (Medical Oncology)</option>
-                  <option value="Doctor (Surgical Oncology)">Doctor (Surgical Oncology)</option>
-                  <option value="Doctor (Radiation Oncology)">Doctor (Radiation Oncology)</option>
+                  <option value="Doctor (General & Internal Medicine)">Doctor (General & Internal Medicine)</option>
+                  <option value="Doctor (General & Laparoscopic Surgery)">Doctor (General & Laparoscopic Surgery)</option>
+                  <option value="Doctor (Cardiology & Interventional Care)">Doctor (Cardiology & Interventional Care)</option>
                   <option value="Receptionist">Receptionist (Front Desk)</option>
                   <option value="Cashier / Billing">Cashier / Billing Desk</option>
                   <option value="Triage Nurse">Triage Nurse</option>

@@ -79,43 +79,43 @@ export default function GameGuideWalkthrough({ onSwitchRole, currentRole }) {
         nextStep();
       }, 900);
     } else if (currentStep === 2) {
-      addToast('🎮 Auto-Pilot: Submitting Clinical Intake & triggering OncoInsight AI...', 'info');
+      addToast('🎮 Auto-Pilot: Submitting Clinical Intake & triggering ClinicalInsight AI...', 'info');
       setTimeout(() => {
         const targetPat = patients.find(p => p.status === 'QUESTIONNAIRE_PENDING') || patients[0];
         if (targetPat) {
           submitQuestionnaire(targetPat.id, {
-            chiefComplaint: 'Palpable Right Breast Mass & Bone Pain',
-            primarySite: 'Breast / Mammary',
-            durationMonths: '2-3 months',
-            weightLoss: 'Significant Unintentional (>5kg)',
-            appetite: 'Reduced Intake / Anorexia',
-            painScore: 'Level 4-6: Moderate Pain',
-            feverSweats: 'Drenching Night Sweats',
-            priorCancer: 'Invasive Ductal Carcinoma (Right Breast)',
-            cancerType: 'Invasive Ductal Carcinoma',
-            priorTreatments: ['Chemotherapy (AC-T)', 'Radiation Therapy'],
-            familyHistory: 'Maternal Ovarian Carcinoma at age 49',
-            familyTumors: ['Breast', 'Ovary'],
-            currentMedications: ['Letrozole 2.5mg OD'],
+            chiefComplaint: 'Persistent Headaches & Elevated Blood Pressure',
+            primarySite: 'Cardiology & Vascular',
+            durationMonths: '1-3 months',
+            weightLoss: 'None (Weight Stable)',
+            appetite: 'Normal Food Intake',
+            painScore: 'Level 1-3: Mild Pain',
+            feverSweats: 'Absent',
+            priorCancer: 'Stage 2 Essential Hypertension & Dyslipidemia',
+            cancerType: 'Cardiovascular / Metabolic',
+            priorTreatments: ['Telmisartan 40mg OD', 'Dietary Sodium Restriction'],
+            familyHistory: 'Maternal Hypertension at age 52',
+            familyTumors: ['Hypertension', 'Type 2 Diabetes'],
+            currentMedications: ['Telmisartan 40mg OD', 'Atorvastatin 20mg HS'],
             allergies: ['Penicillin (rash)'],
             ecogPerformance: 'ECOG 1: Ambulatory',
             smokingStatus: 'Never Smoked'
           });
         }
         setIsAutoPiloting(false);
-        addToast('✨ Stage 2 Complete! +200 XP. OncoInsight AI risk analysis active!', 'success');
+        addToast('✨ Stage 2 Complete! +200 XP. ClinicalInsight AI risk analysis active!', 'success');
         nextStep();
       }, 1000);
     } else if (currentStep === 3) {
-      addToast('🎮 Auto-Pilot: Teleporting to Dr. Patel\'s Daycare Command Center...', 'info');
+      addToast('🎮 Auto-Pilot: Teleporting to Dr. Sharma\'s Daycare Observation Center...', 'info');
       setTimeout(() => {
         if (onSwitchRole) onSwitchRole('doctor');
         setIsAutoPiloting(false);
-        addToast('✨ Stage 3 Complete! +250 XP. Chemotherapy flow pumps & Sentinel alerts active!', 'success');
+        addToast('✨ Stage 3 Complete! +250 XP. Daycare IV flow pumps & Sentinel alerts active!', 'success');
         nextStep();
       }, 700);
     } else if (currentStep === 4) {
-      addToast('🎮 Auto-Pilot: Reviewing CT Chest DICOM & Transmitting Digital Rx to Cashier...', 'info');
+      addToast('🎮 Auto-Pilot: Reviewing Diagnostic Imaging & Transmitting Digital Rx to Cashier...', 'info');
       setTimeout(() => {
         if (onSwitchRole) onSwitchRole('doctor');
         const pat = patients[0];
@@ -124,8 +124,8 @@ export default function GameGuideWalkthrough({ onSwitchRole, currentRole }) {
             status: 'COMPLETED',
             billingStatus: 'READY',
             prescriptions: [
-              { drug: 'Letrozole (2.5mg)', dose: '2.5mg', qty: '30 Tabs', freq: '0-0-1', days: '30d', mealTiming: 'After Meals', notes: 'Daily endocrine therapy' },
-              { drug: 'Ondansetron (4mg)', dose: '4mg', qty: '10 Tabs', freq: 'SOS', days: '5d', mealTiming: 'Before Meals', notes: 'Take 30m prior to chemotherapy' },
+              { drug: 'Telmisartan (40mg)', dose: '40mg', qty: '30 Tabs', freq: '1-0-0', days: '30d', mealTiming: 'Before Meals', notes: 'Morning blood pressure control' },
+              { drug: 'Atorvastatin (20mg)', dose: '20mg', qty: '30 Tabs', freq: '0-0-1', days: '30d', mealTiming: 'After Meals', notes: 'Take at bedtime for lipid control' },
               { drug: 'Pantoprazole (40mg)', dose: '40mg', qty: '14 Tabs', freq: '1-0-0', days: '14d', mealTiming: 'Before Meals', notes: 'Early morning with water' }
             ]
           });
@@ -342,7 +342,7 @@ export default function GameGuideWalkthrough({ onSwitchRole, currentRole }) {
             </h2>
             
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.6 }}>
-              You have successfully completed the entire end-to-end oncology hospital flow: from <strong>1-Click Registration</strong>, <strong>AI Staging Triage</strong>, <strong>Daycare Chemotherapy Monitoring</strong>, <strong>DICOM & Digital Rx</strong>, through to <strong>100% Cashless PM-JAY Settlement & Tax Invoicing</strong>!
+              You have successfully completed the entire end-to-end multispeciality hospital flow: from <strong>1-Click Registration</strong>, <strong>AI Clinical Triage</strong>, <strong>Daycare Observation Monitoring</strong>, <strong>Diagnostic Imaging & Digital Rx</strong>, through to <strong>100% Cashless PM-JAY Settlement & Tax Invoicing</strong>!
             </p>
 
             <div className="victory-stats-grid">
