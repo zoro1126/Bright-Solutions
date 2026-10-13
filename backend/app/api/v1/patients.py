@@ -30,10 +30,30 @@ def list_registered_patients(
         limit=limit
     )
 
+@router.get("/receptionist/queue", tags=["Queue"])
+def get_receptionist_triage_queue(
+    search: Optional[str] = Query(None, description="Filter queue by name, phone, MRN, or token")
+):
+    """
+    Returns real-time triage queue for the reception desk.
+    Heavy client logic (NEWS2 scoring, triage priority classification, dynamic wait times,
+    and tab summary counts) is computed deterministically on the backend.
+    """
+    return PatientService.get_receptionist_queue(search=search)
+
+@router.get("/patients/{patient_id}", tags=["Patients & Vitals"])
+def get_patient_profile_and_dossier(patient_id: int):
+    """
+    Returns single patient profile including demographics, insurance, all historical visits,
+    latest vitals with BMI & BP stage, and intake questionnaire data.
+    """
+    return PatientService.get_patient_details(patient_id=patient_id)
+
 @router.post("/patients", tags=["Patients & Vitals"], status_code=status.HTTP_201_CREATED)
 def register_patient_and_triage(req: PatientRegistrationRequest):
     """
     FEAT-01: Registers a new patient, calculates real-time BMI and BP stages,
-    allocates the next sequential OPD Queue Token (#Q-xxx), and persists triage vitals.
+    allocates the next sequential OPD Queue Token (#Q-xxx), automates doctor routing
+    if unassigned, and persists triage vitals.
     """
     return PatientService.register_patient(req)

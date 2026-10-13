@@ -1,8 +1,8 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from fastapi import HTTPException, status
 from app.repositories.user_repo import UserRepository
 from app.core.security import verify_password, hash_password
-from app.schemas.auth import LoginRequest, CreateUserRequest
+from app.schemas.auth import LoginRequest, CreateUserRequest, ChangePasswordRequest
 
 class AuthService:
     @staticmethod
@@ -31,8 +31,46 @@ class AuthService:
         }
 
     @staticmethod
+    def logout(current_user: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
+        username = current_user.get("username") if current_user else "guest"
+        return {
+            "message": f"Session for {username} terminated successfully."
+        }
+
+    @staticmethod
+    def get_current_user_profile(current_user: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        if not current_user:
+            return {"authenticated": False, "user": None}
+        safe_user = {k: v for k, v in current_user.items() if k != "password_hash"}
+        return {"authenticated": True, "user": safe_user}
+
+    @staticmethod
     def list_users() -> List[Dict[str, Any]]:
-        return UserRepository.list_active_users()
+        users = UserRepository.list_active_users()
+        # Ensure password_hash is stripped from all user dictionaries
+        return [{k: v for k, v in u.items() if k != "password_hash"} for u in users]
+
+    @staticmethod
+    def change_password(user_id: int, req: ChangePasswordRequest) -> Dict[str, str]:
+        user = UserRepository.get_by_id(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found."
+            )
+
+        pwd_hash = user.get("password_hash") or ""
+        if not verify_password(req.old_password, pwd_hash):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password entered is incorrect."
+            )
+
+        new_hash = hash_password(req.new_password)
+        UserRepository.update_password(user_id, new_hash)
+        return {
+            "message": "Password updated successfully."
+        }
 
     @staticmethod
     def create_staff_user(req: CreateUserRequest) -> Dict[str, Any]:

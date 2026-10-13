@@ -36,7 +36,7 @@ class UserRepository:
         try:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, username, full_name, role, email 
+                    SELECT id, username, full_name, role, email, phone, is_active 
                     FROM users 
                     WHERE is_active = 1
                     ORDER BY FIELD(role, 'RECEPTIONIST', 'DOCTOR', 'CASHIER', 'ADMIN'), full_name ASC;
@@ -70,5 +70,33 @@ class UserRepository:
                     VALUES (%s, %s, %s, %s, %s, %s, 1);
                 """, (username.strip().lower(), password_hash, full_name.strip(), role.upper(), email, phone))
                 return cur.lastrowid
+        finally:
+            conn.close()
+
+    @staticmethod
+    def update_password(user_id: int, new_password_hash: str) -> bool:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE users 
+                    SET password_hash = %s, updated_at = NOW()
+                    WHERE id = %s;
+                """, (new_password_hash, user_id))
+                return cur.rowcount > 0
+        finally:
+            conn.close()
+
+    @staticmethod
+    def update_status(user_id: int, is_active: bool) -> bool:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE users 
+                    SET is_active = %s, updated_at = NOW()
+                    WHERE id = %s;
+                """, (1 if is_active else 0, user_id))
+                return cur.rowcount > 0
         finally:
             conn.close()
