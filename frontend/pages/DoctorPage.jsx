@@ -335,16 +335,17 @@ TREATMENT & FOLLOW-UP PLAN:
             <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <span>{patient.age}y {patient.gender} • Coverage: <strong style={{ color: 'var(--doc-accent-color, #0284c7)' }}>{patient.insurance.provider}</strong> • Appt: {patient.appointmentTime}</span>
               {patient.vitals && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--bg-surface)', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}>
-                  <Activity size={12} color="var(--doc-accent-color, #0284c7)" />
+                <span className="anim-hover-lift" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#f0f9ff', padding: '3px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#0369a1', border: '1px solid #bae6fd', boxShadow: '0 2px 8px rgba(56, 189, 248, 0.12)' }}>
+                  <span className="anim-radar-ping live-dot" style={{ backgroundColor: '#0284c7', width: 7, height: 7, borderRadius: '50%', flexShrink: 0 }} />
+                  <Activity size={12} color="#0284c7" style={{ animation: 'docHeartbeatPulse 1.8s ease-in-out infinite', flexShrink: 0 }} />
                   <span>BP: {patient.vitals.bp || '120/80'}</span>
-                  <span style={{ color: 'var(--text-muted)' }}>•</span>
+                  <span style={{ color: '#94a3b8' }}>•</span>
                   <span>HR: {patient.vitals.pulse || '72'} bpm</span>
-                  <span style={{ color: 'var(--text-muted)' }}>•</span>
+                  <span style={{ color: '#94a3b8' }}>•</span>
                   <span>Temp: {patient.vitals.temp || '98.6'}°F</span>
-                  <span style={{ color: 'var(--text-muted)' }}>•</span>
+                  <span style={{ color: '#94a3b8' }}>•</span>
                   <span>SpO2: {patient.vitals.spo2 || '99'}%</span>
-                  <span style={{ color: 'var(--text-muted)' }}>•</span>
+                  <span style={{ color: '#94a3b8' }}>•</span>
                   <span>BMI: {patient.vitals.bmi || '22.8'}</span>
                 </span>
               )}

@@ -36,6 +36,7 @@ import {
   Plus
 } from 'lucide-react';
 import SpeechMicButton from './SpeechMicButton';
+import DoctorAnalyticsHub from './DoctorAnalyticsHub';
 
 export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }) {
   const { patients, selectedPatientId, setSelectedPatientId, stats, addToast } = usePatients();
@@ -458,9 +459,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       {/* =========================================================================
           Top Welcome & Shift Banner - Reception Stat-Card Standard
           ========================================================================= */}
-      {/* =========================================================================
-          Top Welcome & Shift Banner - Reception Stat-Card Standard
-          ===============================================================      <div className="m3-doctor-patient-banner" style={{ padding: '12px 18px', border: '1.5px solid var(--doc-banner-border, #bae6fd)', background: 'var(--doc-banner-bg, linear-gradient(120deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 80%, #ffffff 100%))' }}>
+      <div className="m3-doctor-patient-banner" style={{ padding: '12px 18px', border: '1.5px solid var(--doc-banner-border, #bae6fd)', background: 'var(--doc-banner-bg, linear-gradient(120deg, #ffffff 0%, #f0f9ff 40%, #e0f2fe 80%, #ffffff 100%))', flexShrink: 0 }}>
         <div className="stat-card-accent-blob" style={{ top: -20, right: -20, width: 110, height: 110, opacity: 0.5, background: 'radial-gradient(circle, var(--doc-accent-color, #bae6fd) 0%, rgba(186, 230, 253, 0) 70%)' }} />
         
         <div className="m3-patient-banner-info" style={{ position: 'relative', zIndex: 1 }}>
@@ -529,11 +528,11 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       {/* =========================================================================
           4 Top Stat Cards Row — Ultra-Light Crystal Sky Blue Palette
           ========================================================================= */}
-      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 2 }}>
+      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 4, flexShrink: 0 }}>
         
         {/* Card 1: Today's OPD Consults — Crystal Sky Blue */}
         <div 
-          className="stat-card anim-hover-lift" 
+          className="stat-card anim-hover-lift doc-glass-shimmer" 
           style={{ cursor: 'pointer' }} 
           onClick={() => {
             setScheduleFilter('ALL');
@@ -554,7 +553,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
         {/* Card 2: AI Risk Alerts — Alert Crimson (#dc2626 & #b91c1c) */}
         <div 
-          className="stat-card anim-hover-lift" 
+          className="stat-card anim-hover-lift doc-glass-shimmer" 
           style={{ cursor: 'pointer' }}
           onClick={() => setIsAllAlertsModalOpen(true)}
           title="Click to review all active sentinel AI warnings"
@@ -572,7 +571,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
         {/* Card 3: Active Chemotherapy — Luminous Cyan & Sky Blue */}
         <div 
-          className="stat-card anim-hover-lift"
+          className="stat-card anim-hover-lift doc-glass-shimmer"
           style={{ cursor: 'pointer' }}
           onClick={() => {
             setSelectedChair(infusions[0]);
@@ -593,7 +592,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
 
         {/* Card 4: Diagnostic Reviews — Clinical Amber Gold (#d97706 & #b45309) */}
         <div 
-          className="stat-card anim-hover-lift"
+          className="stat-card anim-hover-lift doc-glass-shimmer"
           style={{ cursor: 'pointer' }}
           onClick={() => setIsDiagnosticsModalOpen(true)}
           title="Click to inspect pending radiology & imaging studies"
@@ -612,10 +611,15 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
       </div>
 
       {/* =========================================================================
+          HERO ANALYTICS: Modern Interactive Telemetry, Bezier Curves & AI Forecasting
+          ========================================================================= */}
+      <DoctorAnalyticsHub />
+
+      {/* =========================================================================
           Main 2-Column Dashboard Grid with Internal Scroll Containment
           ========================================================================= */}
       <div style={{ 
-        flex: 1, 
+        flex: '0 0 auto', 
         minHeight: 'min-content', 
         display: 'grid', 
         gridTemplateColumns: 'minmax(0, 1.45fr) minmax(0, 1fr)', 
@@ -626,7 +630,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           
           {/* VISUAL 1: Oncological Case Mix & Cancer Staging Distribution */}
-          <div className="card anim-hover-lift" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
+          <div className="card anim-hover-lift doc-glass-shimmer" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
             <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #e0f2fe) 0%, rgba(224, 242, 254, 0) 70%)' }} />
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -805,7 +809,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           </div>
 
           {/* VISUAL 2: Daycare Chemotherapy Chair Live Infusion Tracker */}
-          <div className="card anim-hover-lift" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
+          <div className="card anim-hover-lift doc-glass-shimmer" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
             <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #e0f2fe) 0%, rgba(224, 242, 254, 0) 70%)' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -933,7 +937,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           
           {/* VISUAL 3: Sentinel Risk Radar — Clinical Sentinel Watchlist */}
-          <div className="card anim-hover-lift" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
+          <div className="card anim-hover-lift doc-glass-shimmer" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
             <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, #fecaca 0%, rgba(254, 202, 202, 0) 70%)' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -1017,7 +1021,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception }
           </div>
 
           {/* VISUAL 4: Today's OPD Schedule with Search & Filters */}
-          <div className="card anim-hover-lift" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
+          <div className="card anim-hover-lift doc-glass-shimmer" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
             <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #e0f2fe) 0%, rgba(224, 242, 254, 0) 70%)' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>

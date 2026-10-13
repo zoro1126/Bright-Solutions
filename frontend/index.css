@@ -167,7 +167,7 @@
   --doc-secondary: #38bdf8;
   --doc-cyan: #38bdf8;
   --doc-amber: #f59e0b;
-  --doc-bg: #f0f8ff;
+  --doc-bg: #ffffff;
   --doc-alert: #f59e0b;
   --doc-banner-bg: linear-gradient(120deg, #ffffff 0%, #f0f9ff 45%, #e0f2fe 100%);
   --doc-banner-border: #bae6fd;
@@ -2765,6 +2765,42 @@ html, body {
   50%       { opacity: 1; }
 }
 
+@keyframes docChartDraw {
+  from { stroke-dashoffset: 1200; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes docAreaFadeIn {
+  from { opacity: 0; transform: scaleY(0.9); }
+  to   { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes docEcgScan {
+  0%   { stroke-dashoffset: 240; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes docPulseRing {
+  0%   { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.6); }
+  70%  { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(2, 132, 199, 0); }
+  100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+}
+
+@keyframes docBarGrow {
+  from { transform: scaleY(0); transform-origin: bottom; }
+  to   { transform: scaleY(1); transform-origin: bottom; }
+}
+
+@keyframes docShimmerGlint {
+  0%   { transform: translateX(-150%) rotate(25deg); }
+  100% { transform: translateX(250%) rotate(25deg); }
+}
+
+@keyframes docCardFloatHover {
+  0%, 100% { transform: translateY(-4px); }
+  50%      { transform: translateY(-7px); }
+}
+
 /* ======================== SIDEBAR — ULTRA-LIGHTEST BRIGHT SKY BLUE ======================== */
 .doctor-theme .m3-navigation-drawer {
   background: linear-gradient(
@@ -3030,12 +3066,12 @@ html, body {
 }
 
 /* ======================== CONTENT AREA ======================== */
-.doctor-theme .doctor-page-container {
-  background: #f0f9ff;
-}
-
-.doctor-theme .m3-main-viewport {
-  background: #f0f9ff;
+.doctor-theme .doctor-page-container,
+.doctor-theme .doctor-dashboard-container,
+.doctor-theme .m3-main-viewport,
+.doctor-theme.m3-app-shell {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
 }
 
 /* ======================== PATIENT BANNER ======================== */
@@ -3267,14 +3303,291 @@ html, body {
   background-color: rgba(14, 165, 233, 0.55);
 }
 
+/* ======================== DOCTOR KEYFRAME ANIMATIONS ======================== */
+@keyframes docFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes docChartDraw {
+  0% {
+    stroke-dashoffset: 1200;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes docAreaFadeIn {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.92);
+    transform-origin: bottom;
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+}
+
+@keyframes docPulseRing {
+  0% {
+    r: 4;
+    opacity: 0.9;
+    stroke-width: 2;
+  }
+  50% {
+    r: 10;
+    opacity: 0.4;
+    stroke-width: 3.5;
+  }
+  100% {
+    r: 16;
+    opacity: 0;
+    stroke-width: 1;
+  }
+}
+
+@keyframes docEcgScan {
+  0% {
+    stroke-dashoffset: 240;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes docShimmerGlint {
+  0% {
+    transform: translateX(-150%) rotate(25deg);
+  }
+  100% {
+    transform: translateX(150%) rotate(25deg);
+  }
+}
+
+@keyframes docHeartbeatPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.22);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.14);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+@keyframes docFloatSubtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes docRadarPing {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.45);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 7px rgba(2, 132, 199, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(2, 132, 199, 0);
+  }
+}
+
 /* ======================== PAGE ANIMATIONS ======================== */
 .doctor-theme .m3-page-animate {
   animation: docFadeUp 0.38s cubic-bezier(0.05, 0.7, 0.1, 1) both;
 }
 
+/* ======================== DOCTOR PATIENT QUEUE ITEM STYLING ======================== */
+.doctor-theme .doctor-patient-card {
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid #e0f2fe;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.doctor-theme .doctor-patient-card:hover {
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.16);
+  background: #f0f9ff;
+}
+
+.doctor-theme .doctor-patient-card.selected {
+  border: 1.5px solid #0284c7;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.18);
+}
+
+.doctor-theme .anim-radar-ping {
+  animation: docRadarPing 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
 /* ======================== SIDEBAR NAV HOVER OVERRIDE ======================== */
 .doctor-theme .m3-navigation-drawer .drawer-nav-list .m3-nav-item:hover {
-  background: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* ======================== DOCTOR DASHBOARD CONTAINER ======================== */
+.doctor-theme .doctor-dashboard-container {
+  height: calc(100vh - 50px);
+  max-height: calc(100vh - 50px);
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 18px 24px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* ======================== MODERN ANALYTICAL GRAPHS & INTERACTIVE WIDGETS ======================== */
+.doctor-theme .doc-analytics-card {
+  background: #ffffff;
+  border: 1.5px solid #bae6fd;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.08), 0 1px 3px rgba(3, 105, 161, 0.04);
+  transition: all 0.28s cubic-bezier(0.2, 0, 0, 1);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0 !important;
+  min-height: fit-content !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.doctor-theme .doc-analytics-card:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 10px 32px rgba(56, 189, 248, 0.16), 0 2px 8px rgba(3, 105, 161, 0.06);
+  transform: translateY(-2px);
+}
+
+.doctor-theme .doc-chart-svg {
+  filter: drop-shadow(0 4px 12px rgba(2, 132, 199, 0.15));
+}
+
+.doctor-theme .doc-chart-line {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 0;
+  animation: docChartDraw 1.2s cubic-bezier(0.2, 0, 0, 1) forwards;
+}
+
+.doctor-theme .doc-chart-area {
+  animation: docAreaFadeIn 0.8s ease-out forwards;
+}
+
+.doctor-theme .doc-chart-node {
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  cursor: pointer;
+}
+
+.doctor-theme .doc-chart-node:hover {
+  transform: scale(1.4);
+  filter: drop-shadow(0 0 6px rgba(2, 132, 199, 0.8));
+}
+
+.doctor-theme .doc-pulse-marker {
+  animation: docPulseRing 2.2s infinite ease-out;
+}
+
+.doctor-theme .doc-chart-tooltip {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+  border: 1.5px solid #bae6fd;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(2, 132, 199, 0.18), 0 2px 8px rgba(0,0,0,0.04);
+  pointer-events: none;
+  transition: all 0.15s ease-out;
+  z-index: 10;
+}
+
+.doctor-theme .doc-metric-chip {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  border: 1px solid #bae6fd;
+  background: #f0f9ff;
+  color: #0369a1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.doctor-theme .doc-metric-chip:hover {
+  background: #e0f2fe;
+  color: #0284c7;
+  transform: translateY(-1px);
+}
+
+.doctor-theme .doc-metric-chip.active {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 3px 12px rgba(56, 189, 248, 0.35);
+}
+
+.doctor-theme .doc-ecg-svg {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 0;
+  animation: docEcgScan 2.4s linear infinite;
+}
+
+.doctor-theme .doc-glass-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.doctor-theme .doc-glass-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 60%
+  );
+  transform: translateX(-150%) rotate(25deg);
+  pointer-events: none;
+  transition: transform 0.6s ease;
+}
+
+.doctor-theme .doc-glass-shimmer:hover::after {
+  animation: docShimmerGlint 1.2s ease forwards;
 }
 
 /* Active Patient Banner in Doctor & Cashier View - Styled like Reception Stat-Cards */
@@ -4518,7 +4831,8 @@ html, body {
   --tertiary-container: #e0f2fe;
   --on-tertiary-container: #0284c7;
 
-  --bg-page: #f0f8ff;
+  --bg-page: #ffffff;
+  --background: #ffffff;
   --bg-surface: #ffffff;
   --bg-subtle: #f0f9ff;
   --bg-hover: #e0f2fe;
