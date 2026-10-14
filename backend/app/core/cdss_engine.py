@@ -71,6 +71,30 @@ def score_questionnaire_responses(answers: Dict[str, Any]) -> Dict[str, Any]:
     if q_imm and int(q_imm) > 0:
         scores["immunization_up_to_date"] = False
 
+    # 6. Hypersensitivity / Drug Allergy screening (q4, 0=NKDA, 1=Penicillin, 2=Sulfa, 3=NSAID)
+    allergies = []
+    q_allergy = answers.get("allergy_status", answers.get("q4"))
+    if q_allergy == 1 or answers.get("allergy_penicillin"):
+        allergies.append("PENICILLIN")
+    elif q_allergy == 2 or answers.get("allergy_sulfa"):
+        allergies.append("SULFA")
+    elif q_allergy == 3 or answers.get("allergy_nsaid"):
+        allergies.append("NSAID")
+    if answers.get("allergies") and isinstance(answers["allergies"], list):
+        allergies.extend(answers["allergies"])
+    scores["reported_allergies"] = list(set(allergies))
+
+    # 7. Chronic comorbidity screening (q14, 1=HTN, 2=Diabetes, 3=Asthma, 4=Cardiac, 5=CKD)
+    comorbidities = []
+    q_comorb = answers.get("chronic_comorbidity", answers.get("q14"))
+    if q_comorb == 5 or answers.get("comorbidity_ckd") or answers.get("ckd"):
+        comorbidities.append("CKD")
+    elif q_comorb == 3 or answers.get("comorbidity_asthma") or answers.get("asthma"):
+        comorbidities.append("ASTHMA")
+    if answers.get("comorbidities") and isinstance(answers["comorbidities"], list):
+        comorbidities.extend(answers["comorbidities"])
+    scores["reported_comorbidities"] = list(set(comorbidities))
+
     return scores
 
 
@@ -222,13 +246,38 @@ def filter_candidate_medications(
 
         # 2. Check Chronic Organ Contraindications
         has_organ_conflict = False
-        if organ_risks:
-            if "RENAL" in organ_risks and any("KIDNEY" in cm or "CKD" in cm or "RENAL" in cm for cm in clean_comorb):
-                has_organ_conflict = True
-                conflict_reason = f"Blocked: Contraindicated in chronic renal insufficiency."
-            elif "HEPATIC" in organ_risks and any("LIVER" in cm or "HEPATIC" in cm or "CIRRHOSIS" in cm for cm in clean_comorb):
-                has_organ_conflict = True
-                conflict_reason = f"Blocked: Contraindicated in active hepatic impairment."
+        if organ_risks and clean_comorb:
+            risk_tokens = [tok.strip() for tok in organ_risks.split(",") if tok.strip()]
+            for cm in clean_comorb:
+                # Renal / Kidney / CKD checks
+                if any(k in cm for k in ["CKD", "KIDNEY", "RENAL"]):
+                    if any(r in ["CKD", "RENAL", "RENAL_ARTERY_STENOSIS", "ANURIA"] or "CKD" in r or "RENAL" in r for r in risk_tokens):
+                        has_organ_conflict = True
+                        conflict_reason = "Blocked: Contraindicated in chronic renal insufficiency / CKD."
+                        break
+                # Hepatic / Liver checks
+                if any(h in cm for h in ["LIVER", "HEPATIC", "CIRRHOSIS"]):
+                    if any("HEPATIC" in r or "LIVER" in r for r in risk_tokens):
+                        has_organ_conflict = True
+                        conflict_reason = "Blocked: Contraindicated in active hepatic impairment."
+                        break
+                # Peptic Ulcer checks
+                if any(u in cm for u in ["ULCER", "PEPTIC", "GERD"]):
+                    if any("ULCER" in r for r in risk_tokens):
+                        has_organ_conflict = True
+                        conflict_reason = "Blocked: Contraindicated in active peptic ulcer disease."
+                        break
+                # Asthma / Bronchospasm checks
+                if "ASTHMA" in cm:
+                    if any("ASTHMA" in r or "BRADYCARDIA" in r for r in risk_tokens):
+                        has_organ_conflict = True
+                        conflict_reason = "Blocked: Contraindicated in bronchial asthma."
+                        break
+                # Direct match
+                if any(cm == r or cm in r or r in cm for r in risk_tokens):
+                    has_organ_conflict = True
+                    conflict_reason = f"Blocked: Contraindicated in {cm}."
+                    break
 
         if has_allergy_conflict or has_organ_conflict:
             med_copy["safety_status"] = "CONTRAINDICATED"

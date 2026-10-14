@@ -19,6 +19,10 @@ class PredictedConditionItem(BaseModel):
     rationale: str
 
 class RecommendedMedicationItem(BaseModel):
+    generic_drug_id: Optional[int] = None
+    disease_code: Optional[str] = None
+    icd10_code: Optional[str] = None
+    disease_name: Optional[str] = None
     inn_name: str
     strength: str
     dosage_form: str
@@ -41,3 +45,15 @@ class QuestionnaireResponse(BaseModel):
     recommended_medications: List[RecommendedMedicationItem]
     insights_generated_count: int
     updated_at: str
+
+class QuestionnaireDetailResponse(BaseModel):
+    visit_id: int
+    patient_id: int
+    questionnaire_id: int
+    answers: Dict[str, Any]
+    voice_notes: Optional[str] = None
+    clinical_scores: Dict[str, Any]
+    predicted_conditions: List[PredictedConditionItem]
+    recommended_medications: List[RecommendedMedicationItem]
+    recorded_at: str
+

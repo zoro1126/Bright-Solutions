@@ -87,3 +87,51 @@ class ReportService:
             "count": len(reports),
             "reports": reports
         }
+
+    @staticmethod
+    def get_report(visit_id: int, report_id: int) -> Dict[str, Any]:
+        visit = PatientRepository.get_visit_by_id(visit_id)
+        if not visit:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Visit encounter with ID {visit_id} not found."
+            )
+        report = ReportRepository.get_by_id(report_id)
+        if not report or report["visit_id"] != visit_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"External report with ID {report_id} not found for visit {visit_id}."
+            )
+        return report
+
+    @staticmethod
+    def delete_report(visit_id: int, report_id: int) -> Dict[str, Any]:
+        visit = PatientRepository.get_visit_by_id(visit_id)
+        if not visit:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Visit encounter with ID {visit_id} not found."
+            )
+        report = ReportRepository.get_by_id(report_id)
+        if not report or report["visit_id"] != visit_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"External report with ID {report_id} not found for visit {visit_id}."
+            )
+
+        # Remove physical file if present
+        try:
+            rel = report["file_path"].replace("/uploads/", "")
+            full = os.path.join(UPLOAD_DIR, rel)
+            if os.path.exists(full):
+                os.remove(full)
+        except Exception:
+            pass
+
+        ReportRepository.delete_report(report_id)
+        return {
+            "message": "External report removed successfully",
+            "report_id": report_id,
+            "visit_id": visit_id
+        }
+

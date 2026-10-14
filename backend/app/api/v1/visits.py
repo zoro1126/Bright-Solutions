@@ -1,28 +1,53 @@
-from typing import Optional
+from typing import Optional, Dict, Any
 from fastapi import APIRouter, UploadFile, File, Form, status
 from app.services.questionnaire_service import QuestionnaireService
 from app.services.report_service import ReportService
-from app.schemas.questionnaire import QuestionnaireInput
+from app.schemas.questionnaire import (
+    QuestionnaireInput,
+    QuestionnaireResponse,
+    QuestionnaireDetailResponse
+)
+from app.schemas.report import (
+    ExternalReportItem,
+    ExternalReportUploadResponse,
+    ExternalReportListResponse
+)
 
 router = APIRouter(prefix="/visits")
 
-@router.post("/{visit_id}/questionnaire", tags=["Questionnaire"], status_code=status.HTTP_200_OK)
+@router.post(
+    "/{visit_id}/questionnaire",
+    tags=["Questionnaire"],
+    response_model=QuestionnaireResponse,
+    status_code=status.HTTP_200_OK
+)
 def save_visit_questionnaire(visit_id: int, req: QuestionnaireInput):
     """
     FEAT-02: Records standardized clinical intake MCQ questionnaire responses (q1..q20)
-    and optional voice notes. Upserts if a questionnaire already exists for this visit encounter.
+    and optional voice notes. Deterministically calculates PHQ-2, GAD-2, PEG-3 scores,
+    predicts ICD-10 conditions, generates clinical insights, and queries guideline-directed
+    WHO EML generic medicines with patient allergy/organ contraindication masking.
     """
     return QuestionnaireService.save_questionnaire(visit_id, req)
 
-@router.get("/{visit_id}/questionnaire", tags=["Questionnaire"])
+@router.get(
+    "/{visit_id}/questionnaire",
+    tags=["Questionnaire"],
+    response_model=QuestionnaireDetailResponse
+)
 def get_visit_questionnaire(visit_id: int):
     """
-    FEAT-02: Returns saved clinical intake MCQ questionnaire responses (q1..q20)
-    and voice notes for physician consultation review.
+    FEAT-02: Returns saved clinical intake MCQ questionnaire responses (q1..q20),
+    clinical scores, predicted ICD-10 conditions, and candidate medications for doctor consultation review.
     """
     return QuestionnaireService.get_questionnaire(visit_id)
 
-@router.post("/{visit_id}/reports/upload", tags=["External Reports"], status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{visit_id}/reports/upload",
+    tags=["External Reports"],
+    response_model=ExternalReportUploadResponse,
+    status_code=status.HTTP_201_CREATED
+)
 def upload_external_report(
     visit_id: int,
     file: UploadFile = File(..., description="Binary report file (DICOM, PDF, ECG image, etc.)"),
@@ -42,9 +67,36 @@ def upload_external_report(
         findings_summary=findings_summary
     )
 
-@router.get("/{visit_id}/reports", tags=["External Reports"])
+@router.get(
+    "/{visit_id}/reports",
+    tags=["External Reports"],
+    response_model=ExternalReportListResponse
+)
 def list_visit_reports(visit_id: int):
     """
     FEAT-03: Lists all external diagnostic reports archived for a visit encounter.
     """
     return ReportService.list_reports(visit_id)
+
+@router.get(
+    "/{visit_id}/reports/{report_id}",
+    tags=["External Reports"],
+    response_model=ExternalReportItem
+)
+def get_external_report(visit_id: int, report_id: int):
+    """
+    FEAT-03: Retrieves metadata for a specific external diagnostic report.
+    """
+    return ReportService.get_report(visit_id, report_id)
+
+@router.delete(
+    "/{visit_id}/reports/{report_id}",
+    tags=["External Reports"],
+    status_code=status.HTTP_200_OK
+)
+def delete_external_report(visit_id: int, report_id: int):
+    """
+    FEAT-03: Deletes an external diagnostic report and removes its file from disk.
+    """
+    return ReportService.delete_report(visit_id, report_id)
+

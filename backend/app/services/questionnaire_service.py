@@ -62,8 +62,8 @@ class QuestionnaireService:
         raw_candidates = QuestionnaireRepository.get_candidate_medications_by_disease_codes(disease_codes)
 
         # Extract patient allergies and chronic comorbidities
-        patient_allergies = list(req.allergies or [])
-        patient_comorbidities = list(req.comorbidities or [])
+        patient_allergies = list(req.allergies or []) + scores.get("reported_allergies", [])
+        patient_comorbidities = list(req.comorbidities or []) + scores.get("reported_comorbidities", [])
 
         # 6. Apply Deterministic Medication Safety Gate (Allergy & Organ Contraindications)
         recommended_meds = filter_candidate_medications(
@@ -139,7 +139,11 @@ class QuestionnaireService:
         )
         disease_codes = [c["disease_code"] for c in conditions]
         raw_candidates = QuestionnaireRepository.get_candidate_medications_by_disease_codes(disease_codes)
-        recommended_meds = filter_candidate_medications(raw_candidates, [], [])
+        recommended_meds = filter_candidate_medications(
+            candidate_meds=raw_candidates,
+            patient_allergies=scores.get("reported_allergies", []),
+            comorbidities=scores.get("reported_comorbidities", [])
+        )
 
         ts = row["updated_at"] or row["created_at"]
         return {
