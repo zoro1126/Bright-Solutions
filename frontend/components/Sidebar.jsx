@@ -77,11 +77,11 @@ export default function Sidebar({
     avatarGradient = 'linear-gradient(135deg, #0f172a, #1e3a8a)';
     sectionLabel = 'Clinical Navigation';
     activeNavBg = 'var(--doc-nav-active-bg, #CAF0F8)';
-    activeNavColor = 'var(--doc-nav-active-color, #0077B6)';
-    activeNavBorder = 'var(--doc-nav-active-border, #0077B6)';
+    activeNavColor = 'var(--doc-nav-active-color, #1e3a8a)';
+    activeNavBorder = 'var(--doc-nav-active-border, #1e3a8a)';
     navItems = [
       { id: 'dashboard', label: 'Clinical Dashboard', icon: LayoutDashboard },
-      { id: 'workspace', label: 'Consultation & e-Rx', icon: Stethoscope, badge: stats?.total || 5, badgeBg: '#CAF0F8', badgeColor: '#0077B6' },
+      { id: 'workspace', label: 'Consultation & e-Rx', icon: Stethoscope, badge: stats?.total || 5, badgeBg: '#CAF0F8', badgeColor: '#1e3a8a' },
       { id: 'dossier', label: 'Patient Dossier', icon: FileText },
       { id: 'viewer', label: 'Diagnostic Scans', icon: Layers }
     ];
@@ -162,7 +162,7 @@ export default function Sidebar({
       <div className="drawer-nav-list">
         {!collapsed && (
           <div className="drawer-section-label">
-            <span style={{ color: (role === 'doctor' || role === 'admin') ? '#0077B6' : (role === 'cashier' ? '#b45309' : undefined), fontWeight: 700 }}>{sectionLabel}</span>
+            <span style={{ color: (role === 'doctor' || role === 'admin') ? '#1e3a8a' : (role === 'cashier' ? '#b45309' : undefined), fontWeight: 700 }}>{sectionLabel}</span>
           </div>
         )}
 
@@ -192,28 +192,28 @@ export default function Sidebar({
               }}
               title={collapsed ? item.label : undefined}
             >
-              <div className="nav-icon-container" style={{ color: isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? (isActive ? '#0077B6' : '#475569') : undefined) }}>
+              <div className="nav-icon-container" style={{ color: isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? (isActive ? '#1e3a8a' : '#475569') : undefined) }}>
                 <Icon size={17} strokeWidth={isActive ? 2.5 : 2.2} />
               </div>
               {!collapsed && (
                 <>
-                  <span className="nav-label" style={{ color: isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? (isActive ? '#0077B6' : '#334155') : undefined), fontWeight: isActive ? 800 : 600 }}>{item.label}</span>
+                  <span className="nav-label" style={{ color: isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? (isActive ? '#1e3a8a' : '#334155') : undefined), fontWeight: isActive ? 800 : 600 }}>{item.label}</span>
                   {item.badge !== undefined && item.badge > 0 && (
                     <span 
-                      className="nav-badge"
-                      style={{ 
-                        color: item.badgeColor || (isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? '#0077B6' : 'inherit')), 
-                        backgroundColor: item.badgeBg || (role === 'doctor' ? '#CAF0F8' : 'var(--bg-subtle)'),
-                        fontWeight: 700,
-                        border: role === 'doctor' ? '1px solid #90E0EF' : (item.badgeBg === '#FDF4AF' ? '1px solid #e6dc7e' : undefined)
-                      }}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </>
-              )}
-            </button>
+                    className="nav-badge"
+                    style={{ 
+                      color: item.badgeColor || (isActive && activeNavColor ? activeNavColor : (role === 'doctor' ? '#1e3a8a' : 'inherit')), 
+                      backgroundColor: item.badgeBg || (role === 'doctor' ? '#CAF0F8' : 'var(--bg-subtle)'),
+                      fontWeight: 700,
+                      border: role === 'doctor' ? '1px solid #90E0EF' : (item.badgeBg === '#FDF4AF' ? '1px solid #e6dc7e' : undefined)
+                    }}
+                  >
+                    {item.badge}
+                  </span>
+                )}
+              </>
+            )}
+          </button>
           );
         })}
 

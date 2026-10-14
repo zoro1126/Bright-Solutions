@@ -175,8 +175,8 @@
   --doc-pill-color: #0077B6;
   --doc-pill-border: #90E0EF;
   --doc-nav-active-bg: #CAF0F8;
-  --doc-nav-active-color: #0077B6;
-  --doc-nav-active-border: #0077B6;
+  --doc-nav-active-color: #1e3a8a;
+  --doc-nav-active-border: #1e3a8a;
   --doc-card-border-focus: #0077B6;
   --doc-surface: #ffffff;
   --doc-surface-subtle: #edf8fc;
@@ -2901,8 +2901,8 @@ html, body {
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active,
 .doctor-theme .m3-nav-item.active {
   background: #CAF0F8 !important;
-  color: #0077B6 !important;
-  border-left: 3px solid #0077B6 !important;
+  color: #1e3a8a !important;
+  border-left: 3px solid #1e3a8a !important;
   border-radius: 10px !important;
   box-shadow: none !important;
   font-weight: 700 !important;
@@ -2910,7 +2910,7 @@ html, body {
 
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active .nav-label,
 .doctor-theme .m3-nav-item.active .nav-label {
-  color: #0077B6 !important;
+  color: #1e3a8a !important;
   font-weight: 700 !important;
 }
 
@@ -2918,7 +2918,7 @@ html, body {
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active .nav-icon-container,
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active svg,
 .doctor-theme .m3-nav-item.active svg {
-  color: #0077B6 !important;
+  color: #1e3a8a !important;
 }
 
 .doctor-theme .m3-nav-item.active::before {
@@ -4560,25 +4560,25 @@ html, body {
 
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active {
   background: #CAF0F8 !important;
-  color: #0077B6 !important;
+  color: #1e3a8a !important;
   font-weight: 700 !important;
-  border-left: 3px solid #0077B6 !important;
+  border-left: 3px solid #1e3a8a !important;
 }
 
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active .m3-nav-icon,
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active .nav-icon-container,
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active svg {
-  color: #0077B6 !important;
+  color: #1e3a8a !important;
 }
 
 .doctor-theme .m3-navigation-drawer .m3-nav-item.active .nav-label {
-  color: #0077B6 !important;
+  color: #1e3a8a !important;
   font-weight: 700 !important;
 }
 
 .doctor-theme .m3-navigation-drawer .m3-nav-item:hover {
   background: #edf8fc !important;
-  color: #0077B6 !important;
+  color: #1e3a8a !important;
 }
 
 .doctor-theme .m3-view-tab.active {
@@ -4715,18 +4715,18 @@ html, body {
 
 .admin-theme .m3-navigation-drawer .m3-nav-item.active {
   background: #CAF0F8 !important;
-  color: #0077B6 !important;
+  color: #1e3a8a !important;
   font-weight: 700 !important;
-  border-left: 3px solid #0077B6 !important;
+  border-left: 3px solid #1e3a8a !important;
 }
 
 .admin-theme .m3-navigation-drawer .m3-nav-item.active .m3-nav-icon {
-  color: #0077B6 !important;
+  color: #1e3a8a !important;
 }
 
 .admin-theme .m3-navigation-drawer .m3-nav-item:hover {
   background: #edf8fc !important;
-  color: #0077B6 !important;
+  color: #1e3a8a !important;
 }
 
 .admin-theme .m3-doctor-patient-banner {
