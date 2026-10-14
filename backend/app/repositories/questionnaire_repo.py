@@ -48,3 +48,87 @@ class QuestionnaireRepository:
                 return cur.fetchone()
         finally:
             conn.close()
+
+    @staticmethod
+    def get_visit_clinical_context(visit_id: int) -> Optional[Dict[str, Any]]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        v.id AS visit_id,
+                        v.patient_id,
+                        v.doctor_id,
+                        v.status AS visit_status,
+                        v.chief_complaint,
+                        p.uhid,
+                        p.first_name,
+                        p.last_name,
+                        p.dob,
+                        TIMESTAMPDIFF(YEAR, p.dob, CURDATE()) AS age,
+                        p.gender,
+                        p.emergency_contact,
+                        vt.systolic_bp,
+                        vt.diastolic_bp,
+                        vt.pulse_rate,
+                        vt.temperature_f,
+                        vt.resp_rate,
+                        vt.spo2_pct,
+                        vt.weight_kg,
+                        vt.height_cm,
+                        vt.bmi,
+                        vt.bp_stage
+                    FROM visits v
+                    JOIN patients p ON p.id = v.patient_id
+                    LEFT JOIN vital_signs vt ON vt.visit_id = v.id
+                    WHERE v.id = %s;
+                """, (visit_id,))
+                return cur.fetchone()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_candidate_medications_by_disease_codes(disease_codes: list[str]) -> list[Dict[str, Any]]:
+        if not disease_codes:
+            return []
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                placeholders = ", ".join(["%s"] * len(disease_codes))
+                query = f"""
+                    SELECT 
+                        cdi.disease_code,
+                        cdi.icd10_code,
+                        cdi.disease_name,
+                        cdi.line_of_treatment,
+                        cdi.allergy_trigger_class,
+                        cdi.organ_risk_flags,
+                        gd.id AS generic_drug_id,
+                        gd.inn_name,
+                        gd.strength,
+                        gd.dosage_form,
+                        gd.atc_code,
+                        gd.rxcui,
+                        gd.standard_schedule,
+                        gd.contraindication_summary,
+                        (SELECT GROUP_CONCAT(btp.brand_name SEPARATOR ', ') 
+                         FROM brand_trade_products btp 
+                         WHERE btp.generic_drug_id = gd.id AND btp.is_in_stock = 1) AS available_brands
+                    FROM clinical_disease_indications cdi
+                    JOIN standard_generic_drugs gd ON gd.id = cdi.generic_drug_id
+                    WHERE cdi.disease_code IN ({placeholders})
+                    ORDER BY cdi.disease_code, FIELD(cdi.line_of_treatment, 'FIRST_LINE', 'SECOND_LINE', 'SYMPTOMATIC', 'ADJUNCT');
+                """
+                cur.execute(query, disease_codes)
+                return cur.fetchall()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def update_visit_status(visit_id: int, new_status: str) -> None:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("UPDATE visits SET status = %s WHERE id = %s;", (new_status, visit_id))
+        finally:
+            conn.close()
