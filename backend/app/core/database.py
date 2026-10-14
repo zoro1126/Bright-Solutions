@@ -329,6 +329,10 @@ def init_db():
     finally:
         conn.close()
 
+    # Seed universal generic drugs and ICD-10 disease indications
+    from app.core.seed_standard_drugs import setup_and_seed_standard_drugs
+    setup_and_seed_standard_drugs()
+
 if __name__ == "__main__":
     init_db()
     print("Database initialization complete.")
