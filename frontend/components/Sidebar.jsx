@@ -162,7 +162,7 @@ export default function Sidebar({
       <div className="drawer-nav-list">
         {!collapsed && (
           <div className="drawer-section-label">
-            <span style={{ color: (role === 'doctor' || role === 'admin') ? '#1e3a8a' : (role === 'cashier' ? '#b45309' : undefined), fontWeight: 700 }}>{sectionLabel}</span>
+            <span style={{ color: (role === 'doctor' || role === 'admin') ? '#1e3a8a' : undefined, fontWeight: 700 }}>{sectionLabel}</span>
           </div>
         )}
 

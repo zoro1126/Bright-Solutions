@@ -569,11 +569,12 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                 </div>
               </div>
 
-              {/* 4 Top KPI Stat Cards - Crisp Black Amounts, No Greenery */}
+              {/* 4 Top KPI Stat Cards - Matching Receptionist Theme */}
               <div className="stats-grid">
+                {/* Card 1: Gross Collections (Green icon matching Receptionist green icon color) */}
                 <div className="stat-card">
-                  <div className="stat-card-accent-blob blob-yellow" />
-                  <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#ffffff' }}>
+                  <div className="stat-card-accent-blob blob-green" />
+                  <div className="stat-squircle-badge badge-bg-green">
                     <Receipt size={16} strokeWidth={2.4} />
                   </div>
                   <div className="stat-card-value" style={{ color: '#0f172a', fontWeight: 900 }}>₹3,42,800</div>
@@ -583,9 +584,10 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                   </div>
                 </div>
 
+                {/* Card 2: Unbilled Queue Accounts (Amber/Yellow icon) */}
                 <div className="stat-card">
                   <div className="stat-card-accent-blob blob-yellow" />
-                  <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#ffffff' }}>
+                  <div className="stat-squircle-badge badge-bg-yellow">
                     <Clock size={16} strokeWidth={2.4} />
                   </div>
                   <div className="stat-card-value" style={{ color: '#0f172a', fontWeight: 900 }}>
@@ -594,9 +596,10 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                   <div className="stat-card-label">Unbilled Queue Accounts</div>
                 </div>
 
+                {/* Card 3: Invoices Settled (Blue/Cyan icon matching Receptionist) */}
                 <div className="stat-card">
-                  <div className="stat-card-accent-blob blob-yellow" />
-                  <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#ffffff' }}>
+                  <div className="stat-card-accent-blob blob-blue" />
+                  <div className="stat-squircle-badge badge-bg-blue">
                     <CheckCircle2 size={16} strokeWidth={2.4} />
                   </div>
                   <div className="stat-card-value" style={{ color: '#0f172a', fontWeight: 900 }}>
@@ -605,9 +608,10 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                   <div className="stat-card-label">Invoices Settled & Archived</div>
                 </div>
 
+                {/* Card 4: PM-JAY Cashless Cleared (Warm Amber icon) */}
                 <div className="stat-card">
                   <div className="stat-card-accent-blob blob-yellow" />
-                  <div className="stat-squircle-badge" style={{ background: 'linear-gradient(135deg, #f59e0b, #b45309)', color: '#ffffff' }}>
+                  <div className="stat-squircle-badge badge-bg-yellow">
                     <Landmark size={16} strokeWidth={2.4} />
                   </div>
                   <div className="stat-card-value" style={{ color: '#0f172a', fontWeight: 900 }}>100%</div>
@@ -616,119 +620,117 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
               </div>
 
               {/* =====================================================================
-                  INTERACTIVE REVENUE & CASHIER GRAPHS SECTION
+                  INTERACTIVE REVENUE & CASHIER GRAPHS SECTION (Matching Receptionist)
                   Graph 1: Hourly Inflow & Billing Volume Curve
                   Graph 2: Tender Channel Revenue Share
                   Graph 3: Fiscal Counter Telemetry & Speed Meters
                  ===================================================================== */}
               <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.2fr', gap: 14 }}>
                 {/* Graph 1: Hourly Inflow & Billing Volume Curve */}
-                <div className="card" style={{ padding: 18, background: '#ffffff', border: '1px solid var(--border-default)' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+                <div className="card" style={{ padding: 18, background: '#ffffff', border: '1px solid var(--border-default)', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#d97706' }} />
-                        <h3 style={{ fontSize: 14.5, fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                          Today's Hourly Revenue Inflow & Velocity Curve
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <TrendingUp size={15} color="#d97706" />
+                        <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                          Hourly Revenue Inflow & Velocity Curve
                         </h3>
                       </div>
-                      <p style={{ fontSize: 11.5, color: 'var(--text-secondary)', margin: '3px 0 0' }}>
+                      <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '3px 0 0' }}>
                         Peak collections between 10:00 AM – 01:00 PM • Shift Counter B-02
                       </p>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span className="badge badge-ready" style={{ fontSize: 10.5 }}>
-                        <TrendingUp size={12} /> Peak: ₹68.4k (11 AM)
-                      </span>
-                      <span className="cashier-income-pill" style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 9999 }}>
-                        Avg Tx: ₹14,280
-                      </span>
+                      <span className="badge badge-ready" style={{ fontSize: 10 }}>Peak: 11:00 AM (₹68.4k)</span>
                     </div>
                   </div>
 
-                  {/* Hourly Bar Chart Visualizer */}
-                  <div style={{ height: 160, display: 'flex', alignItems: 'flex-end', gap: 10, padding: '0 4px', borderBottom: '1px solid var(--border-subtle)', position: 'relative' }}>
-                    {HOURLY_INFLOW_DATA.map((item, idx) => {
-                      const maxAmount = 68400;
-                      const heightPct = Math.round((item.amount / maxAmount) * 125);
-                      const isHovered = hoveredHourIdx === idx;
-
-                      return (
-                        <div 
-                          key={idx}
-                          style={{ 
-                            flex: 1, 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            alignItems: 'center', 
-                            height: '100%', 
-                            justifyContent: 'flex-end',
-                            cursor: 'pointer',
-                            position: 'relative'
-                          }}
-                          onMouseEnter={() => setHoveredHourIdx(idx)}
-                          onMouseLeave={() => setHoveredHourIdx(null)}
-                        >
-                          {/* Tooltip on hover */}
-                          {isHovered && (
-                            <div style={{
-                              position: 'absolute',
-                              bottom: heightPct + 12,
-                              background: '#0f172a',
-                              color: '#ffffff',
-                              padding: '4px 8px',
-                              borderRadius: 6,
-                              fontSize: 10.5,
-                              whiteSpace: 'nowrap',
-                              zIndex: 10,
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                              pointerEvents: 'none',
-                              textAlign: 'center'
-                            }}>
-                              <div style={{ fontWeight: 800 }}>₹{item.amount.toLocaleString()}</div>
-                              <div style={{ fontSize: 9.5, color: '#fde68a' }}>{item.tx} Bills Settled</div>
-                            </div>
-                          )}
-
-                          {/* Bar Amount Tag */}
-                          <span style={{ 
-                            fontSize: 9, 
-                            fontWeight: 800, 
-                            color: item.isPeak ? '#b45309' : '#0f172a', 
-                            marginBottom: 4 
-                          }}>
-                            {(item.amount / 1000).toFixed(1)}k
-                          </span>
-
-                          {/* Bar Element */}
-                          <div 
-                            style={{
-                              width: '100%',
-                              height: `${heightPct}px`,
-                              background: item.isPeak 
-                                ? 'linear-gradient(180deg, #d97706 0%, #b45309 100%)' 
-                                : isHovered
-                                ? 'linear-gradient(180deg, #fbbf24 0%, #d97706 100%)'
-                                : 'linear-gradient(180deg, #f59e0b 0%, #d97706 100%)',
-                              borderRadius: '6px 6px 2px 2px',
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                              boxShadow: isHovered ? '0 4px 12px rgba(217, 119, 6, 0.35)' : 'none',
-                              opacity: hoveredHourIdx !== null && !isHovered ? 0.65 : 1
-                            }}
-                          />
-                        </div>
-                      );
-                    })}
+                  {/* Graph Legend Matching Receptionist */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 10, fontSize: 11 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)' }}>
+                      <span style={{ width: 10, height: 10, borderRadius: 2, background: 'linear-gradient(180deg, #f59e0b, #d97706)' }} />
+                      <span>Revenue Inflow (₹)</span>
+                    </span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)' }}>
+                      <span style={{ width: 14, height: 2.5, background: '#0284c7', borderRadius: 2 }} />
+                      <span>Settlement Velocity</span>
+                    </span>
+                    <span style={{ marginLeft: 'auto', fontSize: 10.5, color: '#15803d', fontWeight: 700 }}>
+                      Avg: ₹14,280 / hr
+                    </span>
                   </div>
 
-                  {/* X-Axis Hour Labels */}
-                  <div style={{ display: 'flex', gap: 10, padding: '8px 4px 0', marginTop: 2 }}>
-                    {HOURLY_INFLOW_DATA.map((item, idx) => (
-                      <div key={idx} style={{ flex: 1, textAlign: 'center', fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>
-                        {item.label}
-                      </div>
-                    ))}
+                  {/* Dual-Metric Chart Container Matching Receptionist Style */}
+                  <div style={{ position: 'relative', height: 145, paddingTop: 6 }}>
+                    {/* SVG Velocity Trend Curve in Sky Blue */}
+                    <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 110, zIndex: 2, pointerEvents: 'none' }} viewBox="0 0 360 100" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="cshWaitLineGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#0284c7" />
+                          <stop offset="50%" stopColor="#38bdf8" />
+                          <stop offset="100%" stopColor="#0284c7" />
+                        </linearGradient>
+                        <linearGradient id="cshWaitAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#0284c7" stopOpacity="0.16" />
+                          <stop offset="100%" stopColor="#0284c7" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      <path 
+                        d="M 20 78 Q 60 52 100 35 T 144 16 T 195 28 T 245 48 T 295 62 L 340 80 L 340 100 L 20 100 Z" 
+                        fill="url(#cshWaitAreaGrad)" 
+                      />
+                      <path 
+                        d="M 20 78 Q 60 52 100 35 T 144 16 T 195 28 T 245 48 T 295 62 L 340 80" 
+                        fill="none" 
+                        stroke="url(#cshWaitLineGrad)" 
+                        strokeWidth="2.5" 
+                        strokeLinecap="round" 
+                      />
+                      <circle cx="144" cy="16" r="4" fill="#0284c7" stroke="#ffffff" strokeWidth="2" />
+                    </svg>
+
+                    {/* Bar Columns - Soft Translucent Amber, Peak Highlighted */}
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: 110, padding: '0 6px', gap: 6, position: 'relative', zIndex: 1 }}>
+                      {HOURLY_INFLOW_DATA.map((item, idx) => {
+                        const maxAmount = 68400;
+                        const heightPct = Math.round((item.amount / maxAmount) * 78);
+                        const isPeak = item.isPeak;
+
+                        return (
+                          <div 
+                            key={idx}
+                            style={{ 
+                              flex: 1, 
+                              display: 'flex', 
+                              flexDirection: 'column', 
+                              alignItems: 'center', 
+                              gap: 4, 
+                              height: '100%', 
+                              justifyContent: 'flex-end',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <span style={{ fontSize: 9.5, fontWeight: 700, color: isPeak ? '#b45309' : 'var(--text-secondary)' }}>
+                              {(item.amount / 1000).toFixed(1)}k
+                            </span>
+                            <div 
+                              style={{ 
+                                width: '100%', 
+                                maxWidth: 22, 
+                                height: `${heightPct}%`, 
+                                background: isPeak ? 'linear-gradient(180deg, #f59e0b, #d97706)' : 'rgba(245, 158, 11, 0.22)', 
+                                border: isPeak ? '1px solid #d97706' : '1px solid rgba(245, 158, 11, 0.45)', 
+                                borderRadius: '5px 5px 2px 2px',
+                                transition: 'all 0.2s ease'
+                              }}
+                              title={`${item.hour}: ₹${item.amount.toLocaleString()} (${item.tx} bills)`}
+                            />
+                            <span style={{ fontSize: 9.5, color: 'var(--text-muted)', marginTop: 4 }}>{item.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -736,14 +738,17 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                 <div className="card" style={{ padding: 18, background: '#ffffff', border: '1px solid var(--border-default)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                     <div>
-                      <h3 style={{ fontSize: 14.5, fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                        Tender Channel Revenue Share
-                      </h3>
-                      <p style={{ fontSize: 11.5, color: 'var(--text-secondary)', margin: '2px 0 0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Activity size={15} color="#10b981" />
+                        <h3 style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                          Tender Channel Revenue Share
+                        </h3>
+                      </div>
+                      <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '3px 0 0' }}>
                         Settlement channel distribution across Counter B-02
                       </p>
                     </div>
-                    <span className="cashier-income-pill" style={{ fontSize: 10, padding: '2px 8px', borderRadius: 9999 }}>
+                    <span className="badge badge-ready" style={{ fontSize: 10 }}>
                       100% Reconciled
                     </span>
                   </div>
