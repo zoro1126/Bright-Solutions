@@ -33,3 +33,15 @@ class LoginResponse(BaseModel):
 
 class LogoutResponse(BaseModel):
     message: str
+
+class ToggleStatusRequest(BaseModel):
+    active: Optional[bool] = None
+    is_active: Optional[bool] = None
+
+    def get_status(self) -> bool:
+        if self.active is not None:
+            return self.active
+        if self.is_active is not None:
+            return self.is_active
+        return True
+
