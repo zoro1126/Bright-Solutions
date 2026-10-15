@@ -289,6 +289,24 @@ def init_db():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             """)
 
+            # 14. Audit Logs Table (Governance & Security)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS audit_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NULL,
+                user_name VARCHAR(100) NOT NULL,
+                user_role VARCHAR(50) NOT NULL,
+                category ENUM('CDSS_OVERRIDE', 'BILLING_ADJUSTMENT', 'TRIAGE_EDIT', 'USER_AUTH', 'PRESCRIPTION_LOCK') NOT NULL,
+                severity ENUM('INFO', 'LOW', 'MEDIUM', 'HIGH') NOT NULL DEFAULT 'INFO',
+                patient_mrn VARCHAR(50) NULL,
+                details TEXT NOT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_audit_category (category),
+                INDEX idx_audit_severity (severity),
+                INDEX idx_audit_created (created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            """)
+
             # Seed default users if table is empty
             cur.execute("SELECT COUNT(*) AS cnt FROM users;")
             row = cur.fetchone()
@@ -299,9 +317,21 @@ def init_db():
                 ('dr_kulkarni', '$2b$12$dummydoctorhash', 'Dr. Vikram Kulkarni, MD', 'DOCTOR', 'vikram@clinic.com', '+919876543211'),
                 ('dr_ananya', '$2b$12$dummydoctorhash2', 'Dr. Ananya Roy, MBBS, DNB', 'DOCTOR', 'ananya@clinic.com', '+919876543213'),
                 ('dr_priya', '$2b$12$dummydoctorhash3', 'Dr. Priya Nair, MD (Internal Med)', 'DOCTOR', 'priya@clinic.com', '+919876543214'),
-                ('cashier_rahul', '$2b$12$dummycashierhash', 'Rahul Verma', 'CASHIER', 'rahul@clinic.com', '+919876543212');
+                ('cashier_rahul', '$2b$12$dummycashierhash', 'Rahul Verma', 'CASHIER', 'rahul@clinic.com', '+919876543212'),
+                ('admin_sunil', '$2b$12$dummyadminhash', 'Dr. Sunil Mehta, Medical Superintendent', 'ADMIN', 'admin@clinic.com', '+919876543215');
                 """)
                 print("Seeded default clinic staff users.")
+            else:
+                # Ensure admin user exists
+                cur.execute("SELECT id FROM users WHERE role = 'ADMIN' LIMIT 1;")
+                admin_row = cur.fetchone()
+                if not admin_row:
+                    cur.execute("""
+                    INSERT INTO users (username, password_hash, full_name, role, email, phone) VALUES
+                    ('admin_sunil', '$2b$12$dummyadminhash', 'Dr. Sunil Mehta, Medical Superintendent', 'ADMIN', 'admin@clinic.com', '+919876543215');
+                    """)
+                    print("Seeded default admin user.")
+
 
             # Seed 15 standard OPD drug formulary catalog items if empty
             cur.execute("SELECT COUNT(*) AS cnt FROM drug_formulary;")

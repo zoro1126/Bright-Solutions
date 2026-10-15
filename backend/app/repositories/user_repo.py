@@ -17,15 +17,19 @@ class UserRepository:
             conn.close()
 
     @staticmethod
-    def get_by_id(user_id: int) -> Optional[Dict[str, Any]]:
+    def get_by_id(user_id: int, only_active: bool = False) -> Optional[Dict[str, Any]]:
         conn = get_connection()
         try:
             with conn.cursor() as cur:
-                cur.execute("""
+                query = """
                     SELECT id, username, password_hash, full_name, role, email, phone, is_active
                     FROM users
-                    WHERE id = %s AND is_active = 1;
-                """, (user_id,))
+                    WHERE id = %s
+                """
+                if only_active:
+                    query += " AND is_active = 1"
+                query += ";"
+                cur.execute(query, (user_id,))
                 return cur.fetchone()
         finally:
             conn.close()
@@ -100,3 +104,18 @@ class UserRepository:
                 return cur.rowcount > 0
         finally:
             conn.close()
+
+    @staticmethod
+    def list_all_staff() -> List[Dict[str, Any]]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, username, full_name, role, email, phone, is_active, created_at, updated_at
+                    FROM users
+                    ORDER BY FIELD(role, 'ADMIN', 'DOCTOR', 'RECEPTIONIST', 'CASHIER'), full_name ASC;
+                """)
+                return cur.fetchall()
+        finally:
+            conn.close()
+

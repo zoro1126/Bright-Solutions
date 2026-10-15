@@ -1,5 +1,6 @@
 # Bright Solutions — Frontend Developer API Integration Guide
-**Covers:** Group 1 (Auth), Group 2 (Patients), Group 3 (Queue), Group 4 (Questionnaires & Diagnostic Reports), and Group 5 (Doctor Consultation, Dossier, Clinical NegEx NLP, CDSS & Prescriptions).
+**Covers:** Group 1 (Auth), Group 2 (Patients), Group 3 (Queue), Group 4 (Questionnaires & Diagnostic Reports), Group 5 (Doctor Consultation & Prescriptions), Group 6 (Cashier Billing & Payments), and Group 7 (Admin Governance & Unified Analytics).
+
 
 ---
 
@@ -596,25 +597,361 @@ const data = await res.json();
 
 ---
 
-## 7. Standard Error Formats & Status Codes
+## 7. Group 6: Cashier Billing & Checkout Subsystem
+
+### 7.1 Cashier Waiting Queue
+* **Endpoint**: `GET /api/cashier/queue`
+* **Caller in `api.js`**: `cashier.queue()`
+* **Response (`200 OK`)**:
+```json
+{
+  "pending_invoices_count": 1,
+  "billing_queue": [
+    {
+      "visit_id": 15,
+      "queue_token": "Q-101",
+      "uhid": "UHID-2026-00015",
+      "patient_name": "Pooja Nair",
+      "doctor_name": "Dr. Vikram Kulkarni, MD",
+      "insurance_category": "INSURANCE",
+      "ready_since": "2026-10-15T12:00:00"
+    }
+  ]
+}
+```
+
+### 7.2 Get Itemized Bill
+* **Endpoint**: `GET /api/cashier/bills/{visit_id}` (or `GET /api/bills/visit/{visit_id}`)
+* **Caller in `api.js`**: `cashier.bill(visitId)`
+* **Description**: Automatically computes line items:
+  - Consultation Fee (₹500.00)
+  - Diagnostic Archive Tariffs (₹150.00 per uploaded external scan)
+  - Formulary Medications (₹60.00 per prescribed line item)
+  - Insurance Coverage Deduction (80% for Private/Cashless, 100% for Ayushman Bharat PM-JAY, 0% for Cash).
+* **Response (`200 OK`)**:
+```json
+{
+  "visit_id": 15,
+  "bill_id": 5,
+  "uhid": "UHID-2026-00015",
+  "patient_name": "Pooja Nair",
+  "currency": "INR",
+  "line_items": [
+    {
+      "item_code": "CONS_GEN",
+      "item_type": "CONSULTATION",
+      "description": "General Physician Consultation",
+      "quantity": 1,
+      "unit_rate": 500.0,
+      "total_amount": 500.0
+    },
+    {
+      "item_code": "DIAG_ARCH",
+      "item_type": "DIAGNOSTIC",
+      "description": "External Scan Archival & Review (12-Lead ECG Strip)",
+      "quantity": 1,
+      "unit_rate": 150.0,
+      "total_amount": 150.0
+    },
+    {
+      "item_code": "PHARM_01",
+      "item_type": "MEDICATION",
+      "description": "Amlokind 5 5mg (TABLET)",
+      "quantity": 1,
+      "unit_rate": 60.0,
+      "total_amount": 60.0
+    }
+  ],
+  "subtotal": 710.0,
+  "tax_gst": 0.0,
+  "discount": 0.0,
+  "insurance_copay_deduction": 568.0,
+  "net_payable": 142.0,
+  "patient_payable": 142.0,
+  "bill_status": "PENDING"
+}
+```
+
+### 7.3 Settle Payment & Close Encounter
+* **Endpoint**: `POST /api/bills/{bill_id}/payments` (or `POST /api/cashier/bills/{bill_id}/payments`)
+* **Caller in `api.js`**: `cashier.pay(billId, data)`
+* **Status Code**: `201 Created`
+* **Request Body**:
+```json
+{
+  "payment_mode": "UPI",
+  "amount_paid": 142.0,
+  "transaction_reference": "UPI-REF-99881122",
+  "cashier_id": 1,
+  "notes": "Paid via PhonePe QR at counter #1"
+}
+```
+* **Response (`201 Created`)**:
+```json
+{
+  "message": "Payment recorded and encounter closed successfully",
+  "payment_id": 5,
+  "receipt_number": "REC-2026-00005",
+  "bill_id": 5,
+  "visit_id": 15,
+  "paid_amount": 142.0,
+  "payment_mode": "UPI",
+  "payment_timestamp": "2026-10-15T12:06:06.000000",
+  "visit_status": "COMPLETED",
+  "receipt_pdf_url": "/api/bills/5/receipt"
+}
+```
+
+### 7.4 Printable Receipt & Financial Breakdown
+* **Endpoint**: `GET /api/bills/{bill_id}/receipt`
+* **Query Parameter**: `?format=html` (optional; renders a printable thermal/A4 invoice with hospital letterhead and print styles).
+* **Response (`200 OK`)**:
+```json
+{
+  "receipt_number": "REC-2026-00005",
+  "bill_id": 5,
+  "visit_id": 15,
+  "queue_token": "Q-101",
+  "issue_date": "2026-10-15T12:06:06",
+  "payment_status": "PAID",
+  "clinic": {
+    "name": "Bright Solutions Hospital & Clinics",
+    "tagline": "Excellence in Outpatient Care & Clinical Decision Support",
+    "address": "Plot 42, Health City, Sector 5, Mumbai, Maharashtra 400001",
+    "phone": "+91-22-2500-1122",
+    "gstin": "27AAACB2233P1Z2"
+  },
+  "patient": {
+    "uhid": "UHID-2026-00015",
+    "name": "Pooja Nair",
+    "insurance_type": "INSURANCE"
+  },
+  "financials": {
+    "subtotal": 710.0,
+    "discount": 0.0,
+    "insurance_copay_deduction": 568.0,
+    "net_payable": 142.0,
+    "amount_paid": 142.0,
+    "balance_due": 0.0
+  },
+  "payment_details": {
+    "mode": "UPI",
+    "transaction_ref": "UPI-REF-99881122",
+    "status": "SUCCESS"
+  }
+}
+```
+
+---
+
+## 8. Group 7: Admin Governance & Staff Management Subsystem
+
+### 8.1 Executive Governance Dashboard & Analytics
+* **Endpoint**: `GET /api/admin/dashboard` & `GET /api/admin/analytics`
+* **Caller in `api.js`**: `admin.dashboard()`
+* **Response (`200 OK`)**:
+```json
+{
+  "summary": {
+    "total_patients": 48,
+    "today_footfall": 12,
+    "completed_consultations": 8,
+    "ready_for_billing": 2,
+    "in_consultation": 2,
+    "gross_revenue": 14250.0,
+    "avg_throughput_minutes": 25.0
+  },
+  "revenue_by_mode": {
+    "CASH": 4200.0,
+    "UPI": 6800.0,
+    "CARD": 3250.0,
+    "NETBANKING": 0.0,
+    "INSURANCE_DIRECT": 0.0
+  },
+  "doctor_workload": [
+    {
+      "doctor_id": 2,
+      "doctor_name": "Dr. Vikram Kulkarni, MD",
+      "email": "vikram@clinic.com",
+      "patients_seen": 6
+    }
+  ],
+  "recent_activity": [
+    {
+      "visit_id": 15,
+      "queue_token": "Q-101",
+      "uhid": "UHID-2026-00015",
+      "patient_name": "Pooja Nair",
+      "doctor_name": "Dr. Vikram Kulkarni, MD",
+      "status": "COMPLETED",
+      "visit_date": "2026-10-15T12:00:00"
+    }
+  ]
+}
+```
+
+### 8.2 Staff Directory
+* **Endpoint**: `GET /api/admin/staff`
+* **Caller in `api.js`**: `admin.staff()`
+* **Response (`200 OK`)**:
+```json
+[
+  {
+    "id": 1,
+    "username": "receptionist_anita",
+    "full_name": "Anita Sharma",
+    "role": "RECEPTIONIST",
+    "email": "anita@clinic.com",
+    "phone": "+919876543210",
+    "is_active": 1,
+    "created_at": "2026-10-15T10:00:00",
+    "updated_at": "2026-10-15T10:00:00"
+  }
+]
+```
+
+### 8.3 Provision Staff Account
+* **Endpoint**: `POST /api/admin/staff` (or `POST /api/admin/users`)
+* **Caller in `api.js`**: `admin.createStaff(data)`
+* **Status Code**: `201 Created`
+* **Request Body**:
+```json
+{
+  "username": "dr_varun",
+  "password": "SecurePassword@123",
+  "full_name": "Dr. Varun Joshi, MD (Cardiology)",
+  "role": "DOCTOR",
+  "email": "varun@brightsolutions.in",
+  "phone": "+919876543299"
+}
+```
+* **Response (`201 Created`)**:
+```json
+{
+  "message": "Hospital staff user account provisioned successfully",
+  "user_id": 6,
+  "username": "dr_varun",
+  "full_name": "Dr. Varun Joshi, MD (Cardiology)",
+  "role": "DOCTOR",
+  "email": "varun@brightsolutions.in",
+  "phone": "+919876543299",
+  "is_active": true
+}
+```
+
+### 8.4 Toggle Staff Account Status
+* **Endpoint**: `PUT /api/admin/staff/{user_id}/status`
+* **Caller in `api.js`**: `admin.toggleStatus(id, active)`
+* **Request Body**:
+```json
+{
+  "active": false
+}
+```
+* **Response (`200 OK`)**:
+```json
+{
+  "message": "Staff user 'dr_varun' status updated to inactive",
+  "user_id": 6,
+  "username": "dr_varun",
+  "is_active": false
+}
+```
+
+### 8.5 Governance Audit Logs
+* **Endpoint**: `GET /api/admin/audit-logs`
+* **Caller in `api.js`**: `admin.auditLogs(filters)`
+* **Query Parameters**:
+  - `category`: `CDSS_OVERRIDE`, `BILLING_ADJUSTMENT`, `TRIAGE_EDIT`, `USER_AUTH`, `PRESCRIPTION_LOCK`
+  - `severity`: `INFO`, `LOW`, `MEDIUM`, `HIGH`
+  - `limit`: `1-200` (default: 50)
+* **Response (`200 OK`)**:
+```json
+[
+  {
+    "id": 1,
+    "user_id": 6,
+    "user_name": "dr_varun",
+    "user_role": "DOCTOR",
+    "category": "USER_AUTH",
+    "severity": "MEDIUM",
+    "patient_mrn": null,
+    "details": "Changed staff user 'dr_varun' active status to False",
+    "timestamp": "2026-10-15T12:20:00",
+    "created_at": "2026-10-15T12:20:00"
+  }
+]
+```
+
+---
+
+## 9. Real-Time Dashboard KPI Statistics
+
+### 9.1 General OPD Dashboard Feed
+* **Endpoint**: `GET /api/dashboard/stats`
+* **Caller in `api.js`**: `dashboard.stats()`
+* **Response (`200 OK`)**:
+```json
+{
+  "total_patients": 48,
+  "today_visits": 12,
+  "active_doctors": 3,
+  "next_token": "Q-113",
+  "bp_breakdown": [
+    { "stage": "Normal Blood Pressure", "count": 22 },
+    { "stage": "Stage 1 Hypertension", "count": 14 },
+    { "stage": "Stage 2 Hypertension", "count": 10 }
+  ],
+  "bmi_breakdown": [
+    { "category": "Normal Weight", "count": 25 },
+    { "category": "Overweight", "count": 15 },
+    { "category": "Obese Class I", "count": 8 }
+  ],
+  "recent_patients": [
+    {
+      "patient_id": 15,
+      "uhid": "UHID-2026-00015",
+      "full_name": "Pooja Nair",
+      "gender": "FEMALE",
+      "age": 36,
+      "phone": "9876500006",
+      "queue_token": "Q-101",
+      "visit_status": "COMPLETED",
+      "doctor_name": "Dr. Vikram Kulkarni, MD",
+      "systolic_bp": 120,
+      "diastolic_bp": 80,
+      "bp_stage": "Normal Blood Pressure",
+      "bmi": 22.4,
+      "bmi_category": "Normal Weight",
+      "spo2_pct": 98.0
+    }
+  ]
+}
+```
+
+---
+
+## 10. Standard Error Formats & Status Codes
 
 | Status Code | Meaning | Typical Scenario | Response Format |
 | :--- | :--- | :--- | :--- |
 | `200 OK` | Success | Normal data retrieval or update | `{"message": "...", ...}` |
-| `201 Created` | Created | Patient registered, file uploaded, Rx saved | `{"message": "...", "id": ...}` |
-| `400 Bad Request` | Business Rule Violation | Sign-off blocked due to unreviewed critical alert | `{"detail": "Sign-off blocked: Unreviewed CRITICAL safety alert(s)..."}` |
+| `201 Created` | Created | Patient registered, file uploaded, Rx saved, Staff provisioned | `{"message": "...", "id": ...}` |
+| `400 Bad Request` | Business Rule Violation | Duplicate payment attempt or invalid staff role | `{"detail": "Invalid staff role 'ASTRONAUT'..."}` |
 | `401 Unauthorized` | Auth Error | Missing or expired Bearer token | `{"detail": "Invalid or expired authorization token."}` |
-| `404 Not Found` | Entity Missing | Patient ID or Visit ID does not exist | `{"detail": "Patient with ID 9999 not found."}` |
-| `422 Unprocessable`| Schema Validation | Missing required field in JSON payload | `{"detail": [{"loc": ["body", "doctor_id"], "msg": "Field required"}]}` |
+| `404 Not Found` | Entity Missing | Patient ID, Bill ID, or Staff ID does not exist | `{"detail": "Staff user with ID 9999 not found."}` |
+| `409 Conflict` | Unique Key Clash | Duplicate username provision attempt | `{"detail": "Staff user with username 'dr_varun' already exists."}` |
+| `422 Unprocessable`| Schema Validation | Missing required field in JSON payload | `{"detail": [{"loc": ["body", "password"], "msg": "Field required"}]}` |
 
 ---
 
-## 8. Summary Table of Completed Endpoints
+## 11. Complete Summary Table of All Implemented Endpoints (Groups 1 to 7)
 
 | Domain | Method | Route | Description |
 | :--- | :--- | :--- | :--- |
 | **Auth** | `POST` | `/api/auth/login` | Staff authentication with JWT Bearer token |
 | **Auth** | `POST` | `/api/auth/logout` | Session invalidation |
+| **Dashboard** | `GET` | `/api/dashboard/stats` | Real-time OPD KPI cards, BP & BMI breakdown, recent triage |
 | **Tokens** | `GET` | `/api/tokens/next` | Auto-increments daily OPD queue token (`Q-101`) |
 | **Patients** | `GET` | `/api/doctors` | Lists active on-duty consulting physicians |
 | **Patients** | `POST` | `/api/patients` | Registers patient, assigns token, computes BMI/BP stage |
@@ -635,3 +972,14 @@ const data = await res.json();
 | **Doctor** | `POST` | `/api/doctor/visits/{id}/prescriptions` | Creates e-prescription with DDI safety evaluation |
 | **Doctor** | `GET` | `/api/doctor/visits/{id}/prescriptions` | Retrieves finalized prescription with joined medication items |
 | **Doctor** | `POST` | `/api/doctor/visits/{id}/sign-off` | Finalizes consultation, signs CDSS flags $\to$ `READY_FOR_BILLING` |
+| **Cashier** | `GET` | `/api/cashier/queue` | Cashier queue of encounters in `READY_FOR_BILLING` |
+| **Cashier** | `GET` | `/api/cashier/bills/{visit_id}` | Itemized invoice (consultation + scans + Rx - insurance copay) |
+| **Cashier** | `POST` | `/api/bills/{bill_id}/payments` | Multi-tender payment settlement, receipt generation $\to$ `COMPLETED` |
+| **Cashier** | `GET` | `/api/bills/{bill_id}/receipt` | Printable JSON/HTML receipt breakdown with clinic metadata |
+| **Admin** | `GET` | `/api/admin/dashboard` | Hospital executive governance metrics & revenue |
+| **Admin** | `GET` | `/api/admin/analytics` | Workload analytics and payment mode breakdown |
+| **Admin** | `GET` | `/api/admin/staff` | Staff directory (passwords stripped) |
+| **Admin** | `POST` | `/api/admin/staff` | Provisions new staff account with bcrypt |
+| **Admin** | `PUT` | `/api/admin/staff/{id}/status` | Toggles staff account active status |
+| **Admin** | `GET` | `/api/admin/audit-logs` | Tamper-evident governance audit log stream |
+
