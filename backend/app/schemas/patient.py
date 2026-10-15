@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Dict, Any, List
 from datetime import date
 
@@ -11,6 +11,12 @@ class VitalSignsInput(BaseModel):
     spo2_pct: Optional[int] = Field(None, ge=50, le=100, description="Oxygen Saturation (%)")
     weight_kg: Optional[float] = Field(None, ge=1.0, le=350.0, description="Weight (kg)")
     height_cm: Optional[float] = Field(None, ge=30.0, le=250.0, description="Height (cm)")
+
+    @field_validator("*", mode="before")
+    def empty_str_to_none_vitals(cls, v):
+        if v == "" or (isinstance(v, str) and not v.strip()):
+            return None
+        return v
 
 class PatientRegistrationRequest(BaseModel):
     first_name: Optional[str] = Field(None, max_length=50)
@@ -39,6 +45,18 @@ class PatientRegistrationRequest(BaseModel):
     coverage_pct: Optional[float] = None
     deductible: Optional[float] = None
     vitals: Optional[VitalSignsInput] = None
+
+    @field_validator("dob", "age", "doctor_id", "receptionist_id", "coverage_pct", "deductible", mode="before")
+    def empty_str_to_none_fields(cls, v):
+        if v == "" or (isinstance(v, str) and not v.strip()):
+            return None
+        return v
+
+    @field_validator("gender", mode="before")
+    def normalize_gender(cls, v):
+        if not v or (isinstance(v, str) and not v.strip()):
+            return "OTHER"
+        return str(v).strip().upper()
 
 class QueueSummaryCounts(BaseModel):
     all: int
