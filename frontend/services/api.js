@@ -34,8 +34,11 @@ const del  = (path)        => request('DELETE', path);
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export const auth = {
-  /** POST /api/auth/login → { token, user } */
+  /** POST /api/auth/login → { token, token_type, expires_in, user, message } */
   login: (username, password) => post('/auth/login', { username, password }),
+
+  /** POST /api/auth/register → { token, token_type, expires_in, user, message } */
+  register: (userData) => post('/auth/register', userData),
 
   /** POST /api/auth/logout */
   logout: () => post('/auth/logout'),
