@@ -1,9 +1,15 @@
 import React from 'react';
-import { useWalkthrough } from '../context/WalkthroughContext';
 import { Menu, Stethoscope, Users, Receipt, ShieldCheck, LogOut, Sparkles } from 'lucide-react';
 
-export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', onRoleChange, onLogout }) {
-  const { isGuideActive, startGuide, stopGuide } = useWalkthrough();
+export default function Navbar({ 
+  onToggleSidebar, 
+  currentRole = 'receptionist', 
+  onRoleChange, 
+  onLogout,
+  onOpenReceptionistGuide,
+  onOpenDoctorGuide,
+  onOpenAdminGuide 
+}) {
 
   // Role-based title colors for visual contrast
   let brandRoleColor = 'var(--text-secondary)';
@@ -131,36 +137,64 @@ export default function Navbar({ onToggleSidebar, currentRole = 'receptionist', 
         )}
 
 
-        {/* Interactive Clinical Flow Guide Button */}
-        <button
-          className="m3-btn m3-btn-sm anim-hover-lift guide-start-btn"
-          onClick={isGuideActive ? stopGuide : startGuide}
-          title={isGuideActive ? "Close Interactive Walkthrough" : "Start Interactive Clinical Flow Guide"}
-          data-tour="start-guide-btn"
-          style={{ 
-            height: 26, 
-            fontSize: 9.5, 
-            padding: '0 9px', 
-            borderRadius: 9999,
-            backgroundColor: 'var(--bg-subtle)',
-            color: 'var(--text-secondary)',
-            border: '1px solid var(--border-default)',
-            fontWeight: 700
-          }}
-        >
-          <Sparkles size={11} className={isGuideActive ? "" : "m3-animate-pulse"} />
-          <span>{isGuideActive ? 'Exit Guide' : 'Start Guide'}</span>
-        </button>
+        {/* Interactive Role Quick Guide Button */}
+        {((currentRole === 'receptionist' && onOpenReceptionistGuide) || 
+          (currentRole === 'doctor' && onOpenDoctorGuide) ||
+          (currentRole === 'admin' && onOpenAdminGuide)) && (
+          <button
+            className="m3-btn m3-btn-sm anim-hover-lift"
+            onClick={() => {
+              if (currentRole === 'receptionist' && onOpenReceptionistGuide) {
+                onOpenReceptionistGuide();
+              } else if (currentRole === 'doctor' && onOpenDoctorGuide) {
+                onOpenDoctorGuide();
+              } else if (currentRole === 'admin' && onOpenAdminGuide) {
+                onOpenAdminGuide();
+              }
+            }}
+            title={
+              currentRole === 'doctor'
+                ? "Open Doctor Clinical Flow Guide"
+                : currentRole === 'admin'
+                ? "Open Executive Admin Guide"
+                : "Open Receptionist Interactive Quick Guide"
+            }
+            style={{ 
+              height: 26, 
+              fontSize: 9.5, 
+              padding: '0 10px', 
+              borderRadius: 9999,
+              backgroundColor: currentRole === 'doctor' ? 'var(--doc-pill-bg, #CAF0F8)' : currentRole === 'admin' ? '#dbeafe' : '#fef3c7',
+              color: currentRole === 'doctor' ? 'var(--doc-pill-color, #0077B6)' : currentRole === 'admin' ? '#1e40af' : '#92400e',
+              border: currentRole === 'doctor' ? '1px solid var(--doc-pill-border, #90E0EF)' : currentRole === 'admin' ? '1px solid #93c5fd' : '1px solid #fde68a',
+              fontWeight: 800,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              cursor: 'pointer'
+            }}
+          >
+            <Sparkles size={11} className="m3-animate-pulse" color={currentRole === 'doctor' ? '#0077B6' : currentRole === 'admin' ? '#1e40af' : '#d97706'} />
+            <span>{currentRole === 'doctor' ? 'Doctor Guide ⚡' : currentRole === 'admin' ? 'Admin Guide ⚡' : 'Reception Guide ⚡'}</span>
+          </button>
+        )}
 
         {onLogout && (
           <button
-            className="icon-btn"
+            className="icon-btn anim-hover-lift"
             onClick={onLogout}
             title="Sign Out / Switch Staff Account"
             aria-label="Sign Out"
-            style={{ color: 'var(--destructive, #dc2626)' }}
+            style={{ 
+              color: 'var(--destructive, #dc2626)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              marginLeft: 4
+            }}
           >
-            <LogOut size={13} />
+            <LogOut size={14} />
           </button>
         )}
       </div>

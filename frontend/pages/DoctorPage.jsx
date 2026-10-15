@@ -3,6 +3,7 @@ import { usePatients } from '../context/PatientContext';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import DoctorDashboard from '../components/DoctorDashboard';
+import DoctorFlowGuideModal from '../components/DoctorFlowGuideModal';
 import { 
   Stethoscope, 
   Sparkles, 
@@ -43,6 +44,7 @@ export default function DoctorPage({ currentRole = 'doctor', onSwitchRole, onSwi
   const [isCdssOverrideModalOpen, setIsCdssOverrideModalOpen] = useState(false);
 
   // Pop-up Modals State
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isDicomModalOpen, setIsDicomModalOpen] = useState(false);
   const [isInsightsModalOpen, setIsInsightsModalOpen] = useState(false);
   const [isConclusionModalOpen, setIsConclusionModalOpen] = useState(false);
@@ -298,6 +300,7 @@ TREATMENT & FOLLOW-UP PLAN:
           currentRole={currentRole}
           onRoleChange={onSwitchRole}
           onLogout={onLogout}
+          onOpenDoctorGuide={() => setIsGuideOpen(true)}
         />
 
         {doctorNav === 'dashboard' ? (
@@ -308,6 +311,7 @@ TREATMENT & FOLLOW-UP PLAN:
               setDoctorNav('workspace');
             }}
             onSwitchToReception={onSwitchToReception}
+            onOpenGuide={() => setIsGuideOpen(true)}
           />
         ) : (
           <main className="page-container doctor-page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: '0', boxSizing: 'border-box' }}>
@@ -355,6 +359,30 @@ TREATMENT & FOLLOW-UP PLAN:
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+          <button
+            type="button"
+            onClick={() => setIsGuideOpen(true)}
+            className="m3-btn anim-hover-lift"
+            style={{
+              height: 32,
+              fontSize: 11.5,
+              padding: '0 12px',
+              background: 'linear-gradient(135deg, #CAF0F8, #ffffff)',
+              color: '#0077B6',
+              border: '1.5px solid #90E0EF',
+              fontWeight: 800,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(0, 119, 182, 0.15)'
+            }}
+            title="Open Doctor Interactive Clinical Guide"
+          >
+            <Sparkles size={13} color="#0077B6" />
+            <span>Doctor Guide ⚡</span>
+          </button>
+
           <button 
             className="m3-btn"
             onClick={onSwitchToReception}
@@ -1846,6 +1874,28 @@ TREATMENT & FOLLOW-UP PLAN:
         </div>
       </div>
     )}
+
+    {/* Interactive Doctor Clinical Flow Guide Modal */}
+    <DoctorFlowGuideModal
+      isOpen={isGuideOpen}
+      onClose={() => setIsGuideOpen(false)}
+      onOpenWorkspace={() => {
+        setDoctorNav('workspace');
+      }}
+      onSwitchTab={(tabId) => {
+        setDoctorNav('workspace');
+        setActiveTab(tabId);
+      }}
+      onOpenSampleDicom={() => {
+        setDoctorNav('workspace');
+        setActiveTab('dicom');
+        setIsDicomModalOpen(true);
+      }}
+      onOpenSampleRx={() => {
+        setDoctorNav('workspace');
+        setActiveTab('rx');
+      }}
+    />
   </div>
   );
 }

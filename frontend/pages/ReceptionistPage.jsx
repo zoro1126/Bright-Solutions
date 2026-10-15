@@ -10,6 +10,7 @@ import ToastContainer from '../components/ToastContainer';
 import ReportsUploadView from '../components/ReportsUploadView';
 import ReceptionistDashboardView from '../components/ReceptionistDashboardView';
 import TokenSlipModal from '../components/TokenSlipModal';
+import ReceptionistFlowGuideModal from '../components/ReceptionistFlowGuideModal';
 import { usePatients } from '../context/PatientContext';
 
 export default function ReceptionistPage({ currentRole = 'receptionist', onSwitchRole, activeSubTab = 'dashboard', onLogout }) {
@@ -21,6 +22,7 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
   const [activeQuestionnairePatient, setActiveQuestionnairePatient] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [slipModalPatient, setSlipModalPatient] = useState(null);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   // Synchronize state when activeSubTab prop changes (e.g. from URL routing or external links)
   useEffect(() => {
@@ -118,6 +120,7 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
           currentRole={currentRole}
           onRoleChange={onSwitchRole}
           onLogout={onLogout}
+          onOpenReceptionistGuide={() => setIsGuideOpen(true)}
         />
 
         <main className="page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: 0, padding: '16px 20px', boxSizing: 'border-box' }}>
@@ -197,6 +200,34 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
           }}
         />
       )}
+
+      {/* Interactive End-to-End Receptionist Flow Guide Modal */}
+      <ReceptionistFlowGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        onOpenRegister={() => {
+          setIsRegisterOpen(true);
+          setActiveNavTab('queue');
+        }}
+        onOpenSampleSlip={() => {
+          const sample = patients[0] || {
+            id: 'sample-p1',
+            fullName: 'Sangeetha Krishnan',
+            age: 52,
+            gender: 'Female',
+            doctorAssigned: 'Dr. Kiran Patel (Medical Oncology)',
+            mrn: 'MRN-2026-141'
+          };
+          setSlipModalPatient(sample);
+        }}
+        onOpenSampleQuestionnaire={() => {
+          const pendingPat = patients?.find(p => p.status === 'QUESTIONNAIRE_PENDING' || p.status === 'REGISTERED') || patients[0];
+          if (pendingPat) {
+            handleOpenQuestionnaire(pendingPat);
+          }
+        }}
+        onSwitchTab={(tabId) => setActiveNavTab(tabId)}
+      />
 
       {/* Dynamic Toasts */}
       <ToastContainer />

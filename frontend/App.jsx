@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { PatientProvider } from './context/PatientContext';
-import { WalkthroughProvider } from './context/WalkthroughContext';
 import ReceptionistPage from './pages/ReceptionistPage';
 import DoctorPage from './pages/DoctorPage';
 import CashierPage from './pages/CashierPage';
 import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
-import SpotlightTour from './components/SpotlightTour';
 
 // Route Guard wrapper
 function ProtectedRoute({ allowedRole, children }) {
@@ -48,8 +46,7 @@ function RoleRouter() {
   };
 
   return (
-    <WalkthroughProvider onSwitchRole={handleRoleChange} currentRole={currentRole}>
-      <Routes>
+    <Routes>
         {/* P-00 Staff Gateway & Role Login */}
         <Route 
           path="/login" 
@@ -304,6 +301,7 @@ function RoleRouter() {
                 currentRole="admin" 
                 onSwitchRole={handleRoleChange}
                 activeSubTab="dashboard"
+                onLogout={handleLogout}
               />
             </ProtectedRoute>
           } 
@@ -316,6 +314,7 @@ function RoleRouter() {
                 currentRole="admin" 
                 onSwitchRole={handleRoleChange}
                 activeSubTab="dashboard"
+                onLogout={handleLogout}
               />
             </ProtectedRoute>
           } 
@@ -328,6 +327,7 @@ function RoleRouter() {
                 currentRole="admin" 
                 onSwitchRole={handleRoleChange}
                 activeSubTab="staff"
+                onLogout={handleLogout}
               />
             </ProtectedRoute>
           } 
@@ -340,6 +340,7 @@ function RoleRouter() {
                 currentRole="admin" 
                 onSwitchRole={handleRoleChange}
                 activeSubTab="audit"
+                onLogout={handleLogout}
               />
             </ProtectedRoute>
           } 
@@ -357,11 +358,7 @@ function RoleRouter() {
           } 
         />
       </Routes>
-
-      {/* Interactive Spotlight Demo Tour */}
-      <SpotlightTour onSwitchRole={handleRoleChange} currentRole={currentRole} />
-    </WalkthroughProvider>
-  );
+    );
 }
 
 export default function App() {

@@ -15,7 +15,11 @@ import {
 } from 'lucide-react';
 import { usePatients } from '../context/PatientContext';
 
-export default function ReceptionistDashboardView({ onOpenRegister, onSelectPatientForQuestionnaire, onPrintSlip }) {
+export default function ReceptionistDashboardView({ 
+  onOpenRegister, 
+  onSelectPatientForQuestionnaire, 
+  onPrintSlip
+}) {
   const { patients, stats } = usePatients();
 
   const todayStr = new Date().toLocaleDateString('en-US', {
@@ -86,23 +90,24 @@ export default function ReceptionistDashboardView({ onOpenRegister, onSelectPati
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onOpenRegister}
-          className="m3-btn m3-btn-filled"
-          style={{
-            height: 38,
-            fontSize: 12.5,
-            fontWeight: 700,
-            padding: '0 18px',
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-            boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)',
-            zIndex: 1
-          }}
-        >
-          <UserPlus size={16} />
-          <span>+ Register New Patient</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, zIndex: 1, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={onOpenRegister}
+            className="m3-btn m3-btn-filled anim-hover-lift"
+            style={{
+              height: 38,
+              fontSize: 12.5,
+              fontWeight: 700,
+              padding: '0 18px',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)'
+            }}
+          >
+            <UserPlus size={16} />
+            <span>+ Register New Patient</span>
+          </button>
+        </div>
       </div>
 
       {/* 4 KPIs Row */}

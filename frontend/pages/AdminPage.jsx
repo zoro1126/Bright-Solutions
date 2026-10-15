@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
+import AdminFlowGuideModal from '../components/AdminFlowGuideModal';
 import { 
   Users, 
   Receipt, 
@@ -24,7 +25,8 @@ import {
   ChevronRight,
   ShieldAlert,
   ArrowUpRight,
-  Download
+  Download,
+  Sparkles
 } from 'lucide-react';
 import { usePatients } from '../context/PatientContext';
 
@@ -45,10 +47,11 @@ const INITIAL_AUDIT_LOGS = [
   { id: 'log-105', timestamp: '08:30 AM', user: 'Admin System', role: 'System', category: 'USER_AUTH', severity: 'INFO', patientMrn: '—', details: 'Staff duty roster shift rollover completed automatically for OPD Morning shift.' }
 ];
 
-export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeSubTab = 'dashboard' }) {
+export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeSubTab = 'dashboard', onLogout }) {
   const { patients } = usePatients();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState(activeSubTab || 'dashboard'); // 'dashboard' | 'staff' | 'audit'
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   
   // Staff state
   const [staffList, setStaffList] = useState(INITIAL_STAFF);
@@ -122,6 +125,8 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           currentRole={currentRole}
           onRoleChange={onSwitchRole}
+          onLogout={onLogout}
+          onOpenAdminGuide={() => setIsGuideOpen(true)}
         />
 
         <main className="page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: 0, padding: '16px 20px', boxSizing: 'border-box' }}>
@@ -145,7 +150,29 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <button 
+                type="button"
+                onClick={() => setIsGuideOpen(true)}
+                className="m3-btn anim-hover-lift"
+                style={{ 
+                  height: 32, 
+                  fontSize: 11.5,
+                  background: 'linear-gradient(135deg, #dbeafe, #ffffff)',
+                  color: '#1e40af',
+                  border: '1.5px solid #93c5fd',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(37, 99, 235, 0.15)'
+                }}
+                title="Open Executive Admin Guide"
+              >
+                <Sparkles size={13} color="#2563eb" />
+                <span>Admin Guide ⚡</span>
+              </button>
               <button 
                 className="m3-btn"
                 onClick={() => setActiveTab('dashboard')}
@@ -791,6 +818,14 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
           </div>
         </div>
       )}
+
+      {/* Interactive Admin Executive Flow Guide Modal */}
+      <AdminFlowGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        onSwitchTab={(tabId) => setActiveTab(tabId)}
+        onOpenAddStaff={() => setIsAddStaffOpen(true)}
+      />
     </div>
   );
 }

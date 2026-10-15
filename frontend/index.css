@@ -5118,5 +5118,34 @@ html, body {
   background-color: #d97706;
 }
 
+/* ==========================================================================
+   Interactive Flow Guide Modal Animations
+   ========================================================================== */
+
+@keyframes modalSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseGlowAmber {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+  }
+}
+
+.reception-guide-pulse {
+  animation: pulseGlowAmber 2s infinite ease-in-out;
+}
+
+
 
 
