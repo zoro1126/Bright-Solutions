@@ -130,8 +130,13 @@ export default function DoctorPage({ currentRole = 'doctor', onSwitchRole, onSwi
 
   // Conclusion Draft State
   const [conclusionText, setConclusionText] = useState(() => {
+    if (!patient) return '';
+    const pName = patient.fullName || patient.full_name || 'Patient';
+    const pAge = patient.age || '—';
+    const pGender = (patient.gender || '').toLowerCase();
+    const pComp = patient.chief_complaint || 'Consultation';
     return `CLINICAL IMPRESSION:
-${patient.fullName}, ${patient.age}yo ${patient.gender.toLowerCase()}, presenting for clinical evaluation with chief complaint: ${patient.chief_complaint || 'Consultation'}.
+${pName}, ${pAge}yo ${pGender}, presenting for clinical evaluation with chief complaint: ${pComp}.
 
 CLINICAL DECISION SUPPORT & RISK FLAGS (Deterministic CDSS + NegEx NLP):
 - Overall Clinical Risk: ${insights?.overallRisk || 'ROUTINE'} (${insights?.overallRisk === 'HIGH' ? 'Critical Action Required' : 'Standard Outpatient Protocols'})
@@ -148,10 +153,16 @@ TREATMENT & FOLLOW-UP PLAN:
 
   // Sync clinical conclusion draft dynamically when selected patient changes
   useEffect(() => {
-    if (!patient) return;
+    if (!patient) {
+      setConclusionText('');
+      return;
+    }
+    const pName = patient.fullName || patient.full_name || 'Patient';
+    const pAge = patient.age || '—';
+    const pGender = (patient.gender || '').toLowerCase();
     const comp = patient.chief_complaint || patient.questionnaire?.responses?.chiefComplaint || 'Consultation & Clinical Evaluation';
     setConclusionText(`CLINICAL IMPRESSION:
-${patient.fullName}, ${patient.age}yo ${patient.gender.toLowerCase()}, presenting for clinical evaluation with chief complaint: ${comp}.
+${pName}, ${pAge}yo ${pGender}, presenting for clinical evaluation with chief complaint: ${comp}.
 
 CLINICAL DECISION SUPPORT & RISK FLAGS (Deterministic CDSS + NegEx NLP):
 - Overall Clinical Risk: ${insights?.overallRisk || 'ROUTINE'} (${insights?.overallRisk === 'HIGH' ? 'Critical Action Required' : 'Standard Outpatient Protocols'})
@@ -1603,7 +1614,7 @@ TREATMENT & FOLLOW-UP PLAN:
 
 
     {/* Pop-up Modal 1: AI Clinical Insights & Staging Dossier */}
-    {isInsightsModalOpen && (
+    {isInsightsModalOpen && patient && (
       <div className="modal-overlay m3-dialog-backdrop" onClick={() => setIsInsightsModalOpen(false)}>
         <div 
           className="modal-content m3-dialog-container" 
@@ -1751,7 +1762,7 @@ TREATMENT & FOLLOW-UP PLAN:
     )}
 
     {/* Pop-up Modal 2: Fullscreen DICOM Viewer */}
-    {isDicomModalOpen && (
+    {isDicomModalOpen && patient && (
       <div className="modal-overlay m3-dialog-backdrop" onClick={() => setIsDicomModalOpen(false)}>
         <div 
           className="modal-content m3-dialog-container" 
@@ -1872,7 +1883,7 @@ TREATMENT & FOLLOW-UP PLAN:
     )}
 
     {/* Pop-up Modal 3: Fullscreen Consultation Note & Conclusion Editor */}
-    {isConclusionModalOpen && (
+    {isConclusionModalOpen && patient && (
       <div className="modal-overlay m3-dialog-backdrop" onClick={() => setIsConclusionModalOpen(false)}>
         <div 
           className="modal-content m3-dialog-container" 

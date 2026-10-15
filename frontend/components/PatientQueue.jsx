@@ -71,11 +71,16 @@ export default function PatientQueue({ onOpenRegister, onOpenQuestionnaire, exte
   }, [patients]);
 
   const filteredPatients = useMemo(() => {
-    return patients.filter(patient => {
+    return (patients || []).filter(patient => {
+      if (!patient) return false;
+      const pName = (patient.fullName || patient.full_name || '').toLowerCase();
+      const pMrn = (patient.mrn || patient.uhid || '').toLowerCase();
+      const pPhone = (patient.phone || '');
+      const q = (searchQuery || '').toLowerCase();
       const matchesSearch =
-        patient.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        patient.mrn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        patient.phone.includes(searchQuery);
+        pName.includes(q) ||
+        pMrn.includes(q) ||
+        pPhone.includes(q);
 
       if (!matchesSearch) return false;
 
@@ -261,10 +266,10 @@ export default function PatientQueue({ onOpenRegister, onOpenQuestionnaire, exte
                     <td>
                       <div className="patient-cell-wrapper">
                         <div className="patient-avatar-chip" style={{ background: avatarBg }}>
-                          {getInitials(patient.fullName)}
+                          {getInitials(patient?.fullName || patient?.full_name || 'PT')}
                         </div>
                         <div className="patient-name-cell">
-                          <span className="patient-name">{patient.fullName}</span>
+                          <span className="patient-name">{patient?.fullName || patient?.full_name || 'Unknown Patient'}</span>
                           <span className="patient-demographics-sub">
                             {patient.age}y {patient.gender} • <span style={{ color: 'var(--text-muted)' }}>{patient.phone}</span>
                             {patient.vitals && (

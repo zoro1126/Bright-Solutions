@@ -51,8 +51,8 @@ export default function ReceptionistDashboardView({
   ];
 
   const doctorLoads = [
-    { name: 'DevDoc (Consultant Physician)', station: 'OPD Chamber 01', activeCount: patients.filter(p => (p.doctorAssigned || '').toLowerCase().includes('devdoc')).length || 1, avgWait: '4.5 min', capacity: 8, color: '#0284c7' },
-    { name: 'Dr. Vikram Kulkarni (Internal Med.)', station: 'OPD Chamber 02', activeCount: patients.filter(p => (p.doctorAssigned || '').toLowerCase().includes('kulkarni')).length || 0, avgWait: '6.0 min', capacity: 6, color: '#10b981' }
+    { name: 'DevDoc (Consultant Physician)', station: 'OPD Chamber 01', activeCount: (patients || []).filter(p => (p?.doctorAssigned || '').toLowerCase().includes('devdoc')).length || 1, avgWait: '4.5 min', capacity: 8, color: '#0284c7' },
+    { name: 'Dr. Vikram Kulkarni (Internal Med.)', station: 'OPD Chamber 02', activeCount: (patients || []).filter(p => (p?.doctorAssigned || '').toLowerCase().includes('kulkarni')).length || 0, avgWait: '6.0 min', capacity: 6, color: '#10b981' }
   ];
 
   return (
@@ -366,54 +366,64 @@ export default function ReceptionistDashboardView({
               </tr>
             </thead>
             <tbody>
-              {recentPatients.map((p, idx) => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <td style={{ padding: '8px 10px' }}>
-                    <span className="mrn-tag">#{141 + idx}</span>
-                    <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{p.mrn}</span>
-                  </td>
-                  <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    {p.fullName}
-                  </td>
-                  <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>
-                    {p.age}y {p.gender} • {p.phone}
-                  </td>
-                  <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>
-                    {p.doctorAssigned?.split('(')[0]}
-                  </td>
-                  <td style={{ padding: '8px 10px' }}>
-                    <span style={{ fontSize: 11, fontWeight: 600 }}>BP {p.vitals?.bp || '120/80'}</span>
-                    <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 4 }}>• SpO2 {p.vitals?.spo2 || '99'}%</span>
-                  </td>
-                  <td style={{ padding: '8px 10px' }}>
-                    <span className="badge badge-active" style={{ fontSize: 10 }}>{p.status}</span>
-                  </td>
-                  <td style={{ padding: '8px 10px', textAlign: 'right' }}>
-                    <div style={{ display: 'inline-flex', gap: 6 }}>
-                      <button
-                        type="button"
-                        onClick={() => onPrintSlip && onPrintSlip(p)}
-                        className="m3-btn m3-btn-tonal"
-                        style={{ height: 26, fontSize: 11, padding: '0 8px' }}
-                        title="Reprint Token Slip"
-                      >
-                        <Printer size={12} />
-                        <span>Slip</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onSelectPatientForQuestionnaire && onSelectPatientForQuestionnaire(p)}
-                        className="m3-btn m3-btn-filled"
-                        style={{ height: 26, fontSize: 11, padding: '0 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
-                        title="Open Intake Questionnaire"
-                      >
-                        <FileText size={12} />
-                        <span>Intake</span>
-                      </button>
-                    </div>
+              {recentPatients.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <Users size={28} style={{ opacity: 0.35, marginBottom: 8, display: 'inline-block' }} />
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>No Patients Registered Today</div>
+                    <div style={{ fontSize: 11, marginTop: 2 }}>Click "+ Register New Patient" above to triage walk-in consultations.</div>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                recentPatients.filter(Boolean).map((p, idx) => (
+                  <tr key={p?.id || idx} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <td style={{ padding: '8px 10px' }}>
+                      <span className="mrn-tag">#{141 + idx}</span>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{p?.mrn || p?.uhid}</span>
+                    </td>
+                    <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {p?.fullName || p?.full_name || 'Patient'}
+                    </td>
+                    <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>
+                      {p?.age}y {p?.gender} • {p?.phone}
+                    </td>
+                    <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>
+                      {p?.doctorAssigned?.split('(')[0]}
+                    </td>
+                    <td style={{ padding: '8px 10px' }}>
+                      <span style={{ fontSize: 11, fontWeight: 600 }}>BP {p?.vitals?.bp || '120/80'}</span>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 4 }}>• SpO2 {p?.vitals?.spo2 || '99'}%</span>
+                    </td>
+                    <td style={{ padding: '8px 10px' }}>
+                      <span className="badge badge-active" style={{ fontSize: 10 }}>{p?.status}</span>
+                    </td>
+                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: 6 }}>
+                        <button
+                          type="button"
+                          onClick={() => onPrintSlip && onPrintSlip(p)}
+                          className="m3-btn m3-btn-tonal"
+                          style={{ height: 26, fontSize: 11, padding: '0 8px' }}
+                          title="Reprint Token Slip"
+                        >
+                          <Printer size={12} />
+                          <span>Slip</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onSelectPatientForQuestionnaire && onSelectPatientForQuestionnaire(p)}
+                          className="m3-btn m3-btn-filled"
+                          style={{ height: 26, fontSize: 11, padding: '0 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+                          title="Open Intake Questionnaire"
+                        >
+                          <FileText size={12} />
+                          <span>Intake</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

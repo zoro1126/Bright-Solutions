@@ -122,12 +122,16 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
   };
 
   const filteredPatients = useMemo(() => {
-    return patients.filter(p => {
-      const q = searchQuery.toLowerCase();
+    return (patients || []).filter(p => {
+      if (!p) return false;
+      const q = (searchQuery || '').toLowerCase();
+      const pName = (p.fullName || p.full_name || '').toLowerCase();
+      const pMrn = (p.mrn || p.uhid || '').toLowerCase();
+      const pPhone = p.phone || '';
       const matchesSearch =
-        p.fullName.toLowerCase().includes(q) ||
-        p.mrn.toLowerCase().includes(q) ||
-        p.phone.includes(q) ||
+        pName.includes(q) ||
+        pMrn.includes(q) ||
+        pPhone.includes(q) ||
         (p.insurance?.provider || '').toLowerCase().includes(q) ||
         (p.insurance?.policyNumber || '').toLowerCase().includes(q);
 
@@ -1461,7 +1465,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                   )}
                 </div>
                 <h3 style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', marginTop: 4, letterSpacing: '-0.01em' }}>
-                  Itemized Bill & Pharmacy Dispensing — {patient.fullName}
+                  Itemized Bill & Pharmacy Dispensing — {patient?.fullName || patient?.full_name || 'Patient'}
                 </h3>
                 <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.95)', marginTop: 2 }}>
                   {patient?.age}y {patient?.gender} • Doctor: {patient?.doctorAssigned || 'DevDoc'} • Insurance: {patient?.insurance?.provider || 'Self-Pay / Cash'}
