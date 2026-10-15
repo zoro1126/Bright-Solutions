@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "b1c3a6e0-8e12-4d2c-9a2d-clinicos-opd-suite",
-    "name": "Bright Solutions \u2014 OPD Clinic OS API Suite",
-    "description": "Complete turnkey REST API test and operational collection for Bright Solutions (OPD Clinic OS). Covers Authentication, Reception & Triage, Diagnostic Ingestion, Doctor Consultation & CDSS, E-Prescription Formulary, Cashier Billing, and Admin Governance.",
+    "_postman_id": "b1c3a6e0-8e12-4d2c-9a2d-clinicos-opd-suite-v2",
+    "name": "Bright Solutions \u2014 OPD Clinic OS API Suite (Turnkey)",
+    "description": "Complete turnkey REST API test collection for Bright Solutions (OPD Clinic OS). Covers Authentication, Receptionist Registration & NEWS2 Triage, Intake Questionnaire Scoring (PHQ-2/GAD-2/PEG-3), Multipart Diagnostic Vault, Doctor Queue, Patient Dossier with NegEx NLP Brief, Tier-1 CDSS Evaluation & Insight Overrides, WHO EML Drug Formulary, Real-time DDI & Dosage Ceiling Safety Engine, Prescriptions, Cashier Itemized Invoicing, Multi-tender Payment & Thermal/A4 HTML Receipts, Admin Governance, Staff Lifecycle, Audit Logs, and Real-time Dashboard KPIs.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -35,11 +35,21 @@
       "key": "doctorId",
       "value": "2",
       "type": "string"
+    },
+    {
+      "key": "insightId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "staffUserId",
+      "value": "1",
+      "type": "string"
     }
   ],
   "item": [
     {
-      "name": "01. System Health & Auth",
+      "name": "01. Authentication & Session Management",
       "item": [
         {
           "name": "Health Check",
@@ -56,11 +66,11 @@
                 "health"
               ]
             },
-            "description": "System and MySQL database connectivity status."
+            "description": "System health and MySQL connection status check."
           }
         },
         {
-          "name": "Login \u2014 Receptionist / Doctor / Cashier / Admin",
+          "name": "Login \u2014 Doctor (Vikram Kulkarni)",
           "request": {
             "method": "POST",
             "header": [
@@ -84,14 +94,127 @@
                 "login"
               ]
             },
-            "description": "Authenticates staff member and returns session token."
+            "description": "Authenticates Dr. Vikram Kulkarni (Doctor persona) and returns session Bearer token."
           }
         },
         {
-          "name": "List Auth Persona Users",
+          "name": "Login \u2014 Receptionist (Anita Sharma)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"receptionist_anita\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticates Anita Sharma (Receptionist persona) and returns session Bearer token."
+          }
+        },
+        {
+          "name": "Login \u2014 Cashier (Rahul Verma)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"cashier_rahul\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticates Rahul Verma (Cashier persona) and returns session Bearer token."
+          }
+        },
+        {
+          "name": "Login \u2014 Admin (Sunil Mehta)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_sunil\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticates Dr. Sunil Mehta (Admin persona) and returns session Bearer token."
+          }
+        },
+        {
+          "name": "Current Staff User Profile",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Returns current logged in user details."
+          }
+        },
+        {
+          "name": "List Staff Persona Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/auth/users",
               "host": [
@@ -103,56 +226,48 @@
                 "users"
               ]
             },
-            "description": "Lists all active clinical users for 1-click persona testing."
+            "description": "Lists active users without leaking sensitive password hashes."
+          }
+        },
+        {
+          "name": "Logout Staff Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Terminates active session."
           }
         }
       ]
     },
     {
-      "name": "02. Reception Desk & Triage",
+      "name": "02. Reception Desk & Patient Registration",
       "item": [
         {
-          "name": "Clinical Dashboard Stats",
+          "name": "Get Next OPD Queue Token",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/dashboard/stats",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "dashboard",
-                "stats"
-              ]
-            },
-            "description": "OPD throughput, BP breakdown, BMI distribution, and live feed."
-          }
-        },
-        {
-          "name": "Get Active Doctors List",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/doctors",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "doctors"
-              ]
-            },
-            "description": "Returns active physicians for assignment during registration."
-          }
-        },
-        {
-          "name": "Get Next Token Preview",
-          "request": {
-            "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/tokens/next",
               "host": [
@@ -164,39 +279,30 @@
                 "next"
               ]
             },
-            "description": "Sequential OPD token preview for the day."
+            "description": "Generates the next sequential OPD token (e.g. Q-101) for today."
           }
         },
         {
-          "name": "List Registered Patients (Paginated)",
+          "name": "List On-Duty Consulting Doctors",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/api/patients?page=1&page_size=10&search=",
+              "raw": "{{baseUrl}}/api/doctors",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "patients"
-              ],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "page_size",
-                  "value": "10"
-                },
-                {
-                  "key": "search",
-                  "value": ""
-                }
+                "doctors"
               ]
             },
-            "description": "Paginated patient directory with search filtering."
+            "description": "Returns active consulting physicians for encounter assignment."
           }
         },
         {
@@ -207,11 +313,15 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"first_name\": \"Ramesh\",\n  \"last_name\": \"Patel\",\n  \"dob\": \"1976-08-22\",\n  \"gender\": \"MALE\",\n  \"phone\": \"9876543210\",\n  \"address\": \"124 Shanti Nagar, Ahmedabad\",\n  \"doctor_id\": 2,\n  \"chief_complaint\": \"Morning occipital headache & fatigue\",\n  \"insurance_type\": \"CASH\",\n  \"vitals\": {\n    \"systolic_bp\": 148,\n    \"diastolic_bp\": 92,\n    \"pulse_rate\": 82,\n    \"temperature_f\": 98.6,\n    \"resp_rate\": 18,\n    \"spo2_pct\": 97,\n    \"weight_kg\": 78.5,\n    \"height_cm\": 172.0\n  }\n}"
+              "raw": "{\n  \"first_name\": \"Rohan\",\n  \"last_name\": \"Kapur\",\n  \"dob\": \"1988-11-15\",\n  \"gender\": \"MALE\",\n  \"phone\": \"9820011223\",\n  \"email\": \"rohan.kapur@example.com\",\n  \"address\": \"Flat 402, Sea View Apartments, Bandra West, Mumbai\",\n  \"blood_group\": \"B+\",\n  \"doctor_id\": 2,\n  \"receptionist_id\": 1,\n  \"insurance_type\": \"INSURANCE\",\n  \"insurance_provider\": \"HDFC ERGO Health\",\n  \"policy_number\": \"POL-HDFC-99201\",\n  \"systolic_bp\": 150,\n  \"diastolic_bp\": 96,\n  \"pulse_rate\": 84,\n  \"temperature_f\": 99.2,\n  \"resp_rate\": 18,\n  \"spo2_pct\": 98.0,\n  \"weight_kg\": 76.5,\n  \"height_cm\": 174.0,\n  \"chief_complaint\": \"Severe throbbing right temporal headache, nausea, and photophobia for 3 days.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/patients",
@@ -223,27 +333,117 @@
                 "patients"
               ]
             },
-            "description": "Registers new patient, creates visit, and logs baseline vitals."
+            "description": "Creates master patient index, generates UHID-YYYY-XXXXX, computes BMI & AHA BP stage, and assigns doctor token."
+          }
+        },
+        {
+          "name": "Search & List Registered Patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients?search=Rohan&page=1&page_size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Rohan",
+                  "description": "Search by name, phone, or UHID"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Paginated master patient index directory search."
+          }
+        },
+        {
+          "name": "Get Patient Master Card by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/{{patientId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patientId}}"
+              ]
+            },
+            "description": "Retrieves demographics, insurance metadata, and emergency contact."
+          }
+        },
+        {
+          "name": "Live Receptionist Queue with NEWS2 Acuity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/receptionist/queue",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "receptionist",
+                "queue"
+              ]
+            },
+            "description": "Real-time queue with computed NEWS2 acuity scores (EMERGENCY / URGENT / ROUTINE) and estimated wait times."
           }
         }
       ]
     },
     {
-      "name": "03. Patient Intake & Reports",
+      "name": "03. Clinical Intake Questionnaire & Diagnostic Reports",
       "item": [
         {
-          "name": "Submit Intake Questionnaire (MCQ & Voice)",
+          "name": "Submit Intake Questionnaire (MCQs & Voice Notes)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"patient_id\": 1,\n  \"answers\": {\n    \"q1\": 1,\n    \"q2\": 0,\n    \"q3\": 2,\n    \"q4\": 0,\n    \"q5\": 1\n  },\n  \"voice_notes\": \"Patient reports symptoms worsening after physical exertion.\"\n}"
+              "raw": "{\n  \"patient_id\": 1,\n  \"q1\": 0,\n  \"q2\": 0,\n  \"q3\": 0,\n  \"q4\": 1,\n  \"q5\": 2,\n  \"q6\": 1,\n  \"q7\": 0,\n  \"q8\": 0,\n  \"q9\": 6,\n  \"q10\": 5,\n  \"q11\": 5,\n  \"q12\": 0,\n  \"q13\": 0,\n  \"q14\": 0,\n  \"q15\": 0,\n  \"q16\": 0,\n  \"q17\": 0,\n  \"q18\": 0,\n  \"q19\": 0,\n  \"q20\": 0,\n  \"voice_notes\": \"Patient denies chest pain, denies shortness of breath, reports severe pulsating headache on right side for 4 days, allergic to penicillin.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/visits/{{visitId}}/questionnaire",
@@ -257,14 +457,19 @@
                 "questionnaire"
               ]
             },
-            "description": "Records intake answers (generic q1..q20 MCQ matrix) and voice transcription."
+            "description": "Calculates validated clinical scores: PHQ-2, GAD-2, PEG-3, flags red-flags, and links recommended WHO EML medicines with contraindication masking."
           }
         },
         {
-          "name": "Get Intake Questionnaire",
+          "name": "Get Intake Questionnaire & Candidate EML Drugs",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/visits/{{visitId}}/questionnaire",
               "host": [
@@ -277,21 +482,26 @@
                 "questionnaire"
               ]
             },
-            "description": "Retrieves submitted intake questionnaire answers for clinical encounter review."
+            "description": "Retrieves questionnaire answers, psychometric scores, red flags, and WHO EML candidate recommendations."
           }
         },
         {
-          "name": "Upload External Diagnostic Report",
+          "name": "Upload External Diagnostic Report (Multipart)",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "formdata",
               "formdata": [
                 {
                   "key": "file",
                   "type": "file",
-                  "src": ""
+                  "src": "/path/to/ecg_strip.pdf"
                 },
                 {
                   "key": "report_type",
@@ -300,12 +510,12 @@
                 },
                 {
                   "key": "modality",
-                  "value": "12-Lead Resting ECG",
+                  "value": "12-Lead ECG Strip",
                   "type": "text"
                 },
                 {
                   "key": "findings_summary",
-                  "value": "Normal sinus rhythm with mild LVH voltage criteria",
+                  "value": "Normal sinus rhythm, HR 78 bpm, no ST elevation or acute ischemic changes.",
                   "type": "text"
                 }
               ]
@@ -323,14 +533,19 @@
                 "upload"
               ]
             },
-            "description": "Uploads external diagnostic report (PDF/DICOM/ECG) via multipart form-data."
+            "description": "Multipart binary archive for DICOM, ECG strips, Lab PDF reports, or X-rays stored under /uploads/{visit_id}/."
           }
         },
         {
-          "name": "Get External Diagnostic Reports",
+          "name": "List Diagnostic Reports for Encounter",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/visits/{{visitId}}/reports",
               "host": [
@@ -343,19 +558,24 @@
                 "reports"
               ]
             },
-            "description": "Lists all external diagnostic attachments uploaded for a visit."
+            "description": "Lists all external diagnostic reports archived for the patient encounter."
           }
         }
       ]
     },
     {
-      "name": "04. Doctor Consultation & CDSS",
+      "name": "04. Doctor Consultation Queue & Clinical Dossier",
       "item": [
         {
-          "name": "Get Doctor OPD Queue",
+          "name": "Get Doctor Consultation Waiting Queue",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/doctor/queue?doctor_id={{doctorId}}",
               "host": [
@@ -373,14 +593,19 @@
                 }
               ]
             },
-            "description": "Queue of TRIAGED or IN_CONSULTATION patients waiting for attending physician."
+            "description": "Acuity-sorted waiting list for Dr. Vikram Kulkarni."
           }
         },
         {
           "name": "Call Patient into Consultation Room",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/doctor/queue/{{visitId}}/call",
               "host": [
@@ -394,35 +619,72 @@
                 "call"
               ]
             },
-            "description": "Transitions visit status from TRIAGED to IN_CONSULTATION."
+            "description": "Transitions visit encounter from WAITING_DOCTOR to IN_CONSULTATION."
           }
         },
         {
-          "name": "Trigger Deterministic CDSS Rules Evaluation",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/doctor/visits/{{visitId}}/insights",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "doctor",
-                "visits",
-                "{{visitId}}",
-                "insights"
-              ]
-            },
-            "description": "Evaluates AHA BP stages, hypoxemia, tachycardia, pyrexia, and BMI alerts."
-          }
-        },
-        {
-          "name": "Get CDSS Safety Alerts",
+          "name": "Get Patient Dossier with NegEx NLP Brief",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/doctor/patients/{{patientId}}/dossier",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "doctor",
+                "patients",
+                "{{patientId}}",
+                "dossier"
+              ]
+            },
+            "description": "Full 360-degree patient timeline with offline Clinical NegEx NLP executive summary, vitals history, diagnostic scans, and previous prescriptions."
+          }
+        },
+        {
+          "name": "Trigger Tier-1 CDSS Evaluation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/doctor/visits/{{visitId}}/insights/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "doctor",
+                "visits",
+                "{{visitId}}",
+                "insights",
+                "evaluate"
+              ]
+            },
+            "description": "Evaluates Tier-1 deterministic CDSS rules against active vitals and questionnaires, generating actionable clinical alerts."
+          }
+        },
+        {
+          "name": "Get Active CDSS Insights & Alerts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/doctor/visits/{{visitId}}/insights",
               "host": [
@@ -436,7 +698,7 @@
                 "insights"
               ]
             },
-            "description": "Fetches active CDSS clinical alerts for an encounter."
+            "description": "Lists all active alerts for this encounter."
           }
         },
         {
@@ -447,14 +709,18 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"is_reviewed\": true,\n  \"doctor_override_notes\": \"Supplemental O2 4L administered; SpO2 stabilizing at 95%.\"\n}"
+              "raw": "{\n  \"is_reviewed\": true,\n  \"doctor_override_notes\": \"Patient BP 150/96 is stage 2 hypertension. Rechecked in left arm; initiated CCB monotherapy and scheduled ambulatory BP monitoring.\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/doctor/insights/1",
+              "raw": "{{baseUrl}}/api/doctor/insights/{{insightId}}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -462,10 +728,10 @@
                 "api",
                 "doctor",
                 "insights",
-                "1"
+                "{{insightId}}"
               ]
             },
-            "description": "Doctor acknowledges or justifies override for a critical safety insight flag."
+            "description": "Attaches physician clinical override justification to satisfy safety governance."
           }
         },
         {
@@ -476,11 +742,15 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"conclusion_notes\": \"Primary Essential Hypertension (Stage 2). Lifestyle counselled.\",\n  \"diagnosis\": \"Essential Hypertension\",\n  \"doctor_id\": 2,\n  \"doctor_override_notes\": \"Clinical alerts reviewed and accounted for.\"\n}"
+              "raw": "{\n  \"doctor_id\": 2,\n  \"diagnosis\": \"Migraine without aura (G43.009) with Stage 2 Essential Hypertension (I10)\",\n  \"conclusion_notes\": \"Advised lifestyle modifications, sleep hygiene, low salt diet. Prescribed Amlodipine 5mg OD and symptomatic Paracetamol SOS.\",\n  \"doctor_override_notes\": \"All critical triage and drug interaction alerts acknowledged and reviewed.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/doctor/visits/{{visitId}}/sign-off",
@@ -495,60 +765,97 @@
                 "sign-off"
               ]
             },
-            "description": "Locks encounter, signs CDSS alerts, and transitions status to READY_FOR_BILLING."
+            "description": "Validates that all critical CDSS alerts have been reviewed, signs clinical flags, and transitions encounter to READY_FOR_BILLING."
           }
         }
       ]
     },
     {
-      "name": "05. E-Prescriptions & Formulary",
+      "name": "05. E-Prescriptions, Formulary & DDI Safety",
       "item": [
         {
-          "name": "Search Approved Drug Formulary",
+          "name": "Search Drug Formulary & Trade Brands",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/api/drugs/formulary?q=paracetamol&dosage_form=&limit=50",
+              "raw": "{{baseUrl}}/api/doctor/formulary?q=Telma",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "drugs",
+                "doctor",
                 "formulary"
               ],
               "query": [
                 {
                   "key": "q",
-                  "value": "paracetamol"
-                },
-                {
-                  "key": "dosage_form",
-                  "value": ""
-                },
-                {
-                  "key": "limit",
-                  "value": "50"
+                  "value": "Telma",
+                  "description": "Substring search across WHO EML generic molecules and commercial brand trade names"
                 }
               ]
             },
-            "description": "Autocomplete search matching trade and generic molecules in approved clinic formulary."
+            "description": "Fast indexed search of drug formulary."
           }
         },
         {
-          "name": "Create E-Prescription",
+          "name": "Pre-flight Prescription DDI & Safety Check",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"doctor_id\": 2,\n  \"general_instructions\": \"Drink plenty of warm water, low sodium diet, avoid strenuous work.\",\n  \"status\": \"FINALIZED\",\n  \"items\": [\n    {\n      \"drug_id\": 2,\n      \"dosage\": \"5mg\",\n      \"frequency\": \"OD\",\n      \"duration_days\": 30,\n      \"meal_timing\": \"AFTER_MEALS\",\n      \"special_instructions\": \"Take in morning with water\"\n    },\n    {\n      \"drug_id\": 3,\n      \"dosage\": \"40mg\",\n      \"frequency\": \"OD\",\n      \"duration_days\": 14,\n      \"meal_timing\": \"BEFORE_MEALS\",\n      \"special_instructions\": \"Take 30 mins before breakfast\"\n    }\n  ]\n}"
+              "raw": "[\n  {\n    \"drug_id\": 2,\n    \"frequency\": \"1-0-0\",\n    \"dosage\": \"5mg\"\n  },\n  {\n    \"drug_id\": 4,\n    \"frequency\": \"1-0-1\",\n    \"dosage\": \"650mg\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/doctor/visits/{{visitId}}/prescriptions/check-safety",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "doctor",
+                "visits",
+                "{{visitId}}",
+                "prescriptions",
+                "check-safety"
+              ]
+            },
+            "description": "Pre-flight preview that evaluates potential drug-drug interactions, duplicate therapeutic classes, and daily dose ceiling violations."
+          }
+        },
+        {
+          "name": "Create E-Prescription with DDI Validation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor_id\": 2,\n  \"general_instructions\": \"Take medicines with warm water after meals. Do not skip morning antihypertensive dose.\",\n  \"status\": \"FINALIZED\",\n  \"items\": [\n    {\n      \"drug_id\": 2,\n      \"dosage\": \"1 tablet (5mg)\",\n      \"frequency\": \"1-0-0\",\n      \"duration_days\": 30,\n      \"meal_timing\": \"AFTER_MEALS\",\n      \"special_instructions\": \"Take daily in the morning after breakfast.\"\n    },\n    {\n      \"drug_id\": 4,\n      \"dosage\": \"1 tablet (650mg)\",\n      \"frequency\": \"1-0-1\",\n      \"duration_days\": 5,\n      \"meal_timing\": \"AFTER_MEALS\",\n      \"special_instructions\": \"Take only if severe headache or fever > 100 F.\"\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/doctor/visits/{{visitId}}/prescriptions",
@@ -563,14 +870,19 @@
                 "prescriptions"
               ]
             },
-            "description": "Creates e-prescription header and line items for the visit."
+            "description": "Saves prescription line items, performs automatic DDI checks, and links items for cashier billing."
           }
         },
         {
           "name": "Get Encounter E-Prescription",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/doctor/visits/{{visitId}}/prescriptions",
               "host": [
@@ -584,7 +896,7 @@
                 "prescriptions"
               ]
             },
-            "description": "Retrieves prescription and joined drug details for print/pharmacy dispensing."
+            "description": "Retrieves finalized prescription with joined medication items, dosage forms, and instructions."
           }
         }
       ]
@@ -596,7 +908,12 @@
           "name": "Cashier Active Billing Queue",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/cashier/queue",
               "host": [
@@ -608,42 +925,51 @@
                 "queue"
               ]
             },
-            "description": "Lists encounters in READY_FOR_BILLING awaiting checkout clearance."
+            "description": "Lists all patient encounters in READY_FOR_BILLING status awaiting cashier clearance."
           }
         },
         {
           "name": "Get Itemized Bill Breakdown",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/api/bills/visit/{{visitId}}",
+              "raw": "{{baseUrl}}/api/cashier/bills/{{visitId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
+                "cashier",
                 "bills",
-                "visit",
                 "{{visitId}}"
               ]
             },
-            "description": "Auto-aggregates physician consultation fees, diagnostic scans, and medications."
+            "description": "Auto-aggregates physician consultation fee (\u20b9500), diagnostic scan archival (\u20b9150), and prescribed medicines (\u20b960 each), deducting insurance copay."
           }
         },
         {
-          "name": "Process Multi-Mode Payment Tender",
+          "name": "Process Multi-Mode Payment Tender (UPI / Cash / Card)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"payment_mode\": \"UPI\",\n  \"tendered_amount\": 650.0,\n  \"transaction_reference\": \"UPI/20261008/PAY/OKAXIS\",\n  \"notes\": \"Paid via Counter QR Scanner at Desk 1\",\n  \"cashier_id\": 5\n}"
+              "raw": "{\n  \"payment_mode\": \"UPI\",\n  \"amount_paid\": 154.0,\n  \"transaction_reference\": \"UPI-G6-POSTMAN-9988\",\n  \"cashier_id\": 1,\n  \"notes\": \"Settled via PhonePe QR scanner at counter #1\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/bills/{{billId}}/payments",
@@ -657,7 +983,63 @@
                 "payments"
               ]
             },
-            "description": "Tenders payment, marks bill as PAID, closes encounter as COMPLETED, and issues receipt."
+            "description": "Tenders payment, marks bill as PAID, transitions visit to COMPLETED, and issues receipt serial."
+          }
+        },
+        {
+          "name": "Get Printable Receipt (JSON Format)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bills/{{billId}}/receipt",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bills",
+                "{{billId}}",
+                "receipt"
+              ]
+            },
+            "description": "Structured JSON receipt with hospital metadata, patient demographics, line items, and transaction reference."
+          }
+        },
+        {
+          "name": "Get Printable Thermal / A4 Receipt (HTML Preview)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/html"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bills/{{billId}}/receipt?format=html",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bills",
+                "{{billId}}",
+                "receipt"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "html"
+                }
+              ]
+            },
+            "description": "Renders an elegant printable thermal/A4 invoice in the browser with hospital header, GSTIN, and CSS print media rules."
           }
         }
       ]
@@ -669,7 +1051,12 @@
           "name": "Executive Analytics Dashboard",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/admin/analytics",
               "host": [
@@ -681,14 +1068,19 @@
                 "analytics"
               ]
             },
-            "description": "Executive KPI counters, revenue by tender mode, doctor workload, and activity feed."
+            "description": "Hospital executive summary, daily footfall, revenue by payment mode, doctor consultation workload, and recent activity."
           }
         },
         {
           "name": "Admin Dashboard (Alias)",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/admin/dashboard",
               "host": [
@@ -704,6 +1096,30 @@
           }
         },
         {
+          "name": "List Hospital Staff Directory",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/staff",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "staff"
+              ]
+            },
+            "description": "Complete staff directory ordered by role (ADMIN, DOCTOR, RECEPTIONIST, CASHIER) with stripped password hashes."
+          }
+        },
+        {
           "name": "Provision Hospital Staff User (Bcrypt)",
           "request": {
             "method": "POST",
@@ -711,24 +1127,131 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"dr_sharma\",\n  \"password\": \"DocPassword@123\",\n  \"full_name\": \"Dr. Rohit Sharma, MD\",\n  \"role\": \"DOCTOR\",\n  \"email\": \"rohit@clinic.com\",\n  \"phone\": \"+919876543299\"\n}"
+              "raw": "{\n  \"username\": \"dr_rohit_sharma\",\n  \"password\": \"SecurePassword@123\",\n  \"full_name\": \"Dr. Rohit Sharma, MD (Cardiology)\",\n  \"role\": \"DOCTOR\",\n  \"email\": \"rohit.sharma@brightsolutions.in\",\n  \"phone\": \"+919876543299\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/admin/users",
+              "raw": "{{baseUrl}}/api/admin/staff",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "admin",
-                "users"
+                "staff"
               ]
             },
-            "description": "Creates new staff account with bcrypt password hashing and RBAC role assignment."
+            "description": "Provisions new staff account with 12-round bcrypt password encryption and writes an audit log."
+          }
+        },
+        {
+          "name": "Toggle Staff Account Status (Active / Inactive)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/staff/{{staffUserId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "staff",
+                "{{staffUserId}}",
+                "status"
+              ]
+            },
+            "description": "Enables or disables staff account access and logs the governance event."
+          }
+        },
+        {
+          "name": "Governance Audit Trail Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/audit-logs?category=USER_AUTH&severity=INFO&limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "audit-logs"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "USER_AUTH",
+                  "description": "CDSS_OVERRIDE, BILLING_ADJUSTMENT, TRIAGE_EDIT, USER_AUTH, PRESCRIPTION_LOCK"
+                },
+                {
+                  "key": "severity",
+                  "value": "INFO",
+                  "description": "INFO, LOW, MEDIUM, HIGH"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Tamper-evident immutable governance audit stream."
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Real-Time Dashboard Analytics",
+      "item": [
+        {
+          "name": "OPD KPI Dashboard & Vitals Staging Distribution",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "stats"
+              ]
+            },
+            "description": "Real-time statistics including active doctors, today's footfall, next arrival token, AHA BP distribution, and recent triage feed."
           }
         }
       ]
