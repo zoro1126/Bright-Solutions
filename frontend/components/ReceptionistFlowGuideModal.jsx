@@ -168,7 +168,7 @@ export default function ReceptionistFlowGuideModal({
         'Patients can complete this on a front-desk tablet or verbally with the receptionist.',
         'Captures Chief Complaints, Pain Score (1-10), Duration, Allergies, and Baseline Vitals.'
       ],
-      proTip: 'Completing the questionnaire immediately runs the ClinicalInsight AI model, saving doctors 4+ minutes of consult charting.',
+      proTip: 'Completing the questionnaire immediately runs deterministic CDSS and NegEx NLP engines, saving doctors 4+ minutes of consult charting.',
       actionBtnText: 'Open Clinical Questionnaire',
       actionFn: () => {
         onOpenSampleQuestionnaire?.();
@@ -304,7 +304,7 @@ export default function ReceptionistFlowGuideModal({
         { id: 'b', text: 'When the 6-step Clinical Intake Questionnaire is submitted.', correct: true },
         { id: 'c', text: 'Only when the doctor manually clicks accept.' }
       ],
-      explanation: 'Submitting the intake questionnaire triggers ClinicalInsight AI to score risk and flag recommendations for Dr. Patel.'
+      explanation: 'Submitting the intake questionnaire triggers deterministic CDSS and NegEx NLP to score risk and flag recommendations for the physician.'
     }
   ];
 

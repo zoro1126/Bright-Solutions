@@ -27,10 +27,12 @@ async function request(method, path, body = undefined, token = null) {
   return res.text();
 }
 
-const get  = (path)        => request('GET',    path);
-const post = (path, body)  => request('POST',   path, body);
-const put  = (path, body)  => request('PUT',    path, body);
-const del  = (path)        => request('DELETE', path);
+const get   = (path)        => request('GET',    path);
+const post  = (path, body)  => request('POST',   path, body);
+const put   = (path, body)  => request('PUT',    path, body);
+const patch = (path, body)  => request('PATCH',  path, body);
+const del   = (path)        => request('DELETE', path);
+
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export const auth = {
@@ -126,13 +128,22 @@ export const dossier = {
 // ─── Doctor — CDSS / Insights ─────────────────────────────────────────────────
 export const cdss = {
   /** POST /api/doctor/visits/:visitId/insights/evaluate */
-  evaluate: (visitId, payload) => post(`/doctor/visits/${visitId}/insights/evaluate`, payload),
+  evaluate: (visitId, payload = {}) => post(`/doctor/visits/${visitId}/insights/evaluate`, payload),
+
+  /** GET /api/doctor/visits/:visitId/insights */
+  list: (visitId) => get(`/doctor/visits/${visitId}/insights`),
+
+  /** PATCH /api/doctor/insights/:insightId */
+  review: (insightId, data) => patch(`/doctor/insights/${insightId}`, data),
 };
 
 // ─── Doctor — Prescriptions ───────────────────────────────────────────────────
 export const prescriptions = {
   /** GET /api/doctor/visits/:visitId/prescriptions */
   list: (visitId) => get(`/doctor/visits/${visitId}/prescriptions`),
+
+  /** POST /api/doctor/visits/:visitId/prescriptions/check-safety */
+  checkSafety: (visitId, items) => post(`/doctor/visits/${visitId}/prescriptions/check-safety`, items),
 
   /** POST /api/doctor/visits/:visitId/prescriptions */
   create: (visitId, data) => post(`/doctor/visits/${visitId}/prescriptions`, data),
@@ -160,7 +171,11 @@ export const cashier = {
 
   /** POST /api/bills/:billId/payments */
   pay: (billId, data) => post(`/bills/${billId}/payments`, data),
+
+  /** GET /api/bills/:billId/receipt */
+  receipt: (billId, format = null) => get(`/bills/${billId}/receipt${format ? `?format=${format}` : ''}`),
 };
+
 
 // ─── Admin — Analytics ────────────────────────────────────────────────────────
 export const admin = {

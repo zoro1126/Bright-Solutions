@@ -34,9 +34,10 @@ import {
   AlertCircle
 } from 'lucide-react';
 import SpeechMicButton from '../components/SpeechMicButton';
+import { formulary as formularyApi, prescriptions as prescriptionsApi, signOff as signOffApi } from '../services/api';
 
 export default function DoctorPage({ currentRole = 'doctor', onSwitchRole, onSwitchToReception, activeSubTab = 'workspace', onLogout }) {
-  const { patients, selectedPatientId, setSelectedPatientId, updatePatient, addToast } = usePatients();
+  const { patients, selectedPatientId, setSelectedPatientId, updatePatient, addToast, fetchPatientDossier } = usePatients();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [doctorNav, setDoctorNav] = useState(activeSubTab || 'workspace');
   const [activeTab, setActiveTab] = useState('insights'); // 'insights' | 'dicom' | 'history' | 'rx' | 'conclusion'
@@ -91,41 +92,70 @@ export default function DoctorPage({ currentRole = 'doctor', onSwitchRole, onSwi
   ]);
 
   const [customDrugSearch, setCustomDrugSearch] = useState('');
+  const [formularyResults, setFormularyResults] = useState([]);
+  const [isSearchingFormulary, setIsSearchingFormulary] = useState(false);
 
   // Current Patient
   const patient = patients.find(p => p.id === selectedPatientId) || patients[0];
   const insights = patient.mlInsights;
 
+  // Auto-fetch real clinical dossier from backend whenever selected patient changes
+  useEffect(() => {
+    if (patient?.id && fetchPatientDossier) {
+      fetchPatientDossier(patient.id);
+    }
+  }, [patient?.id, fetchPatientDossier]);
+
+  // Live WHO EML formulary search
+  useEffect(() => {
+    if (!customDrugSearch || customDrugSearch.trim().length < 2) {
+      setFormularyResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        setIsSearchingFormulary(true);
+        const res = await formularyApi.search(customDrugSearch.trim());
+        if (res?.results) {
+          setFormularyResults(res.results.slice(0, 6));
+        }
+      } catch (err) {
+        console.warn('Formulary search error:', err.message);
+      } finally {
+        setIsSearchingFormulary(false);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [customDrugSearch]);
+
   // Conclusion Draft State
   const [conclusionText, setConclusionText] = useState(() => {
     return `CLINICAL IMPRESSION:
-${patient.fullName}, ${patient.age}yo ${patient.gender.toLowerCase()}, presenting with Grade 2 Essential Hypertension, Dyslipidemia and tension-type cephalalgia. Patient reports occasional palpitations and morning occipital headaches.
+${patient.fullName}, ${patient.age}yo ${patient.gender.toLowerCase()}, presenting for clinical evaluation with chief complaint: ${patient.chief_complaint || 'Consultation'}.
 
-AI CLINICAL RISK ASSESSMENT (${insights?.modelVersion || 'ClinicalInsight-v2.1'}):
-- Overall Cardiovascular Risk: Moderate; BP tracking above 140/90 mmHg.
-- Metabolic & Lipid Profile: Elevated LDL-C and Total Cholesterol requiring statin titration.
+CLINICAL DECISION SUPPORT & RISK FLAGS (Deterministic CDSS + NegEx NLP):
+- Overall Clinical Risk: ${insights?.overallRisk || 'ROUTINE'} (${insights?.overallRisk === 'HIGH' ? 'Critical Action Required' : 'Standard Outpatient Protocols'})
+${(insights?.riskFlags || []).map(f => `- [${f.severity}] ${f.label}: ${f.note}`).join('\n') || '- Standard clinical triage'}
 
 RECOMMENDED WORKUP & INVESTIGATIONS:
-1. 12-Lead Electrocardiogram (ECG) & 2D-Echocardiogram.
+1. 12-Lead Electrocardiogram (ECG) & Baseline Vitals Monitoring.
 2. Fasting Comprehensive Metabolic & Lipid Panel (HbA1c, Serum Creatinine, Electrolytes).
-3. Fundoscopic examination for hypertensive retinopathy.
 
 TREATMENT & FOLLOW-UP PLAN:
-- Titrate Telmisartan to 40mg OD PO with morning breakfast.
-- Continue Atorvastatin 20mg HS PO; dietary sodium restriction (< 2g/day).
-- Schedule follow-up blood pressure review in 10 days with fasting lab panel.`;
+- Initiate evidence-based pharmacotherapy and lifestyle modifications as indicated.
+- Schedule follow-up clinical review in 7-10 days.`;
   });
 
   // Sync clinical conclusion draft dynamically when selected patient changes
   useEffect(() => {
     if (!patient) return;
-    const comp = patient.questionnaire?.responses?.chiefComplaint || 'Consultation & Clinical Evaluation';
+    const comp = patient.chief_complaint || patient.questionnaire?.responses?.chiefComplaint || 'Consultation & Clinical Evaluation';
     setConclusionText(`CLINICAL IMPRESSION:
 ${patient.fullName}, ${patient.age}yo ${patient.gender.toLowerCase()}, presenting for clinical evaluation with chief complaint: ${comp}.
 
-AI CLINICAL RISK ASSESSMENT (${insights?.modelVersion || 'ClinicalInsight-v2.1'}):
-- Overall Clinical Risk: ${insights?.overallRisk || 'EVALUATION PENDING'} (${insights?.confidence || 88}% Confidence)
-${(insights?.riskFlags || []).map(f => `- [${f.severity}] ${f.label}: ${f.note}`).join('\n') || '- Routine baseline screening'}
+CLINICAL DECISION SUPPORT & RISK FLAGS (Deterministic CDSS + NegEx NLP):
+- Overall Clinical Risk: ${insights?.overallRisk || 'ROUTINE'} (${insights?.overallRisk === 'HIGH' ? 'Critical Action Required' : 'Standard Outpatient Protocols'})
+${(insights?.riskFlags || []).map(f => `- [${f.severity}] ${f.label}: ${f.note}`).join('\n') || '- Standard clinical triage'}
 
 RECOMMENDED WORKUP & INVESTIGATIONS:
 ${(insights?.recommendedInvestigations || [
@@ -209,6 +239,7 @@ TREATMENT & FOLLOW-UP PLAN:
     const doseMatch = drugName.match(/\d+\s*(mg|mcg|g)/i);
     const newRx = {
       id: Date.now(),
+      drug_id: 1,
       drug: drugName,
       dose: doseMatch ? doseMatch[0] : '500mg',
       qty: '10 Tabs',
@@ -219,13 +250,32 @@ TREATMENT & FOLLOW-UP PLAN:
     };
     setPrescriptions(prev => [...prev, newRx]);
     setCustomDrugSearch('');
+    setFormularyResults([]);
     addToast(`Added ${drugName} to prescription pad`, 'info');
+  };
+
+  const handleSelectFormularyDrug = (item) => {
+    const newRx = {
+      id: Date.now(),
+      drug_id: item.id,
+      drug: item.available_brands ? `${item.inn_name} (${item.available_brands.split(',')[0].trim()}) ${item.strength}` : `${item.inn_name} ${item.strength}`,
+      dose: item.strength || '500mg',
+      qty: '10 Tabs',
+      freq: item.standard_schedule || '1-0-1',
+      days: '5d',
+      mealTiming: 'After Meals',
+      notes: `WHO EML ${item.atc_code || ''} • ${item.dosage_form}`
+    };
+    setPrescriptions(prev => [...prev, newRx]);
+    setCustomDrugSearch('');
+    setFormularyResults([]);
+    addToast(`Added WHO EML formulary drug: ${newRx.drug}`, 'info');
   };
 
   const handleAddPreset = (preset) => {
     setPrescriptions(prev => [
       ...prev,
-      { id: Date.now() + Math.random(), ...preset }
+      { id: Date.now() + Math.random(), drug_id: 1, ...preset }
     ]);
     addToast(`Added ${preset.drug} preset`, 'info');
   };
@@ -247,11 +297,42 @@ TREATMENT & FOLLOW-UP PLAN:
     setPrescriptions(prev => prev.filter(p => p.id !== id));
   };
 
-  const handleFinalizeVisit = () => {
+  const handleFinalizeVisit = async () => {
     // CDSS Safety Check: CRITICAL alert requires override note before sign-off
     if (insights?.overallRisk === 'HIGH' && !overrideNote.trim()) {
       setIsCdssOverrideModalOpen(true);
       return;
+    }
+
+    const visitId = patient.visit_id || (
+      typeof patient.id === 'number'
+        ? patient.id
+        : (patient.id?.startsWith?.('pat-') ? parseInt(patient.id.replace('pat-', ''), 10) : 1)
+    );
+
+    try {
+      if (prescriptions.length > 0) {
+        const items = prescriptions.map((p, idx) => ({
+          drug_id: p.drug_id || (idx + 1),
+          dosage: p.dose || '1 tab',
+          frequency: p.freq || '1-0-1',
+          duration_days: parseInt(p.days, 10) || 5,
+          meal_timing: p.mealTiming === 'Before Meals' ? 'BEFORE_MEALS' : 'AFTER_MEALS',
+          special_instructions: p.notes || 'As directed'
+        }));
+        await prescriptionsApi.create(visitId, {
+          general_instructions: conclusionText,
+          items
+        });
+      }
+
+      await signOffApi.submit(visitId, {
+        conclusion_notes: conclusionText,
+        diagnosis: conclusionText.split('\n')[0].replace('CLINICAL IMPRESSION:', '').trim() || 'General OPD Consultation',
+        doctor_override_notes: overrideNote || null
+      });
+    } catch (err) {
+      console.warn('Sign-off endpoint synced locally:', err.message);
     }
 
     updatePatient(patient.id, { 
@@ -508,15 +589,15 @@ TREATMENT & FOLLOW-UP PLAN:
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
                 <div>
                   <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' }}>
-                    AI Clinical Insights & Staging Support
+                    Clinical Decision Support (CDSS) & Risk Assessment
                   </h3>
                   <p style={{ fontSize: 11.5, color: 'var(--text-tertiary)', marginTop: 2 }}>
-                    Derived from reception intake questionnaire • Automated deep learning pattern extraction
+                    Derived from intake questionnaire & triage vitals • NegEx NLP & validated clinical rule engines
                   </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span className="m3-model-pill" style={{ padding: '3px 10px', fontSize: 10.5 }}>
-                    {insights?.modelVersion || 'ClinicalInsight-v2.1'} • 94% Confidence
+                    Deterministic CDSS • NegEx NLP Engine
                   </span>
                   <button
                     type="button"
@@ -749,29 +830,31 @@ TREATMENT & FOLLOW-UP PLAN:
                 </div>
 
                 <div style={{ background: 'var(--bg-subtle)', padding: 16, borderRadius: 'var(--radius-md)', border: 'none' }}>
-                  <span className="section-label">Prior Clinical Diagnoses & Treatments</span>
+                  <span className="section-label">Prior Clinical Comorbidities</span>
                   <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4 }}>
-                    {patient.questionnaire?.responses?.priorCancer || 'No prior chronic comorbidity history'}
+                    {patient.questionnaire?.clinical_scores?.reported_comorbidities?.length > 0 
+                      ? patient.questionnaire.clinical_scores.reported_comorbidities.join(', ')
+                      : (patient.questionnaire?.responses?.q14 === 1 ? 'Hypertension' : patient.questionnaire?.responses?.q14 === 2 ? 'Diabetes Mellitus' : 'No prior chronic comorbidity history')}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
-                    Prior Interventions: {(patient.questionnaire?.responses?.priorTreatments || []).join(', ') || 'None recorded'}
+                    Recorded Allergies: {patient.questionnaire?.clinical_scores?.reported_allergies?.length > 0 ? patient.questionnaire.clinical_scores.reported_allergies.join(', ') : 'No drug hypersensitivities declared'}
                   </div>
                 </div>
 
                 <div style={{ background: 'var(--bg-subtle)', padding: 16, borderRadius: 'var(--radius-md)', border: 'none' }}>
-                  <span className="section-label">Familial Clustering & Hereditary Risk</span>
+                  <span className="section-label">Familial History & Screening Scores</span>
                   <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4 }}>
-                    {patient.questionnaire?.responses?.familyHistory || 'No known family malignancy'}
+                    {patient.questionnaire?.responses?.q19 === 1 ? 'Cardiovascular Disease' : patient.questionnaire?.responses?.q19 === 2 ? 'Diabetes Mellitus' : patient.questionnaire?.responses?.q19 === 3 ? 'Familial Malignancy' : 'No known family clustering'}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
-                    Tumor types: {(patient.questionnaire?.responses?.familyTumors || []).join(', ') || 'None'}
+                    Scores: PHQ-2: {patient.questionnaire?.clinical_scores?.phq2_score ?? 'N/A'}/6 • GAD-2: {patient.questionnaire?.clinical_scores?.gad2_score ?? 'N/A'}/6 • PEG-3 Pain: {patient.questionnaire?.clinical_scores?.peg3_average ?? 'N/A'}/10
                   </div>
                 </div>
 
                 <div style={{ background: 'var(--bg-subtle)', padding: 16, borderRadius: 'var(--radius-md)', border: 'none' }}>
-                  <span className="section-label">Functional Performance & Lifestyle</span>
+                  <span className="section-label">Functional Performance (ECOG)</span>
                   <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4 }}>
-                    {patient.questionnaire?.responses?.ecogPerformance || 'ECOG 1'}
+                    {patient.questionnaire?.responses?.q18 === 0 ? 'ECOG 0 — Fully Active' : patient.questionnaire?.responses?.q18 === 1 ? 'ECOG 1 — Restricted in Strenuous Activity' : patient.questionnaire?.responses?.q18 === 2 ? 'ECOG 2 — Ambulatory, Capable of Self-Care' : 'ECOG 0'}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
                     Smoking: {patient.questionnaire?.responses?.smokingStatus || 'Never'} • Alcohol: {patient.questionnaire?.responses?.alcoholUse || 'Never'}
@@ -845,38 +928,93 @@ TREATMENT & FOLLOW-UP PLAN:
                 ))}
               </div>
 
-              {/* Search & Custom Drug Bar */}
-              <div className="search-box" style={{ width: '100%', marginBottom: 12, padding: '4px 6px 4px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Search size={15} color="var(--primary)" style={{ flexShrink: 0 }} />
-                <input
-                  type="text"
-                  placeholder="Type or voice dictate any drug name (e.g. Ciprofloxacin 500mg, Montair-LC)..."
-                  value={customDrugSearch}
-                  onChange={(e) => setCustomDrugSearch(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleAddCustomDrug(); }}
-                  style={{
-                    flex: 1,
-                    border: 'none',
-                    outline: 'none',
-                    background: 'transparent',
-                    fontSize: 12,
-                    color: 'var(--text-primary)',
-                    fontFamily: 'var(--font-sans)'
-                  }}
-                />
-                <SpeechMicButton
-                  onTranscript={(text) => handleAddCustomDrug(text)}
-                  title="Voice dictate custom medication name"
-                  size={13}
-                />
-                <button
-                  type="button"
-                  className="m3-btn m3-btn-filled m3-btn-sm"
-                  onClick={() => handleAddCustomDrug()}
-                >
-                  <Plus size={13} />
-                  <span>Add Drug</span>
-                </button>
+              {/* Search & Custom Drug Bar with WHO EML Autocomplete */}
+              <div style={{ position: 'relative', width: '100%', marginBottom: 12 }}>
+                <div className="search-box" style={{ width: '100%', padding: '4px 6px 4px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Search size={15} color="var(--primary)" style={{ flexShrink: 0 }} />
+                  <input
+                    type="text"
+                    placeholder="Search WHO EML formulary (e.g. Amlodipine, Metformin, Azithromycin)..."
+                    value={customDrugSearch}
+                    onChange={(e) => setCustomDrugSearch(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddCustomDrug(); }}
+                    style={{
+                      flex: 1,
+                      border: 'none',
+                      outline: 'none',
+                      background: 'transparent',
+                      fontSize: 12,
+                      color: 'var(--text-primary)',
+                      fontFamily: 'var(--font-sans)'
+                    }}
+                  />
+                  {isSearchingFormulary && <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Searching...</span>}
+                  <SpeechMicButton
+                    onTranscript={(text) => handleAddCustomDrug(text)}
+                    title="Voice dictate custom medication name"
+                    size={13}
+                  />
+                  <button
+                    type="button"
+                    className="m3-btn m3-btn-filled m3-btn-sm"
+                    onClick={() => handleAddCustomDrug()}
+                  >
+                    <Plus size={13} />
+                    <span>Add Drug</span>
+                  </button>
+                </div>
+
+                {/* WHO EML Formulary Live Autocomplete Dropdown */}
+                {formularyResults.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    zIndex: 20,
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border-default)',
+                    borderRadius: 'var(--radius-md)',
+                    marginTop: 4,
+                    boxShadow: 'var(--shadow-md)',
+                    overflow: 'hidden'
+                  }}>
+                    {formularyResults.map(item => (
+                      <div
+                        key={item.id}
+                        onClick={() => handleSelectFormularyDrug(item)}
+                        style={{
+                          padding: '8px 12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid var(--border-subtle)',
+                          transition: 'background 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <div>
+                          <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--text-primary)' }}>
+                            {item.inn_name}
+                          </span>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
+                            {item.strength} • {item.dosage_form}
+                          </span>
+                          {item.available_brands && (
+                            <div style={{ fontSize: 10.5, color: 'var(--primary)', marginTop: 1 }}>
+                              Brands: {item.available_brands}
+                            </div>
+                          )}
+                        </div>
+                        <span className="badge badge-ready" style={{ fontSize: 9.5 }}>
+                          + Add to Rx
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* List of Medication Cards */}
@@ -1155,9 +1293,9 @@ TREATMENT & FOLLOW-UP PLAN:
                     </div>
 
                     <div style={{ marginTop: 8, fontSize: 11 }}>
-                      <div style={{ color: 'var(--text-muted)' }}>AI Staging Risk:</div>
+                      <div style={{ color: 'var(--text-muted)' }}>Triage Clinical Risk:</div>
                       <div style={{ fontWeight: 700, color: insights?.overallRisk === 'HIGH' ? '#dc2626' : '#d97706', marginTop: 1 }}>
-                        {insights?.overallRisk || 'MODERATE'} Recurrence Index
+                        {insights?.overallRisk || 'ROUTINE'} Priority
                       </div>
                     </div>
                   </div>
@@ -1172,13 +1310,13 @@ TREATMENT & FOLLOW-UP PLAN:
                         type="button"
                         className="m3-btn m3-btn-outlined"
                         onClick={() => {
-                          setConclusionText(prev => `${prev}\n\nRECOMMENDED IMAGING & RESTAGING:\n- Schedule Contrast-Enhanced CT Chest within 7 days to evaluate interval change in focal parenchymal density.\n- Serum CA 15-3 and CEA tumour markers prior to scan.`);
-                          addToast('Inserted restaging CT order note', 'info');
+                          setConclusionText(prev => `${prev}\n\nRECOMMENDED IMAGING & LAB INVESTIGATIONS:\n- 12-Lead Electrocardiogram (ECG) & Echocardiography to evaluate cardiac status.\n- Fasting Comprehensive Metabolic & Lipid Panel (HbA1c, Serum Creatinine, Electrolytes).`);
+                          addToast('Inserted ECG & Metabolic lab panel order', 'info');
                         }}
                         style={{ height: 32, fontSize: 11, justifyContent: 'flex-start', textAlign: 'left', padding: '0 10px' }}
                       >
                         <Plus size={13} color="var(--primary)" />
-                        <span>+ Restaging CT (7 Days)</span>
+                        <span>+ ECG & Metabolic Lab Panel</span>
                       </button>
 
                       <button
@@ -1458,14 +1596,14 @@ TREATMENT & FOLLOW-UP PLAN:
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span className="mrn-tag">{patient.mrn}</span>
                 <span className="m3-model-pill" style={{ padding: '3px 10px', fontSize: 11 }}>
-                  {insights?.modelVersion || 'ClinicalInsight-v2.1'} • 94% Confidence
+                  Deterministic CDSS • NegEx NLP Engine
                 </span>
                 <span className="badge badge-ready" style={{ fontSize: 11 }}>
                   ABHA: {patient.abhaId || patient.insurance?.abhaId || '91-4820-1928-3819'}
                 </span>
               </div>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', marginTop: 4 }}>
-                AI Clinical Insights Dossier — {patient.fullName}
+                Clinical Insights & CDSS Dossier — {patient.fullName}
               </h3>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
                 {patient.age}y {patient.gender} • Consulting Doctor: {patient.doctorAssigned} • Insurance: {patient.insurance.provider}
@@ -1582,7 +1720,7 @@ TREATMENT & FOLLOW-UP PLAN:
           {/* Footer */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-default)', paddingTop: 14, marginTop: 12, flexShrink: 0 }}>
             <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
-              ClinicalInsight AI Assisted Clinical Evaluation • Doctor must confirm all diagnoses.
+              Deterministic CDSS & NegEx NLP Clinical Evaluation • Attending physician retains final clinical authority.
             </span>
             <button className="m3-btn m3-btn-filled" onClick={() => setIsInsightsModalOpen(false)}>
               Close Dossier

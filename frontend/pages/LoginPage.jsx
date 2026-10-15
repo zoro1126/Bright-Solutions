@@ -21,29 +21,29 @@ import { auth as authApi } from '../services/api';
 export const QUICK_PERSONAS = [
   {
     role: 'receptionist',
-    username: 'receptionist',
-    displayName: 'Priya Raghavan',
-    title: 'Receptionist',
-    dept: 'Counter 01',
+    username: 'receptionist_anita',
+    displayName: 'Anita Sharma',
+    title: 'Senior Receptionist',
+    dept: 'Counter 01 (Triage)',
     icon: Users,
     color: '#0284c7',
     bg: '#eff6ff'
   },
   {
     role: 'doctor',
-    username: 'dr_kiran',
-    displayName: 'Dr. Kiran Patel',
+    username: 'dr_kulkarni',
+    displayName: 'Dr. Vikram Kulkarni, MD',
     title: 'Consultant Physician',
-    dept: 'Room 03',
+    dept: 'OPD Chamber 03',
     icon: Stethoscope,
     color: '#15803d',
     bg: '#dcfce7'
   },
   {
     role: 'cashier',
-    username: 'cashier',
-    displayName: 'Ramesh V.',
-    title: 'Cashier',
+    username: 'cashier_rahul',
+    displayName: 'Rahul Verma',
+    title: 'Cashier & Billing Officer',
     dept: 'Counter B-02',
     icon: Receipt,
     color: '#d97706',
@@ -52,9 +52,9 @@ export const QUICK_PERSONAS = [
   {
     role: 'admin',
     username: 'admin',
-    displayName: 'Dr. Alok Mehta',
-    title: 'Superintendent',
-    dept: 'Directorate',
+    displayName: 'Dr. Suresh Deshmukh',
+    title: 'Medical Superintendent',
+    dept: 'Executive Directorate',
     icon: ShieldCheck,
     color: '#7c3aed',
     bg: '#f3e8ff'
@@ -65,7 +65,7 @@ export default function LoginPage({ onLoginSuccess }) {
   const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
   
   // Login Form
-  const [loginIdentifier, setLoginIdentifier] = useState('receptionist');
+  const [loginIdentifier, setLoginIdentifier] = useState('receptionist_anita');
   const [loginPassword, setLoginPassword] = useState('password123');
 
   // Registration Form
@@ -87,14 +87,14 @@ export default function LoginPage({ onLoginSuccess }) {
     setErrorMessage('');
     setSuccessMessage('');
     try {
-      let inferredRole = roleHint;
+      let inferredRole = roleHint ? roleHint.toLowerCase() : null;
       if (!inferredRole) {
         const u = userToLogin.toLowerCase();
-        if (u.includes('doc') || u.includes('dr_') || u.includes('patel') || u.includes('swami')) {
+        if (u.includes('doc') || u.includes('dr_') || u.includes('kulkarni') || u.includes('patel')) {
           inferredRole = 'doctor';
-        } else if (u.includes('cash') || u.includes('ramesh') || u.includes('bill')) {
+        } else if (u.includes('cash') || u.includes('rahul') || u.includes('bill')) {
           inferredRole = 'cashier';
-        } else if (u.includes('admin') || u.includes('mehta') || u.includes('director')) {
+        } else if (u.includes('admin') || u.includes('deshmukh') || u.includes('director')) {
           inferredRole = 'admin';
         } else {
           inferredRole = 'receptionist';
@@ -112,18 +112,25 @@ export default function LoginPage({ onLoginSuccess }) {
         const res = await authApi.login(userToLogin, passToLogin);
         if (res?.token) {
           token = res.token;
-          if (res.user) userObj = res.user;
+          if (res.user) {
+            userObj = {
+              ...res.user,
+              role: (res.user.role || inferredRole).toLowerCase(),
+              name: res.user.full_name || res.user.username
+            };
+          }
         }
       } catch (apiErr) {
-        console.warn('Backend login endpoint unavailable, using secure demo session:', apiErr.message);
+        console.warn('Backend login endpoint unavailable, using demo session fallback:', apiErr.message);
       }
 
+      const finalRole = (userObj.role || inferredRole).toLowerCase();
       localStorage.setItem('auth_token', token);
-      localStorage.setItem('bright_user', JSON.stringify(userObj));
-      localStorage.setItem('bright_role', userObj.role || inferredRole);
+      localStorage.setItem('bright_user', JSON.stringify({ ...userObj, role: finalRole }));
+      localStorage.setItem('bright_role', finalRole);
 
       if (onLoginSuccess) {
-        onLoginSuccess(userObj.role || inferredRole, userObj);
+        onLoginSuccess(finalRole, { ...userObj, role: finalRole });
       }
     } catch (err) {
       setErrorMessage(err.message || 'Authentication failed. Please verify credentials.');

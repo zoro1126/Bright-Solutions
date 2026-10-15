@@ -117,8 +117,8 @@ export default function DoctorFlowGuideModal({
     {
       num: 2,
       badge: 'Step 02 • Diagnostic Intelligence',
-      title: 'AI Clinical Risk Stratification (ClinicalInsight-v2.1)',
-      subtitle: 'Inspect deep-learning clinical staging, cardiovascular/metabolic risk flags, and confidence ratings.',
+      title: 'CDSS Clinical Risk Stratification & NegEx NLP',
+      subtitle: 'Inspect deterministic CDSS flags, validated scores (PHQ-2, GAD-2, PEG-3, NEWS2), and NegEx SOAP brief.',
       icon: Sparkles,
       color: '#0284c7',
       bg: '#e0f2fe',
@@ -786,10 +786,10 @@ export default function DoctorFlowGuideModal({
                         <div style={{ background: '#ffffff', borderRadius: 12, padding: 14, border: '1px solid var(--border-default)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontSize: 11, fontWeight: 800, color: '#1E3A8A' }}>
-                              ClinicalInsight-v2.1 Evaluation
+                              Deterministic CDSS Evaluation
                             </span>
                             <span style={{ fontSize: 10, fontWeight: 800, background: '#fef3c7', color: '#92400e', padding: '2px 6px', borderRadius: 4 }}>
-                              Moderate-High Alert (74%)
+                              Moderate Priority Alert
                             </span>
                           </div>
                           <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.4 }}>
@@ -1132,7 +1132,7 @@ export default function DoctorFlowGuideModal({
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
                 {[
                   { step: 1, title: '1. Queue & Triage Intake', desc: 'Select patient from waiting roster; review vital signs & chief complaints.', icon: Stethoscope, color: '#0077B6' },
-                  { step: 2, title: '2. AI Risk Stratification', desc: 'ClinicalInsight deep-learning flags for cardiovascular & metabolic risk.', icon: Sparkles, color: '#0284c7' },
+                  { step: 2, title: '2. CDSS Risk Stratification', desc: 'Deterministic CDSS risk flags, validated scores, and NegEx NLP SOAP brief.', icon: Sparkles, color: '#0284c7' },
                   { step: 3, title: '3. DICOM Imaging Review', desc: '148-slice axial CT/MRI viewer with Lung, Mediastinum, and Bone windowing.', icon: Layers, color: '#0077B6' },
                   { step: 4, title: '4. History & Contraindications', desc: 'Longitudinal EHR timeline, past admissions, and drug allergy cross-checks.', icon: ShieldCheck, color: '#059669' },
                   { step: 5, title: '5. Digital Prescription Pad', desc: 'Formulate drug dosage, frequency (1-0-1), meal timing, and auto-dispense.', icon: Pill, color: '#0077B6' },

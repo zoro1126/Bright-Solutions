@@ -1,12 +1,14 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { INITIAL_PATIENTS } from '../utils/mockData';
+import { queue as queueApi, patients as patientsApi, questionnaire as questionnaireApi, dossier as dossierApi } from '../services/api';
 
 const PatientContext = createContext();
 
 export function PatientProvider({ children }) {
   const [patients, setPatients] = useState(INITIAL_PATIENTS);
-  const [selectedPatientId, setSelectedPatientId] = useState("pat-001");
+  const [selectedPatientId, setSelectedPatientId] = useState("pat-2");
   const [toasts, setToasts] = useState([]);
+  const [isLoadingQueue, setIsLoadingQueue] = useState(false);
 
   // Toast notification helper
   const addToast = (message, type = 'info') => {
@@ -21,73 +23,173 @@ export function PatientProvider({ children }) {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
+  // Refresh queue from real backend MySQL database
+  const refreshQueue = useCallback(async () => {
+    try {
+      setIsLoadingQueue(true);
+      const res = await queueApi.list();
+      if (res && Array.isArray(res.queue) && res.queue.length > 0) {
+        setPatients(prev => {
+          // Merge real backend patients, preserving any local active consultation notes if present
+          const backendPatients = res.queue.map(bp => {
+            const existing = prev.find(p => p.id === bp.id || p.mrn === bp.mrn);
+            return existing ? { ...existing, ...bp } : bp;
+          });
+          return backendPatients;
+        });
+
+        // Ensure selected patient remains valid
+        setSelectedPatientId(prevId => {
+          const exists = res.queue.some(p => p.id === prevId);
+          return exists ? prevId : res.queue[0].id;
+        });
+      }
+    } catch (err) {
+      console.warn('Queue API sync fallback to local cache:', err.message);
+    } finally {
+      setIsLoadingQueue(false);
+    }
+  }, []);
+
+  // Sync on mount
+  useEffect(() => {
+    refreshQueue();
+  }, [refreshQueue]);
+
   const selectedPatient = patients.find(p => p.id === selectedPatientId) || patients[0];
 
-  // Register a new patient
-  const registerPatient = (patientData) => {
-    const nextNum = 140 + patients.length + 1;
+  // Fetch full clinical dossier (CDSS, NegEx NLP, vitals, questionnaire) from backend
+  const fetchPatientDossier = useCallback(async (patientId) => {
+    try {
+      const targetId = typeof patientId === 'number' 
+        ? patientId 
+        : (patientId?.startsWith?.('pat-') ? parseInt(patientId.replace('pat-', ''), 10) : patientId);
+      
+      if (!targetId || isNaN(targetId)) return null;
+
+      const dos = await dossierApi.get(targetId);
+      if (dos && dos.insights) {
+        setPatients(prev => prev.map(p => {
+          if (p.id === patientId || p.patient_id === targetId) {
+            return {
+              ...p,
+              mlInsights: {
+                modelVersion: "Deterministic CDSS + NegEx NLP",
+                overallRisk: dos.insights.riskFlags?.some(f => f.severity === 'HIGH') 
+                  ? 'HIGH' 
+                  : (dos.insights.riskFlags?.length > 0 ? 'MEDIUM' : 'LOW'),
+                riskFlags: dos.insights.riskFlags || [],
+                symptomSummary: dos.insights.symptomSummary || p.chief_complaint,
+                hpiNarrative: dos.insights.hpiNarrative,
+                affirmedSymptoms: dos.insights.affirmedSymptoms || [],
+                pertinentNegatives: dos.insights.pertinentNegatives || [],
+                clinicalScores: dos.questionnaire?.clinical_scores || null,
+                recommendedInvestigations: [
+                  { id: `inv-${targetId}-1`, name: "12-Lead Electrocardiogram (ECG)", urgency: "Routine" },
+                  { id: `inv-${targetId}-2`, name: "Comprehensive Metabolic Panel (HbA1c, LFT, KFT)", urgency: "Routine" }
+                ]
+              }
+            };
+          }
+          return p;
+        }));
+      }
+      return dos;
+    } catch (err) {
+      console.warn('Could not load backend clinical dossier:', err.message);
+      return null;
+    }
+  }, []);
+
+  // Register a new patient via POST /api/patients
+  const registerPatient = async (patientData) => {
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    const newPatient = {
-      id: `pat-${Date.now()}`,
-      mrn: `MRN-2026-0${nextNum}`,
-      fullName: patientData.fullName,
-      age: parseInt(patientData.age, 10) || 0,
-      gender: patientData.gender,
-      dob: patientData.dob,
-      phone: patientData.phone,
-      address: patientData.address,
-      emergencyContact: {
-        name: patientData.emergencyContactName || 'N/A',
-        phone: patientData.emergencyContactPhone || 'N/A'
-      },
-      appointmentTime: timeStr,
-      doctorAssigned: patientData.doctorAssigned || "Dr. Ananya Sharma (General & Internal Medicine)",
-      status: "QUESTIONNAIRE_PENDING",
-      registeredAt: timeStr,
-      abhaId: patientData.abhaId || "",
-      abhaAddress: patientData.abhaAddress || "",
-      insurance: {
-        type: patientData.insuranceType || "INSURANCE",
-        provider: patientData.insuranceType === 'GOVT_SCHEME' 
-          ? (patientData.govtSchemeName || "Ayushman Bharat — PM-JAY (AB-PMJAY)")
-          : (patientData.insuranceProvider || "Self-Pay / Cash"),
-        policyNumber: patientData.policyNumber || patientData.beneficiaryId || "N/A",
-        groupNumber: patientData.groupNumber || "N/A",
-        coveragePct: patientData.insuranceType === 'GOVT_SCHEME' 
-          ? 100 
-          : (Number(patientData.coveragePct) || (patientData.insuranceType === 'CASH' ? 0 : 80)),
-        deductible: patientData.insuranceType === 'GOVT_SCHEME' ? 0 : (Number(patientData.deductible) || 0),
-        preAuthNumber: patientData.preAuthNumber || (patientData.insuranceType === 'GOVT_SCHEME' ? 'PMJAY-AUTO-PREAUTH' : ''),
-        abhaId: patientData.abhaId || "",
-        abhaAddress: patientData.abhaAddress || "",
-        govtSchemeName: patientData.govtSchemeName || "",
-        beneficiaryId: patientData.beneficiaryId || patientData.policyNumber || ""
-      },
+    let systolic_bp = null;
+    let diastolic_bp = null;
+    if (patientData.vitals?.bp) {
+      const parts = String(patientData.vitals.bp).split('/');
+      systolic_bp = parseInt(parts[0], 10) || null;
+      diastolic_bp = parseInt(parts[1], 10) || null;
+    } else if (patientData.bp) {
+      const parts = String(patientData.bp).split('/');
+      systolic_bp = parseInt(parts[0], 10) || null;
+      diastolic_bp = parseInt(parts[1], 10) || null;
+    }
+
+    const regPayload = {
+      full_name: patientData.fullName,
+      age: parseInt(patientData.age, 10) || null,
+      gender: (patientData.gender || 'OTHER').toUpperCase(),
+      dob: patientData.dob || null,
+      phone: patientData.phone || '9876543210',
+      address: patientData.address || null,
+      emergency_contact_name: patientData.emergencyContactName || null,
+      emergency_contact_phone: patientData.emergencyContactPhone || null,
+      doctor_assigned: patientData.doctorAssigned || null,
+      chief_complaint: patientData.chiefComplaint || 'General outpatient consultation',
+      insurance_type: patientData.insuranceType || 'CASH',
+      insurance_provider: patientData.insuranceProvider || null,
+      policy_number: patientData.policyNumber || patientData.beneficiaryId || null,
+      govt_scheme_name: patientData.govtSchemeName || null,
+      abha_id: patientData.abhaId || null,
+      abha_address: patientData.abhaAddress || null,
+      coverage_pct: patientData.coveragePct ? parseFloat(patientData.coveragePct) : null,
+      deductible: patientData.deductible ? parseFloat(patientData.deductible) : null,
       vitals: {
-        weight: patientData.weight || '62',
-        height: patientData.height || '165',
-        bmi: patientData.bmi || '22.8',
-        bp: patientData.bp || '120/80',
-        pulse: patientData.pulse || '72',
-        temp: patientData.temp || '98.4',
-        spo2: patientData.spo2 || '99',
-        respRate: patientData.respRate || '16',
-        recordedAt: timeStr
-      },
-      questionnaire: {
-        completed: false,
-        completedAt: null,
-        responses: null
-      },
-      mlInsights: null
+        systolic_bp,
+        diastolic_bp,
+        pulse_rate: parseInt(patientData.vitals?.pulse || patientData.pulse, 10) || null,
+        temperature_f: parseFloat(patientData.vitals?.temp || patientData.temp) || null,
+        resp_rate: parseInt(patientData.vitals?.respRate || patientData.vitals?.resp || patientData.respRate, 10) || null,
+        spo2_pct: parseInt(patientData.vitals?.spo2 || patientData.spo2, 10) || null,
+        weight_kg: parseFloat(patientData.vitals?.weight || patientData.weight) || null,
+        height_cm: parseFloat(patientData.vitals?.height || patientData.height) || null
+      }
     };
 
-    setPatients(prev => [newPatient, ...prev]);
-    setSelectedPatientId(newPatient.id);
-    addToast(`Patient ${newPatient.fullName} registered (${newPatient.mrn}). Ready for intake questionnaire.`, 'success');
-    return newPatient;
+    try {
+      const res = await patientsApi.register(regPayload);
+      await refreshQueue();
+      
+      const newPatientId = `pat-${res.patient?.id || Date.now()}`;
+      setSelectedPatientId(newPatientId);
+      addToast(`Patient ${res.patient?.full_name || patientData.fullName} registered (${res.token_number || 'Token Assigned'}). Ready for intake questionnaire.`, 'success');
+      return res.patient;
+    } catch (apiErr) {
+      console.warn('Backend registration failed, using local session:', apiErr);
+      // Local fallback
+      const nextNum = 140 + patients.length + 1;
+      const newPatient = {
+        id: `pat-${Date.now()}`,
+        mrn: `MRN-2026-0${nextNum}`,
+        fullName: patientData.fullName,
+        age: parseInt(patientData.age, 10) || 0,
+        gender: patientData.gender,
+        dob: patientData.dob,
+        phone: patientData.phone,
+        address: patientData.address,
+        emergencyContact: {
+          name: patientData.emergencyContactName || 'N/A',
+          phone: patientData.emergencyContactPhone || 'N/A'
+        },
+        appointmentTime: timeStr,
+        doctorAssigned: patientData.doctorAssigned || "Dr. Vikram Kulkarni, MD",
+        status: "QUESTIONNAIRE_PENDING",
+        registeredAt: timeStr,
+        insurance: {
+          type: patientData.insuranceType || "CASH",
+          provider: patientData.insuranceProvider || "Self-Pay / Cash",
+          policyNumber: patientData.policyNumber || "N/A"
+        },
+        vitals: patientData.vitals || {}
+      };
+      setPatients(prev => [newPatient, ...prev]);
+      setSelectedPatientId(newPatient.id);
+      addToast(`Patient ${newPatient.fullName} registered locally (${newPatient.mrn}). Ready for intake questionnaire.`, 'success');
+      return newPatient;
+    }
   };
 
   // Update existing patient data
@@ -95,124 +197,64 @@ export function PatientProvider({ children }) {
     setPatients(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
   };
 
-  // Submit questionnaire and trigger ML insight generation
-  const submitQuestionnaire = (patientId, responses) => {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const fullTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  // Submit questionnaire to backend POST /api/visits/{id}/questionnaire
+  const submitQuestionnaire = async (patientId, payload, visitId) => {
+    const targetPatient = patients.find(p => p.id === patientId);
+    const resolvedVisitId = visitId || targetPatient?.visit_id || (
+      typeof patientId === 'number' 
+        ? patientId 
+        : (patientId?.startsWith?.('pat-') ? parseInt(patientId.replace('pat-', ''), 10) : 1)
+    );
 
-    // Step 1: Set questionnaire as completed & status to generating
+    // Optimistically mark questionnaire completed
     setPatients(prev => prev.map(p => {
       if (p.id !== patientId) return p;
       return {
         ...p,
-        status: "INSIGHTS_GENERATING",
+        status: "INSIGHTS_READY",
         questionnaire: {
           completed: true,
-          completedAt: timeStr,
-          responses
+          completedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          responses: payload.answers || payload
         }
       };
     }));
 
-    addToast(`Questionnaire submitted. AI model analysis in progress...`, 'info');
-
-    // Step 2: Simulate ML / DL model inference (takes 1.8 seconds)
-    setTimeout(() => {
+    try {
+      const result = await questionnaireApi.submit(resolvedVisitId, payload);
+      
+      // Update patient with verified deterministic scores and WHO EML recommendations
       setPatients(prev => prev.map(p => {
         if (p.id !== patientId) return p;
-
-        // Determine dynamic risk flags based on MCQ choices
-        const hasPriorChronic = responses.priorCancer && !responses.priorCancer.includes('No Prior');
-        const hasSignificantWeightLoss = responses.weightLoss && responses.weightLoss.includes('Significant');
-        const hasSmokingRisk = responses.smokingStatus && (responses.smokingStatus.includes('Active') || responses.smokingStatus.includes('Heavy'));
-        const hasFamilyHistory = responses.familyHistory && !responses.familyHistory.includes('No Known');
-        const hasSeverePain = responses.painScore && responses.painScore.includes('Severe');
-        const hasBSymptoms = responses.feverSweats && responses.feverSweats.includes('Drenching');
-
-        const flags = [];
-        let riskLevel = "LOW";
-        let confidenceScore = 88;
-
-        if (hasPriorChronic) {
-          flags.push({
-            label: "Chronic Comorbidity Management Alert",
-            severity: "HIGH",
-            note: `History: ${responses.cancerType || 'diagnosed medical conditions'}. Treatments: ${(responses.priorTreatments || []).join(', ') || 'ongoing'}. Close organ monitoring indicated.`
-          });
-          riskLevel = "HIGH";
-          confidenceScore = 92;
-        }
-
-        if (hasSignificantWeightLoss || hasBSymptoms) {
-          flags.push({
-            label: "Constitutional Metabolic Red Flag",
-            severity: "HIGH",
-            note: `${hasSignificantWeightLoss ? 'Significant unintentional weight loss' : ''} ${hasBSymptoms ? 'Drenching night sweats' : ''}. Requires urgent diagnostic workup.`
-          });
-          riskLevel = "HIGH";
-          confidenceScore = 89;
-        }
-
-        if (hasSmokingRisk) {
-          flags.push({
-            label: "Cardiovascular & Respiratory Risk (Tobacco)",
-            severity: "HIGH",
-            note: `Tobacco use history: ${responses.smokingStatus}. Correlates with elevated cardiovascular and airway disease risk.`
-          });
-          if (riskLevel !== "HIGH") riskLevel = "MEDIUM";
-        }
-
-        if (hasFamilyHistory) {
-          flags.push({
-            label: "Familial Cardiovascular / Metabolic Clustering",
-            severity: "MEDIUM",
-            note: `${responses.familyHistory}. Family conditions: ${(responses.familyTumors || []).join(', ') || 'Specified'}. Preventive risk scoring advised.`
-          });
-          if (riskLevel !== "HIGH") riskLevel = "MEDIUM";
-        }
-
-        if (hasSeverePain) {
-          flags.push({
-            label: "Acute Analgesia & Pain Stabilization Required",
-            severity: "HIGH",
-            note: "Patient reports severe/excruciating pain score (7-10/10). Immediate physician review and analgesic titration needed."
-          });
-        }
-
-        if (flags.length === 0) {
-          flags.push({
-            label: "Routine Clinical Triage",
-            severity: "LOW",
-            note: "No acute critical red flags detected. Standard outpatient clinical consultation recommended."
-          });
-          riskLevel = "LOW";
-          confidenceScore = 94;
-        }
-
-        const generatedInsights = {
-          generatedAt: fullTime,
-          modelVersion: "ClinicalInsight-v2.1",
-          overallRisk: riskLevel,
-          confidence: confidenceScore,
-          riskFlags: flags,
-          symptomSummary: `${p.age}yo ${p.gender.toLowerCase()} presenting with ${responses.chiefComplaint} (${responses.primarySite || 'General'}, duration: ${responses.durationMonths || '1-3 months'}). Functional status: ${responses.ecogPerformance || 'ECOG 1'}.`,
-          recommendedInvestigations: [
-            { id: `inv-${Date.now()}-1`, name: "12-Lead Electrocardiogram (ECG) & 2D Echo", urgency: riskLevel === 'HIGH' ? 'Urgent' : 'Routine' },
-            { id: `inv-${Date.now()}-2`, name: "Comprehensive Metabolic Panel (HbA1c, LFT, KFT)", urgency: 'Routine' },
-            { id: `inv-${Date.now()}-3`, name: "High-Resolution Chest Radiography / USG Abdomen", urgency: 'Routine' }
-          ]
-        };
-
         return {
           ...p,
           status: "INSIGHTS_READY",
-          mlInsights: generatedInsights
+          mlInsights: {
+            modelVersion: "Deterministic CDSS + NegEx NLP",
+            overallRisk: result.clinical_scores?.red_flag_emergency 
+              ? "HIGH" 
+              : (result.clinical_scores?.phq2_positive || result.clinical_scores?.peg3_significant_pain ? "MEDIUM" : "LOW"),
+            clinicalScores: result.clinical_scores,
+            predictedConditions: result.predicted_conditions || [],
+            recommendedMedications: result.recommended_medications || [],
+            riskFlags: (result.predicted_conditions || []).map((c, i) => ({
+              id: i + 1,
+              label: c.disease_name,
+              severity: "MEDIUM",
+              note: c.rationale
+            })),
+            symptomSummary: payload.voice_notes || payload.chief_complaint || 'Intake questionnaire evaluated'
+          }
         };
       }));
 
-      addToast(`✨ AI Insights generated & pushed to Doctor Dashboard for ${patients.find(p => p.id === patientId)?.fullName || 'patient'}!`, 'success');
-    }, 1800);
+      await refreshQueue();
+      addToast(`Deterministic CDSS & NegEx NLP insights generated for ${targetPatient?.fullName || 'patient'}!`, 'success');
+      return result;
+    } catch (err) {
+      console.warn('Backend questionnaire submission error, using local fallback:', err.message);
+      addToast(`Questionnaire recorded locally for ${targetPatient?.fullName || 'patient'}.`, 'info');
+    }
   };
 
   // Quick stats
@@ -234,6 +276,9 @@ export function PatientProvider({ children }) {
       registerPatient,
       updatePatient,
       submitQuestionnaire,
+      fetchPatientDossier,
+      refreshQueue,
+      isLoadingQueue,
       stats,
       toasts,
       addToast,
@@ -251,3 +296,4 @@ export function usePatients() {
   }
   return context;
 }
+

@@ -62,7 +62,7 @@ export const INITIAL_PATIENTS = [
     },
     mlInsights: {
       generatedAt: "09:12:28 AM",
-      modelVersion: "ClinicalInsight-v2.1",
+      modelVersion: "Deterministic CDSS + NegEx NLP",
       overallRisk: "HIGH",
       confidence: 88,
       riskFlags: [
@@ -230,7 +230,7 @@ export const INITIAL_PATIENTS = [
     },
     mlInsights: {
       generatedAt: "08:50:35 AM",
-      modelVersion: "ClinicalInsight-v2.1",
+      modelVersion: "Deterministic CDSS + NegEx NLP",
       overallRisk: "HIGH",
       confidence: 84,
       riskFlags: [
@@ -302,7 +302,7 @@ export const INITIAL_PATIENTS = [
     },
     mlInsights: {
       generatedAt: "08:30:19 AM",
-      modelVersion: "ClinicalInsight-v2.1",
+      modelVersion: "Deterministic CDSS + NegEx NLP",
       overallRisk: "LOW",
       confidence: 94,
       riskFlags: [
@@ -328,14 +328,15 @@ export const COMMON_INSURERS = [
   "Self-Pay / Cash"
 ];
 
-export const ONCOLOGISTS = [
-  "Dr. Kiran Patel (General & Internal Medicine)",
-  "Dr. Swaminathan (General & Laparoscopic Surgery)",
-  "Dr. Radhika Sen (Cardiology & Interventional Care)",
-  "Dr. Anand Deshmukh (Pulmonology & Critical Care)"
+export const DOCTORS = [
+  "Dr. Vikram Kulkarni, MD (General & Internal Medicine)",
+  "Dr. Ananya Roy, MBBS, DNB (General Medicine)",
+  "Dr. Priya Nair, MD (Internal Medicine)",
+  "Dr. Rohit Sharma, MD (Consultant Physician)",
+  "Dr. Siddharth Verma, MBBS, MS (General Surgery)"
 ];
 
-export const DOCTORS = ONCOLOGISTS;
+export const ONCOLOGISTS = DOCTORS;
 
 export const GOVT_SCHEMES = [
   "Ayushman Bharat — PM-JAY (AB-PMJAY)",

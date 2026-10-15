@@ -54,12 +54,12 @@ export default function PatientDetailsDrawer({
               <span className="mrn-tag">{p.mrn}</span>
               {p.status === 'INSIGHTS_READY' && (
                 <span className="badge badge-ready">
-                  <CheckCircle2 size={12} /> Ready for Oncologist
+                  <CheckCircle2 size={12} /> Ready for Doctor
                 </span>
               )}
               {p.status === 'INSIGHTS_GENERATING' && (
                 <span className="badge badge-active m3-animate-pulse">
-                  <Sparkles size={12} /> ML In-Flight
+                  <Sparkles size={12} /> CDSS Evaluating
                 </span>
               )}
               {p.status === 'QUESTIONNAIRE_PENDING' && (
@@ -346,10 +346,10 @@ export default function PatientDetailsDrawer({
                   <div className="m3-ai-generating-banner">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', color: '#0369a1', fontWeight: 800 }}>
                       <Sparkles size={16} className="m3-animate-pulse" />
-                      <span>Processing Deep Learning Pipeline...</span>
+                      <span>Processing Deterministic CDSS & NegEx NLP...</span>
                     </div>
                     <p style={{ fontSize: '12px', color: '#0369a1', marginTop: 4, lineHeight: 1.4 }}>
-                      Parsing questionnaire patterns and compiling clinical insights for the oncologist.
+                      Evaluating intake questionnaire patterns and compiling clinical decision support for attending physician.
                     </p>
                   </div>
                 ) : null}

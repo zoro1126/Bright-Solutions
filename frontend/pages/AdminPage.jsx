@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import AdminFlowGuideModal from '../components/AdminFlowGuideModal';
@@ -29,22 +29,22 @@ import {
   Sparkles
 } from 'lucide-react';
 import { usePatients } from '../context/PatientContext';
+import { admin as adminApi } from '../services/api';
 
 const INITIAL_STAFF = [
-  { id: 'usr-1', name: 'Dr. Kiran Patel', role: 'Doctor (General & Internal Medicine)', dept: 'OPD Station 03', shift: 'Morning (08:00 - 14:00)', email: 'kiran.patel@brightcare.in', active: true, consultationsCount: 142 },
-  { id: 'usr-2', name: 'Dr. Swaminathan', role: 'Doctor (General & Laparoscopic Surgery)', dept: 'Surgical Wing R-07', shift: 'Full Day (09:00 - 17:00)', email: 'swami.s@brightcare.in', active: true, consultationsCount: 98 },
-  { id: 'usr-3', name: 'Dr. Radhika Sen', role: 'Doctor (Cardiology & Interventional Care)', dept: 'Echo & Cath Lab', shift: 'Evening (14:00 - 20:00)', email: 'radhika.sen@brightcare.in', active: true, consultationsCount: 86 },
-  { id: 'usr-4', name: 'Priya Raghavan', role: 'Receptionist', dept: 'Counter 01 (Triage)', shift: 'Morning (07:30 - 15:30)', email: 'priya.r@brightcare.in', active: true, consultationsCount: 310 },
-  { id: 'usr-5', name: 'Ramesh V.', role: 'Cashier / Billing', dept: 'Counter B-02 (Settlement)', shift: 'Morning (08:00 - 16:00)', email: 'ramesh.v@brightcare.in', active: true, consultationsCount: 290 },
-  { id: 'usr-6', name: 'Ananya Deshmukh', role: 'Triage Nurse', dept: 'Vitals & Intake Bay', shift: 'Rotational', email: 'ananya.d@brightcare.in', active: false, consultationsCount: 45 }
+  { id: 'usr-1', name: 'Dr. Vikram Kulkarni, MD', role: 'Doctor (General & Internal Medicine)', dept: 'OPD Chamber 03', shift: 'Morning (08:00 - 14:00)', email: 'vikram@clinic.com', active: true, consultationsCount: 142 },
+  { id: 'usr-2', name: 'Dr. Ananya Roy, MBBS, DNB', role: 'Doctor (General Medicine)', dept: 'OPD Chamber 04', shift: 'Full Day (09:00 - 17:00)', email: 'ananya@clinic.com', active: true, consultationsCount: 98 },
+  { id: 'usr-3', name: 'Dr. Priya Nair, MD', role: 'Doctor (Internal Medicine)', dept: 'OPD Chamber 05', shift: 'Evening (14:00 - 20:00)', email: 'priya@clinic.com', active: true, consultationsCount: 86 },
+  { id: 'usr-4', name: 'Anita Sharma', role: 'Receptionist', dept: 'Counter 01 (Triage)', shift: 'Morning (07:30 - 15:30)', email: 'anita@clinic.com', active: true, consultationsCount: 310 },
+  { id: 'usr-5', name: 'Rahul Verma', role: 'Cashier / Billing', dept: 'Counter B-02 (Settlement)', shift: 'Morning (08:00 - 16:00)', email: 'rahul@clinic.com', active: true, consultationsCount: 290 },
+  { id: 'usr-6', name: 'Staff Triage Nurse', role: 'Triage Nurse', dept: 'Vitals & Intake Bay', shift: 'Rotational', email: 'nurse@clinic.com', active: true, consultationsCount: 45 }
 ];
 
 const INITIAL_AUDIT_LOGS = [
-  { id: 'log-101', timestamp: '10:42 AM', user: 'Dr. Kiran Patel', role: 'Doctor', category: 'CDSS_OVERRIDE', severity: 'HIGH', patientMrn: 'MRN-2026-0142', details: 'Confirmed Telmisartan 40mg + Atorvastatin 20mg initiation with scheduled fasting lipid and renal panel repeat in 14 days.' },
-  { id: 'log-102', timestamp: '10:15 AM', user: 'Ramesh V.', role: 'Cashier', category: 'BILLING_ADJUSTMENT', severity: 'MEDIUM', patientMrn: 'MRN-2026-0143', details: 'Applied 100% Cashless Government Scheme package under Ayushman Bharat PM-JAY (AB-PMJAY) golden card verification.' },
-  { id: 'log-103', timestamp: '09:50 AM', user: 'Priya Raghavan', role: 'Receptionist', category: 'TRIAGE_EDIT', severity: 'LOW', patientMrn: 'MRN-2026-0144', details: 'Updated emergency contact number and assigned walk-in to Dr. Swaminathan queue.' },
-  { id: 'log-104', timestamp: '09:12 AM', user: 'Dr. Swaminathan', role: 'Doctor', category: 'CDSS_OVERRIDE', severity: 'HIGH', patientMrn: 'MRN-2026-0145', details: 'Approved laparoscopic cholecystectomy schedule with fresh blood grouping and baseline coagulation panel verified.' },
-  { id: 'log-105', timestamp: '08:30 AM', user: 'Admin System', role: 'System', category: 'USER_AUTH', severity: 'INFO', patientMrn: '—', details: 'Staff duty roster shift rollover completed automatically for OPD Morning shift.' }
+  { id: 'log-101', timestamp: '10:42 AM', user: 'Dr. Vikram Kulkarni', role: 'Doctor', category: 'CDSS_OVERRIDE', severity: 'HIGH', patientMrn: 'UHID-2026-00002', details: 'Confirmed Amlodipine 5mg + Telmisartan 40mg initiation with scheduled fasting lipid and renal panel repeat in 14 days.' },
+  { id: 'log-102', timestamp: '10:15 AM', user: 'Rahul Verma', role: 'Cashier', category: 'BILLING_ADJUSTMENT', severity: 'MEDIUM', patientMrn: 'UHID-2026-00004', details: 'Applied 100% Cashless Government Scheme package under Ayushman Bharat PM-JAY (AB-PMJAY) golden card verification.' },
+  { id: 'log-103', timestamp: '09:50 AM', user: 'Anita Sharma', role: 'Receptionist', category: 'TRIAGE_EDIT', severity: 'LOW', patientMrn: 'UHID-2026-00005', details: 'Updated emergency contact number and assigned walk-in to Dr. Kulkarni queue.' },
+  { id: 'log-104', timestamp: '09:12 AM', user: 'Dr. Suresh Deshmukh', role: 'Admin', category: 'USER_AUTH', severity: 'INFO', patientMrn: '—', details: 'Staff duty roster shift rollover completed automatically for OPD Morning shift.' }
 ];
 
 export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeSubTab = 'dashboard', onLogout }) {
@@ -69,11 +69,46 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
   const [auditFilter, setAuditFilter] = useState('ALL');
   const [auditSearch, setAuditSearch] = useState('');
 
-  const toggleStaffStatus = (id) => {
-    setStaffList(prev => prev.map(s => s.id === id ? { ...s, active: !s.active } : s));
+  // Fetch real staff roster from backend
+  useEffect(() => {
+    async function loadStaff() {
+      try {
+        const res = await adminApi.staff();
+        if (Array.isArray(res) && res.length > 0) {
+          const mapped = res.map(s => ({
+            id: s.id,
+            name: s.full_name || s.username,
+            role: s.role === 'DOCTOR' ? 'Doctor (General & Internal Medicine)' : s.role === 'RECEPTIONIST' ? 'Receptionist' : s.role === 'CASHIER' ? 'Cashier / Billing' : 'Hospital Administrator',
+            dept: s.role === 'DOCTOR' ? 'OPD Chamber 03' : s.role === 'RECEPTIONIST' ? 'Counter 01 (Triage)' : s.role === 'CASHIER' ? 'Counter B-02 (Settlement)' : 'Executive Directorate',
+            shift: 'General OPD (08:00 - 16:00)',
+            email: s.email || `${s.username}@clinic.com`,
+            phone: s.phone || '+91 98765 43210',
+            active: Boolean(s.is_active),
+            consultationsCount: s.role === 'DOCTOR' ? 14 : 28
+          }));
+          setStaffList(mapped);
+        }
+      } catch (err) {
+        console.warn('Backend staff load error, using local fallback:', err.message);
+      }
+    }
+    loadStaff();
+  }, []);
+
+  const toggleStaffStatus = async (id) => {
+    const current = staffList.find(s => s.id === id);
+    const newActive = current ? !current.active : false;
+    setStaffList(prev => prev.map(s => s.id === id ? { ...s, active: newActive } : s));
+    try {
+      if (typeof id === 'number') {
+        await adminApi.toggleStatus(id, newActive);
+      }
+    } catch (err) {
+      console.warn('Backend toggle status error:', err.message);
+    }
   };
 
-  const handleAddStaffSubmit = (e) => {
+  const handleAddStaffSubmit = async (e) => {
     e.preventDefault();
     if (!newStaff.name.trim()) return;
     const staffItem = {
@@ -82,12 +117,27 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
       role: newStaff.role,
       dept: newStaff.dept,
       shift: newStaff.shift,
-      email: newStaff.email || `${newStaff.name.toLowerCase().replace(/\s+/g, '.')}@brightcare.in`,
+      email: newStaff.email || `${newStaff.name.toLowerCase().replace(/\s+/g, '.')}@clinic.com`,
       active: true,
       consultationsCount: 0
     };
     setStaffList(prev => [staffItem, ...prev]);
     setIsAddStaffOpen(false);
+
+    try {
+      const roleEnum = newStaff.role.toLowerCase().includes('doc') ? 'DOCTOR' : newStaff.role.toLowerCase().includes('cash') ? 'CASHIER' : 'RECEPTIONIST';
+      await adminApi.createStaff({
+        username: newStaff.email ? newStaff.email.split('@')[0] : `user_${Date.now()}`,
+        password: 'password123',
+        full_name: newStaff.name,
+        role: roleEnum,
+        email: newStaff.email || null,
+        phone: newStaff.phone || null
+      });
+    } catch (err) {
+      console.warn('Backend staff creation local fallback:', err.message);
+    }
+
     setNewStaff({
       name: '',
       role: 'Doctor (General & Internal Medicine)',

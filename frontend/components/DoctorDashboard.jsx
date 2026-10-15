@@ -718,7 +718,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
                     key={item.id}
                     onClick={() => {
                       setSelectedCaseMix(prev => prev?.id === item.id ? null : item);
-                      addToast(isSelected ? 'Cleared tumor filter.' : `Inspecting ${item.shortSite} treatment pathway.`, 'info');
+                      addToast(isSelected ? 'Cleared specialty filter.' : `Inspecting ${item.shortSite} clinical protocol.`, 'info');
                     }}
                     style={{
                       backgroundColor: isSelected ? 'var(--bg-active)' : 'var(--bg-subtle)',
@@ -973,7 +973,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
                 </div>
                 <div>
                   <h3 style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                    ClinicalInsight Sentinel AI Watchlist
+                    Clinical CDSS Sentinel Alert Watchlist
                   </h3>
                   <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>
                     Immediate physician attention indicated
@@ -1520,7 +1520,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
               {/* Rationale & Actions */}
               <div style={{ padding: '12px 14px', backgroundColor: 'var(--bg-subtle)', borderRadius: 10 }}>
                 <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-primary)', display: 'block', marginBottom: 6 }}>
-                  ClinicalInsight Model Rationale & Guidance:
+                  CDSS Clinical Rationale & Guidance:
                 </span>
                 <ul style={{ margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   {activeAlertModal.recommendations.map((rec, idx) => (
