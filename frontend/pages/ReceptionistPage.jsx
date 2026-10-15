@@ -78,6 +78,7 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
 
   const handleRegisteredAndStartIntake = (newPatient) => {
     // Show printable token slip then start intake
+    if (!newPatient || typeof newPatient.then === 'function') return;
     setSlipModalPatient(newPatient);
   };
 
@@ -179,6 +180,7 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
       {/* Intake Questionnaire Modal (P-REC-03) */}
       {isQuestionnaireOpen && activeQuestionnairePatient && (
         <QuestionnaireModal
+          key={activeQuestionnairePatient.id || activeQuestionnairePatient.visit_id || 'q-active'}
           isOpen={isQuestionnaireOpen}
           patient={activeQuestionnairePatient}
           onClose={() => {
@@ -196,7 +198,9 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
           onClose={() => {
             const p = slipModalPatient;
             setSlipModalPatient(null);
-            handleOpenQuestionnaire(p);
+            if (p) {
+              handleOpenQuestionnaire(p);
+            }
           }}
         />
       )}

@@ -6,7 +6,7 @@ const PatientContext = createContext();
 
 export function PatientProvider({ children }) {
   const [patients, setPatients] = useState(INITIAL_PATIENTS);
-  const [selectedPatientId, setSelectedPatientId] = useState("pat-2");
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [isLoadingQueue, setIsLoadingQueue] = useState(false);
 
@@ -56,7 +56,7 @@ export function PatientProvider({ children }) {
     refreshQueue();
   }, [refreshQueue]);
 
-  const selectedPatient = patients.find(p => p.id === selectedPatientId) || patients[0];
+  const selectedPatient = patients.find(p => p.id === selectedPatientId) || patients[0] || null;
 
   // Fetch full clinical dossier (CDSS, NegEx NLP, vitals, questionnaire) from backend
   const fetchPatientDossier = useCallback(async (patientId) => {
@@ -151,12 +151,52 @@ export function PatientProvider({ children }) {
 
     try {
       const res = await patientsApi.register(regPayload);
+      
+      const newPatientId = `pat-${res.patient?.id || res.visit?.id || Date.now()}`;
+      const createdPatient = {
+        id: newPatientId,
+        patient_id: res.patient?.id,
+        visit_id: res.visit?.id,
+        mrn: res.patient?.uhid || `UHID-2026-000${res.patient?.id || '01'}`,
+        uhid: res.patient?.uhid,
+        fullName: res.patient?.full_name || patientData.fullName,
+        full_name: res.patient?.full_name || patientData.fullName,
+        age: parseInt(patientData.age, 10) || 0,
+        gender: patientData.gender,
+        dob: patientData.dob,
+        phone: patientData.phone,
+        address: patientData.address,
+        doctorAssigned: res.visit?.doctor_name || patientData.doctorAssigned || "DevDoc (Consultant Physician)",
+        status: "QUESTIONNAIRE_PENDING",
+        appointmentTime: timeStr,
+        registeredAt: timeStr,
+        queue_token: res.visit?.queue_token || res.token_number || "Q-101",
+        chief_complaint: patientData.chiefComplaint || "General outpatient consultation",
+        insurance: {
+          type: patientData.insuranceType || "CASH",
+          provider: patientData.insuranceProvider || (patientData.insuranceType === 'GOVT_SCHEME' ? (patientData.govtSchemeName || 'Ayushman Bharat PM-JAY') : "Self-Pay / Cash"),
+          policyNumber: patientData.policyNumber || patientData.beneficiaryId || "N/A",
+          coveragePct: patientData.insuranceType === 'GOVT_SCHEME' ? 100 : (patientData.coveragePct ? parseFloat(patientData.coveragePct) : 0),
+          deductible: patientData.deductible ? parseFloat(patientData.deductible) : 0
+        },
+        vitals: {
+          bp: (systolic_bp && diastolic_bp) ? `${systolic_bp}/${diastolic_bp}` : (patientData.bp || '120/80'),
+          pulse: parseInt(patientData.vitals?.pulse || patientData.pulse, 10) || 72,
+          temp: parseFloat(patientData.vitals?.temp || patientData.temp) || 98.6,
+          spo2: parseInt(patientData.vitals?.spo2 || patientData.spo2, 10) || 99,
+          resp: parseInt(patientData.vitals?.respRate || patientData.respRate, 10) || 16,
+          weight: parseFloat(patientData.vitals?.weight || patientData.weight) || 60,
+          height: parseFloat(patientData.vitals?.height || patientData.height) || 165,
+          bmi: patientData.bmi || '22.0'
+        }
+      };
+
+      setPatients(prev => [createdPatient, ...prev.filter(p => p.id !== createdPatient.id)]);
+      setSelectedPatientId(newPatientId);
       await refreshQueue();
       
-      const newPatientId = `pat-${res.patient?.id || Date.now()}`;
-      setSelectedPatientId(newPatientId);
-      addToast(`Patient ${res.patient?.full_name || patientData.fullName} registered (${res.token_number || 'Token Assigned'}). Ready for intake questionnaire.`, 'success');
-      return res.patient;
+      addToast(`Patient ${createdPatient.fullName} registered (${createdPatient.queue_token}). Ready for intake questionnaire.`, 'success');
+      return createdPatient;
     } catch (apiErr) {
       console.warn('Backend registration failed, using local session:', apiErr);
       // Local fallback
@@ -165,6 +205,7 @@ export function PatientProvider({ children }) {
         id: `pat-${Date.now()}`,
         mrn: `MRN-2026-0${nextNum}`,
         fullName: patientData.fullName,
+        full_name: patientData.fullName,
         age: parseInt(patientData.age, 10) || 0,
         gender: patientData.gender,
         dob: patientData.dob,
@@ -175,15 +216,17 @@ export function PatientProvider({ children }) {
           phone: patientData.emergencyContactPhone || 'N/A'
         },
         appointmentTime: timeStr,
-        doctorAssigned: patientData.doctorAssigned || "Dr. Vikram Kulkarni, MD",
+        doctorAssigned: patientData.doctorAssigned || "DevDoc (Consultant Physician)",
         status: "QUESTIONNAIRE_PENDING",
         registeredAt: timeStr,
+        queue_token: `Q-${nextNum}`,
+        chief_complaint: patientData.chiefComplaint || 'General outpatient consultation',
         insurance: {
           type: patientData.insuranceType || "CASH",
           provider: patientData.insuranceProvider || "Self-Pay / Cash",
           policyNumber: patientData.policyNumber || "N/A"
         },
-        vitals: patientData.vitals || {}
+        vitals: patientData.vitals || { bp: patientData.bp || '120/80' }
       };
       setPatients(prev => [newPatient, ...prev]);
       setSelectedPatientId(newPatient.id);

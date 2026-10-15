@@ -2,13 +2,16 @@ import React from 'react';
 import { Printer, X, CheckCircle2, QrCode, Sun } from 'lucide-react';
 
 export default function TokenSlipModal({ isOpen, patient, tokenNumber, onClose }) {
-  if (!isOpen || !patient) return null;
+  if (!isOpen || !patient || typeof patient.then === 'function') return null;
 
   const handlePrint = () => {
     window.print();
   };
 
-  const tokNum = tokenNumber || (patient.mrn ? patient.mrn.replace(/\D/g, '').slice(-3) : '142');
+  const tokNum = tokenNumber || patient.queue_token || (patient.mrn ? patient.mrn.replace(/\D/g, '').slice(-3) : '101');
+  const patientName = patient.fullName || patient.full_name || 'Patient';
+  const patientMrn = patient.mrn || patient.uhid || 'MRN-PENDING';
+  const doctorName = (patient.doctorAssigned || patient.doctor_assigned || 'DevDoc (Consultant Physician)').split('(')[0];
 
   return (
     <div className="m3-modal-backdrop" style={{
@@ -89,15 +92,15 @@ export default function TokenSlipModal({ isOpen, patient, tokenNumber, onClose }
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Patient Name:</span>
-              <strong style={{ color: 'var(--text-primary)' }}>{patient.fullName}</strong>
+              <strong style={{ color: 'var(--text-primary)' }}>{patientName}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>UHID / MRN:</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{patient.mrn}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{patientMrn}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Assigned Doctor:</span>
-              <strong style={{ color: 'var(--text-primary)' }}>{patient.doctorAssigned?.split('(')[0]}</strong>
+              <strong style={{ color: 'var(--text-primary)' }}>{doctorName}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Triage Vitals:</span>

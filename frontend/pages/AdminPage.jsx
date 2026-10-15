@@ -32,19 +32,17 @@ import { usePatients } from '../context/PatientContext';
 import { admin as adminApi } from '../services/api';
 
 const INITIAL_STAFF = [
-  { id: 'usr-1', name: 'Dr. Vikram Kulkarni, MD', role: 'Doctor (General & Internal Medicine)', dept: 'OPD Chamber 03', shift: 'Morning (08:00 - 14:00)', email: 'vikram@clinic.com', active: true, consultationsCount: 142 },
-  { id: 'usr-2', name: 'Dr. Ananya Roy, MBBS, DNB', role: 'Doctor (General Medicine)', dept: 'OPD Chamber 04', shift: 'Full Day (09:00 - 17:00)', email: 'ananya@clinic.com', active: true, consultationsCount: 98 },
-  { id: 'usr-3', name: 'Dr. Priya Nair, MD', role: 'Doctor (Internal Medicine)', dept: 'OPD Chamber 05', shift: 'Evening (14:00 - 20:00)', email: 'priya@clinic.com', active: true, consultationsCount: 86 },
-  { id: 'usr-4', name: 'Anita Sharma', role: 'Receptionist', dept: 'Counter 01 (Triage)', shift: 'Morning (07:30 - 15:30)', email: 'anita@clinic.com', active: true, consultationsCount: 310 },
-  { id: 'usr-5', name: 'Rahul Verma', role: 'Cashier / Billing', dept: 'Counter B-02 (Settlement)', shift: 'Morning (08:00 - 16:00)', email: 'rahul@clinic.com', active: true, consultationsCount: 290 },
-  { id: 'usr-6', name: 'Staff Triage Nurse', role: 'Triage Nurse', dept: 'Vitals & Intake Bay', shift: 'Rotational', email: 'nurse@clinic.com', active: true, consultationsCount: 45 }
+  { id: 'usr-15', name: 'DevAdmin', role: 'Hospital Administrator', dept: 'Executive Directorate', shift: 'All Shifts', email: 'devadmin@clinic.com', active: true, consultationsCount: 0 },
+  { id: 'usr-16', name: 'DevDoc', role: 'Doctor (General & Internal Medicine)', dept: 'OPD Chamber 01', shift: 'Morning (08:00 - 14:00)', email: 'devdoc@clinic.com', active: true, consultationsCount: 42 },
+  { id: 'usr-17', name: 'DevRec', role: 'Receptionist', dept: 'Counter 01 (Triage)', shift: 'Morning (07:30 - 15:30)', email: 'devrec@clinic.com', active: true, consultationsCount: 65 },
+  { id: 'usr-18', name: 'DevCash', role: 'Cashier / Billing', dept: 'Counter B-01 (Settlement)', shift: 'Morning (08:00 - 16:00)', email: 'devcash@clinic.com', active: true, consultationsCount: 58 }
 ];
 
 const INITIAL_AUDIT_LOGS = [
-  { id: 'log-101', timestamp: '10:42 AM', user: 'Dr. Vikram Kulkarni', role: 'Doctor', category: 'CDSS_OVERRIDE', severity: 'HIGH', patientMrn: 'UHID-2026-00002', details: 'Confirmed Amlodipine 5mg + Telmisartan 40mg initiation with scheduled fasting lipid and renal panel repeat in 14 days.' },
-  { id: 'log-102', timestamp: '10:15 AM', user: 'Rahul Verma', role: 'Cashier', category: 'BILLING_ADJUSTMENT', severity: 'MEDIUM', patientMrn: 'UHID-2026-00004', details: 'Applied 100% Cashless Government Scheme package under Ayushman Bharat PM-JAY (AB-PMJAY) golden card verification.' },
-  { id: 'log-103', timestamp: '09:50 AM', user: 'Anita Sharma', role: 'Receptionist', category: 'TRIAGE_EDIT', severity: 'LOW', patientMrn: 'UHID-2026-00005', details: 'Updated emergency contact number and assigned walk-in to Dr. Kulkarni queue.' },
-  { id: 'log-104', timestamp: '09:12 AM', user: 'Dr. Suresh Deshmukh', role: 'Admin', category: 'USER_AUTH', severity: 'INFO', patientMrn: '—', details: 'Staff duty roster shift rollover completed automatically for OPD Morning shift.' }
+  { id: 'log-101', timestamp: '10:42 AM', user: 'DevDoc', role: 'Doctor', category: 'CDSS_OVERRIDE', severity: 'HIGH', patientMrn: 'UHID-2026-00004', details: 'Confirmed Amlodipine 5mg + Telmisartan 40mg initiation with scheduled fasting lipid and renal panel repeat in 14 days.' },
+  { id: 'log-102', timestamp: '10:15 AM', user: 'DevCash', role: 'Cashier', category: 'BILLING_ADJUSTMENT', severity: 'MEDIUM', patientMrn: 'UHID-2026-00002', details: 'Applied 100% Cashless Government Scheme package under Ayushman Bharat PM-JAY (AB-PMJAY) golden card verification.' },
+  { id: 'log-103', timestamp: '09:50 AM', user: 'DevRec', role: 'Receptionist', category: 'TRIAGE_EDIT', severity: 'LOW', patientMrn: 'UHID-2026-00005', details: 'Updated emergency contact number and assigned walk-in to DevDoc queue.' },
+  { id: 'log-104', timestamp: '09:12 AM', user: 'DevAdmin', role: 'Admin', category: 'USER_AUTH', severity: 'INFO', patientMrn: '—', details: 'Developer test credentials seeded and active session validated.' }
 ];
 
 export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeSubTab = 'dashboard', onLogout }) {

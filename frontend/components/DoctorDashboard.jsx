@@ -50,81 +50,7 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
   const [selectedBiomarker, setSelectedBiomarker] = useState(null);
 
   // State: Daycare & Observation Ward Active Beds
-  const [infusions, setInfusions] = useState([
-    {
-      id: 'chair-1',
-      chair: 'Bed D-01',
-      patient: 'Rajan Pillai',
-      mrn: 'MRN-2026-0143',
-      patientId: 'pat-002',
-      age: 67,
-      gender: 'M',
-      regimen: 'Normal Saline (500ml) + IV Ciprofloxacin (200mg)',
-      indication: 'Type 2 Diabetes with Lower Limb Cellulitis & Dehydration',
-      cycle: 'Dose 3 of 5',
-      bagVolumeMl: 500,
-      flowRateMlHr: 125,
-      elapsedMinutes: 95,
-      totalMinutes: 150,
-      vitals: { bp: '126/80', hr: 74, spo2: 99, temp: '98.4°F' },
-      status: 'Infusing',
-      isPaused: false,
-      premeds: [
-        { name: 'Pantoprazole 40mg IV Push', done: true },
-        { name: 'Normal Saline 100ml Flush', done: true },
-        { name: 'Blood Glucose Glucometer Check (148 mg/dL)', done: true },
-        { name: 'Vitals Sign-off & Fluid Charting', done: true }
-      ]
-    },
-    {
-      id: 'chair-2',
-      chair: 'Bed D-02',
-      patient: 'Devendra Kapoor',
-      mrn: 'MRN-2026-0145',
-      patientId: 'pat-004',
-      age: 58,
-      gender: 'M',
-      regimen: 'IV Methylprednisolone (40mg) + Levosalbutamol Nebulization',
-      indication: 'Bronchial Asthma Acute Exacerbation & Wheeze Relief',
-      cycle: 'Session 2 of 3',
-      bagVolumeMl: 250,
-      flowRateMlHr: 100,
-      elapsedMinutes: 40,
-      totalMinutes: 90,
-      vitals: { bp: '132/84', hr: 80, spo2: 98, temp: '98.6°F' },
-      status: 'In Progress',
-      isPaused: false,
-      premeds: [
-        { name: 'Duolin (Ipratropium + Levosalbutamol) Nebulization', done: true },
-        { name: 'Hydrocortisone 100mg IV Stat', done: true },
-        { name: 'Peak Expiratory Flow Rate (PEFR) Recorded', done: true }
-      ]
-    },
-    {
-      id: 'chair-3',
-      chair: 'Bed D-03',
-      patient: 'Ananya Sharma',
-      mrn: 'MRN-2026-0142',
-      patientId: 'pat-001',
-      age: 52,
-      gender: 'F',
-      regimen: 'IV Iron Sucrose (200mg in 200ml Normal Saline)',
-      indication: 'Microcytic Hypochromic Anemia with Chronic Fatigue',
-      cycle: 'Dose 2 of 3',
-      bagVolumeMl: 200,
-      flowRateMlHr: 80,
-      elapsedMinutes: 110,
-      totalMinutes: 120,
-      vitals: { bp: '124/78', hr: 72, spo2: 100, temp: '98.2°F' },
-      status: 'Near Complete',
-      isPaused: false,
-      premeds: [
-        { name: 'Test Dose Iron Sucrose (15 mins prior)', done: true },
-        { name: 'Baseline Blood Pressure Verified (124/78)', done: true },
-        { name: 'Anaphylaxis Kit & Hydrocortisone on Standby', done: true }
-      ]
-    }
-  ]);
+  const [infusions, setInfusions] = useState([]);
 
   // State: Modals & Flowsheets
   const [selectedChair, setSelectedChair] = useState(null); // Chair object for Flowsheet modal
@@ -133,77 +59,11 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
   const [isAllAlertsModalOpen, setIsAllAlertsModalOpen] = useState(false);
 
   // State: Sentinel AI Alerts
-  const [sentinelAlerts, setSentinelAlerts] = useState([
-    {
-      id: 1,
-      level: 'CRITICAL',
-      patientId: 'pat-001',
-      patientName: 'Ananya Sharma',
-      age: 52,
-      gender: 'F',
-      mrn: 'MRN-2026-0142',
-      confidence: '92%',
-      title: 'Stage 2 Hypertension Spike & Statin Adherence Gap',
-      desc: 'Persistent systolic BP elevation (150/95 mmHg) with recurrent morning headaches. Lipid panel shows LDL 158 mg/dL.',
-      recommendations: [
-        'Titrate Telmisartan to 80mg OD or add Amlodipine 5mg',
-        'Order 12-Lead ECG & 2D Doppler Echocardiography',
-        'Review renal artery duplex & fasting lipid profile'
-      ],
-      acknowledged: false
-    },
-    {
-      id: 2,
-      level: 'CAUTION',
-      patientId: 'pat-004',
-      patientName: 'Devendra Kapoor',
-      age: 58,
-      gender: 'M',
-      mrn: 'MRN-2026-0145',
-      confidence: '89%',
-      title: 'Acute Bronchospasm & Decreased Peak Flow Watch',
-      desc: 'PEFR dropped 28% from baseline with nocturnal cough. Expiratory wheeze noted on chest auscultation.',
-      recommendations: [
-        'Initiate short course oral Prednisolone 30mg x 5 days',
-        'Upgrade to Budesonide + Formoterol 400mcg DPI twice daily',
-        'Schedule formal Pulmonary Function Test (Spirometry)'
-      ],
-      acknowledged: false
-    },
-    {
-      id: 3,
-      level: 'GENOMIC',
-      patientId: 'pat-002',
-      patientName: 'Rajan Pillai',
-      age: 67,
-      gender: 'M',
-      mrn: 'MRN-2026-0143',
-      confidence: '95%',
-      title: 'Diabetic Nephropathy & Microalbuminuria Risk',
-      desc: 'Spot urine albumin-creatinine ratio (UACR) 180 mg/g with eGFR 54 mL/min/1.73m². Nephroprotective protocol indicated.',
-      recommendations: [
-        'Add SGLT2 inhibitor (Dapagliflozin 10mg OD) for renal protection',
-        'Maintain strict glycemic target (HbA1c < 7.0%)',
-        'Repeat serum creatinine & potassium in 4 weeks'
-      ],
-      acknowledged: false
-    }
-  ]);
+  const [sentinelAlerts, setSentinelAlerts] = useState([]);
 
   // State: Shift Voice Memos
   const [quickNote, setQuickNote] = useState('');
-  const [savedMemos, setSavedMemos] = useState([
-    {
-      id: 'memo-1',
-      text: 'Clinical Rounds note: Review Ananya Sharma 24-hr ambulatory BP log on Thursday morning clinic.',
-      timestamp: '11:15 AM'
-    },
-    {
-      id: 'memo-2',
-      text: 'Order repeat serum electrolytes and KFT for Rajan Pillai before titrating ACE inhibitor.',
-      timestamp: '12:30 PM'
-    }
-  ]);
+  const [savedMemos, setSavedMemos] = useState([]);
 
   // General Hospital Case Mix Breakdown — Multispeciality OPD
   const caseMix = [
@@ -336,18 +196,12 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
       // Search Query Filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchesName = p.fullName.toLowerCase().includes(q);
-        const matchesMrn = p.mrn.toLowerCase().includes(q);
-        const matchesGender = p.gender.toLowerCase().includes(q);
-        const matchesComplaint = p.questionnaire?.responses?.chiefComplaint?.toLowerCase().includes(q);
-        if (!matchesName && !matchesMrn && !matchesGender && !matchesComplaint) return false;
+        const pName = (p.fullName || p.full_name || '').toLowerCase();
+        const pMrn = (p.mrn || p.uhid || '').toLowerCase();
+        const pGender = (p.gender || '').toLowerCase();
+        const matchesComplaint = p.questionnaire?.responses?.chiefComplaint?.toLowerCase().includes(q) || (p.chief_complaint || '').toLowerCase().includes(q);
+        if (!pName.includes(q) && !pMrn.includes(q) && !pGender.includes(q) && !matchesComplaint) return false;
       }
-
-      // Biomarker Filter
-      if (selectedBiomarker === 'er_pr' && p.id !== 'pat-001') return false;
-      if (selectedBiomarker === 'egfr' && p.id !== 'pat-002') return false;
-      if (selectedBiomarker === 'her2' && p.id !== 'pat-003') return false;
-      if (selectedBiomarker === 'tnbc' && p.id !== 'pat-005') return false;
 
       return true;
     });
@@ -526,28 +380,30 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
             <Stethoscope size={14} />
             <span>Clinical Workspace →</span>
           </button>
-          <button 
-            className="m3-btn anim-hover-lift"
-            onClick={() => onOpenWorkspace('pat-001', 'insights')}
-            style={{ 
-              background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)', 
-              color: '#ffffff', 
-              height: 34, 
-              fontSize: 12, 
-              padding: '0 16px',
-              border: 'none',
-              borderRadius: 'var(--radius-sm)',
-              boxShadow: '0 4px 10px rgba(15, 23, 42, 0.35)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
-          >
-            <span>Resume Patient: Ananya Sharma</span>
-            <ArrowRight size={14} />
-          </button>
+          {patients.length > 0 && (
+            <button 
+              className="m3-btn anim-hover-lift"
+              onClick={() => onOpenWorkspace(patients[0].id, 'insights')}
+              style={{ 
+                background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)', 
+                color: '#ffffff', 
+                height: 34, 
+                fontSize: 12, 
+                padding: '0 16px',
+                border: 'none',
+                borderRadius: 'var(--radius-sm)',
+                boxShadow: '0 4px 10px rgba(15, 23, 42, 0.35)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              <span>Call Next: {patients[0].fullName || patients[0].full_name}</span>
+              <ArrowRight size={14} />
+            </button>
+          )}
         </div>
       </div>
 

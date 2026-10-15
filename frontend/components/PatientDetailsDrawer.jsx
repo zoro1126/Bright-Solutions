@@ -35,7 +35,7 @@ export default function PatientDetailsDrawer({
 
   if (!isOpen || !p) return null;
 
-  const isQuestionnaireDone = p.questionnaire?.completed;
+  const isQuestionnaireDone = Boolean(p.questionnaire?.completed || p.questionnaire_completed);
   const hasInsights = p.status === 'INSIGHTS_READY' && p.mlInsights;
 
   return (
@@ -114,13 +114,15 @@ export default function PatientDetailsDrawer({
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, color: 'var(--text-secondary)' }}>
                   <MapPin size={14} color="var(--text-tertiary)" style={{ marginTop: 2, flexShrink: 0 }} />
-                  <span style={{ fontSize: '12px', lineHeight: 1.4 }}>{p.address}</span>
+                  <span style={{ fontSize: '12px', lineHeight: 1.4 }}>{p.address || 'Address on record'}</span>
                 </div>
-                <div className="m3-emergency-chip" style={{ marginTop: 4 }}>
-                  <span className="m3-chip-label">Emergency:</span>
-                  <strong style={{ color: 'var(--text-primary)' }}>{p.emergencyContact.name}</strong>
-                  <span style={{ color: 'var(--text-muted)' }}>({p.emergencyContact.phone})</span>
-                </div>
+                {(p.emergencyContact || p.emergency_contact) && (
+                  <div className="m3-emergency-chip" style={{ marginTop: 4 }}>
+                    <span className="m3-chip-label">Emergency:</span>
+                    <strong style={{ color: 'var(--text-primary)' }}>{p.emergencyContact?.name || p.emergency_contact || 'Contact'}</strong>
+                    <span style={{ color: 'var(--text-muted)' }}>({p.emergencyContact?.phone || p.emergency_contact_phone || 'N/A'})</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -128,11 +130,11 @@ export default function PatientDetailsDrawer({
             <div style={{ background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: 14, border: 'none' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span className="section-label" style={{ marginBottom: 0 }}>Billing & Coverage Overview</span>
-                {p.insurance.type === 'GOVT_SCHEME' ? (
+                {p.insurance?.type === 'GOVT_SCHEME' ? (
                   <span className="badge badge-ready" style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Landmark size={12} /> Govt PM-JAY Cashless
                   </span>
-                ) : p.insurance.type === 'INSURANCE' ? (
+                ) : p.insurance?.type === 'INSURANCE' ? (
                   <span className="badge badge-active" style={{ fontSize: '11px' }}>
                     Private TPA Insurance
                   </span>
@@ -146,15 +148,15 @@ export default function PatientDetailsDrawer({
               <div className="info-grid" style={{ gap: '8px 12px' }}>
                 <div className="info-item">
                   <span className="info-key">Plan / Scheme</span>
-                  <span className="info-val" style={{ color: 'var(--primary)', fontWeight: 800 }}>{p.insurance.provider}</span>
+                  <span className="info-val" style={{ color: 'var(--primary)', fontWeight: 800 }}>{p.insurance?.provider || 'Self-Pay / Cash'}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-key">Policy / Beneficiary ID</span>
-                  <span className="info-val">{p.insurance.policyNumber || 'N/A'}</span>
+                  <span className="info-val">{p.insurance?.policyNumber || 'N/A'}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-key">Coverage Percentage</span>
-                  <span className="info-val">{p.insurance.coveragePct}%</span>
+                  <span className="info-val">{p.insurance?.coveragePct || 0}%</span>
                 </div>
                 <div className="info-item">
                   <span className="info-key">Annual Deductible</span>
@@ -256,17 +258,17 @@ export default function PatientDetailsDrawer({
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <span className="section-label" style={{ marginBottom: 0 }}>Oncology Intake & AI Insights</span>
               {isQuestionnaireDone && (
-                <span className="m3-timestamp-tag">Logged at {p.questionnaire.completedAt}</span>
+                <span className="m3-timestamp-tag">Logged at {p.questionnaire?.completedAt || 'Recently'}</span>
               )}
             </div>
 
-            {p.questionnaire.status === 'PENDING' ? (
+            {!isQuestionnaireDone ? (
               <div className="m3-intake-pending-card">
                 <p style={{ fontWeight: 700, color: '#92400e', fontSize: '13px' }}>
                   Intake Questionnaire Not Yet Submitted
                 </p>
                 <p style={{ fontSize: '12px', color: '#b45309', margin: '4px 0 14px' }}>
-                  Administer standardized MCQ intake to capture oncology history and baseline symptoms for AI triage.
+                  Administer standardized MCQ intake to capture clinical history and baseline symptoms for CDSS triage.
                 </p>
                 <button
                   className="m3-btn m3-btn-filled"
@@ -282,17 +284,17 @@ export default function PatientDetailsDrawer({
                 <div className="m3-intake-complaint-box">
                   <div className="m3-intake-complaint-meta">
                     <span className="m3-intake-site-chip">
-                      {p.questionnaire.responses.primarySite || 'General'}
+                      {p.questionnaire?.responses?.primarySite || 'General'}
                     </span>
                     <span className="m3-intake-duration-chip">
-                      {p.questionnaire.responses.durationMonths}
+                      {p.questionnaire?.responses?.durationMonths || 'N/A'}
                     </span>
                     <span className="m3-intake-time">
-                      {p.questionnaire.completedAt}
+                      {p.questionnaire?.completedAt || ''}
                     </span>
                   </div>
                   <div className="m3-intake-complaint-body">
-                    "{p.questionnaire.responses.chiefComplaint}"
+                    "{p.questionnaire?.responses?.chiefComplaint || p.chief_complaint || 'General consultation'}"
                   </div>
                 </div>
 

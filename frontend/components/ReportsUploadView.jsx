@@ -22,12 +22,7 @@ const REPORT_TYPES = [
   { id: 'DISCHARGE_SUMMARY', label: 'Prior Hospital Discharge Summary', icon: FileText, accept: '.pdf,.docx,.jpg' }
 ];
 
-const SAMPLE_EXISTING_REPORTS = [
-  { id: 'rep-01', patientId: 'pat-001', fileName: 'CT_Thorax_Contrast_148sl.dcm', type: 'DICOM_SCAN', size: '28.4 MB', uploadedAt: '09:05 AM', status: 'VERIFIED' },
-  { id: 'rep-02', patientId: 'pat-001', fileName: 'Histopath_Biopsy_IDC_Grade2.pdf', type: 'LAB_BLOODWORK', size: '2.1 MB', uploadedAt: '09:08 AM', status: 'VERIFIED' },
-  { id: 'rep-03', patientId: 'pat-002', fileName: 'Resting_12Lead_ECG_Strip.pdf', type: 'ECG_WAVEFORM', size: '840 KB', uploadedAt: '09:22 AM', status: 'VERIFIED' },
-  { id: 'rep-04', patientId: 'pat-004', fileName: 'PET_CT_Restaging_WholeBody.dcm', type: 'DICOM_SCAN', size: '42.8 MB', uploadedAt: '08:40 AM', status: 'VERIFIED' }
-];
+const SAMPLE_EXISTING_REPORTS = [];
 
 export default function ReportsUploadView({ onSwitchToDoctor }) {
   const { patients, selectedPatientId, setSelectedPatientId, addToast } = usePatients();
@@ -37,7 +32,7 @@ export default function ReportsUploadView({ onSwitchToDoctor }) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
-  const activePatient = patients.find(p => p.id === selectedPatientId) || patients[0];
+  const activePatient = patients.find(p => p.id === selectedPatientId) || patients[0] || null;
 
   const handleFileDrop = (e) => {
     e.preventDefault();

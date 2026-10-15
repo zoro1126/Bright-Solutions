@@ -20,44 +20,44 @@ import { auth as authApi } from '../services/api';
 
 export const QUICK_PERSONAS = [
   {
-    role: 'receptionist',
-    username: 'receptionist_anita',
-    displayName: 'Anita Sharma',
-    title: 'Senior Receptionist',
-    dept: 'Counter 01 (Triage)',
-    icon: Users,
-    color: '#0284c7',
-    bg: '#eff6ff'
+    role: 'admin',
+    username: 'DevAdmin',
+    displayName: 'DevAdmin',
+    title: 'Hospital Administrator',
+    dept: 'Executive Directorate',
+    icon: ShieldCheck,
+    color: '#7c3aed',
+    bg: '#f3e8ff'
   },
   {
     role: 'doctor',
-    username: 'dr_kulkarni',
-    displayName: 'Dr. Vikram Kulkarni, MD',
+    username: 'DevDoc',
+    displayName: 'DevDoc',
     title: 'Consultant Physician',
-    dept: 'OPD Chamber 03',
+    dept: 'OPD Chamber 01',
     icon: Stethoscope,
     color: '#15803d',
     bg: '#dcfce7'
   },
   {
+    role: 'receptionist',
+    username: 'DevRec',
+    displayName: 'DevRec',
+    title: 'Triage Receptionist',
+    dept: 'Intake Counter 01',
+    icon: Users,
+    color: '#0284c7',
+    bg: '#eff6ff'
+  },
+  {
     role: 'cashier',
-    username: 'cashier_rahul',
-    displayName: 'Rahul Verma',
-    title: 'Cashier & Billing Officer',
-    dept: 'Counter B-02',
+    username: 'DevCash',
+    displayName: 'DevCash',
+    title: 'Billing & Cashier',
+    dept: 'Counter B-01',
     icon: Receipt,
     color: '#d97706',
     bg: '#fef3c7'
-  },
-  {
-    role: 'admin',
-    username: 'admin',
-    displayName: 'Dr. Suresh Deshmukh',
-    title: 'Medical Superintendent',
-    dept: 'Executive Directorate',
-    icon: ShieldCheck,
-    color: '#7c3aed',
-    bg: '#f3e8ff'
   }
 ];
 
@@ -65,7 +65,7 @@ export default function LoginPage({ onLoginSuccess }) {
   const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
   
   // Login Form
-  const [loginIdentifier, setLoginIdentifier] = useState('receptionist_anita');
+  const [loginIdentifier, setLoginIdentifier] = useState('DevAdmin');
   const [loginPassword, setLoginPassword] = useState('password123');
 
   // Registration Form
@@ -90,11 +90,11 @@ export default function LoginPage({ onLoginSuccess }) {
       let inferredRole = roleHint ? roleHint.toLowerCase() : null;
       if (!inferredRole) {
         const u = userToLogin.toLowerCase();
-        if (u.includes('doc') || u.includes('dr_') || u.includes('kulkarni') || u.includes('patel')) {
+        if (u.includes('doc')) {
           inferredRole = 'doctor';
-        } else if (u.includes('cash') || u.includes('rahul') || u.includes('bill')) {
+        } else if (u.includes('cash')) {
           inferredRole = 'cashier';
-        } else if (u.includes('admin') || u.includes('deshmukh') || u.includes('director')) {
+        } else if (u.includes('admin')) {
           inferredRole = 'admin';
         } else {
           inferredRole = 'receptionist';

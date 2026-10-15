@@ -63,6 +63,7 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
 
   const [errors, setErrors] = useState({});
   const [isAbhaVerified, setIsAbhaVerified] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -132,12 +133,19 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (startIntake = false) => {
-    if (!validate()) return;
-    const newPatient = registerPatient(formData);
-    onClose();
-    if (startIntake && onRegisteredAndStartIntake) {
-      onRegisteredAndStartIntake(newPatient);
+  const handleSubmit = async (startIntake = false) => {
+    if (!validate() || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const newPatient = await registerPatient(formData);
+      onClose();
+      if (startIntake && onRegisteredAndStartIntake && newPatient) {
+        onRegisteredAndStartIntake(newPatient);
+      }
+    } catch (err) {
+      console.error('Registration failed:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -152,7 +160,7 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
       address: 'Plot 44, Gandhi Road, Tambaram, Chennai',
       emergencyContactName: 'Murali Krishnan (Son)',
       emergencyContactPhone: '+91 98400 98211',
-      doctorAssigned: 'Dr. Kiran Patel (General & Internal Medicine)',
+      doctorAssigned: 'DevDoc (Consultant Physician)',
       // Vitals
       weight: '58',
       height: '160',
@@ -188,7 +196,7 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
       address: 'Flat 302, Green Meadows, Velachery, Chennai',
       emergencyContactName: 'Radha Sharma (Spouse)',
       emergencyContactPhone: '+91 98840 55124',
-      doctorAssigned: 'Dr. Swaminathan (General & Laparoscopic Surgery)',
+      doctorAssigned: 'DevDoc (Consultant Physician)',
       // Vitals
       weight: '74',
       height: '172',
@@ -1191,17 +1199,19 @@ export default function PatientRegistrationModal({ isOpen, onClose, onRegistered
               type="button"
               className="m3-btn m3-btn-outlined" 
               onClick={() => handleSubmit(false)}
+              disabled={isSubmitting}
             >
-              Save Record Only
+              {isSubmitting ? 'Registering...' : 'Save Record Only'}
             </button>
             <button 
               type="button"
               className="m3-btn m3-btn-filled" 
               onClick={() => handleSubmit(true)}
               data-tour="register-submit-btn"
+              disabled={isSubmitting}
             >
               <ClipboardList size={16} />
-              <span>Register & Start Intake</span>
+              <span>{isSubmitting ? 'Registering...' : 'Register & Start Intake'}</span>
             </button>
           </div>
         </div>

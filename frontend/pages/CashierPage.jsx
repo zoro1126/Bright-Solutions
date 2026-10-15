@@ -52,7 +52,7 @@ const AVATAR_COLORS = [
 ];
 
 const CLINICAL_PROCEDURES = [
-  { id: 'proc-1', desc: 'Specialist General Medicine Consultation (Dr. Ananya Sharma)', code: 'MED-CONS-01', dept: 'Internal Medicine', qty: 1, unitPrice: 1200, coveredByInsurance: true },
+  { id: 'proc-1', desc: 'Specialist General Medicine Consultation (DevDoc)', code: 'MED-CONS-01', dept: 'Internal Medicine', qty: 1, unitPrice: 1200, coveredByInsurance: true },
   { id: 'proc-2', desc: '12-Lead Electrocardiography (ECG) & 2D Echo Evaluation', code: 'CARD-ECG-02', dept: 'Cardiology Diagnostics', qty: 1, unitPrice: 2800, coveredByInsurance: true },
   { id: 'proc-3', desc: 'Comprehensive Metabolic Panel (HbA1c, Lipid & Renal Profile)', code: 'LAB-CMP-104', dept: 'Clinical Biochemistry', qty: 1, unitPrice: 1800, coveredByInsurance: true },
   { id: 'proc-4', desc: 'Daycare Observation Ward Care & IV Medication Administration', code: 'ADM-DAY-CARE', dept: 'Observation & Daycare', qty: 1, unitPrice: 1500, coveredByInsurance: true }
@@ -66,169 +66,8 @@ const PHARMACY_MEDICINES = [
   { id: 'rx-5', name: 'Sterile IV Infusion Set & Normal Saline 500mL', form: 'Sterile Infusion Kit', batch: 'NS-1044', exp: '04/2029', qty: 1, unitPrice: 280, gstPct: 12, coveredByInsurance: true }
 ];
 
-// Rich settled receipts archive for the dedicated Settlement & Receipts tab
-const SETTLED_RECEIPTS_DATA = [
-  {
-    id: 'RCP-2026-081',
-    invNo: 'INV-2026-0914',
-    patientName: 'Devika Krishnan',
-    mrn: 'MRN-2026-0042',
-    phone: '+91 98412 88201',
-    age: 48,
-    gender: 'Female',
-    doctor: 'Dr. Ananya Sharma',
-    dept: 'Cardiology',
-    method: 'UPI',
-    methodLabel: 'Dynamic UPI QR',
-    ref: 'UPI-849102-HDFC',
-    amount: 14250,
-    gross: 14250,
-    scheme: 'Direct Self-Pay',
-    date: 'Today, 04:32 PM',
-    status: 'SETTLED',
-    abdmLinked: true
-  },
-  {
-    id: 'RCP-2026-080',
-    invNo: 'INV-2026-0913',
-    patientName: 'Mohammad Farooq',
-    mrn: 'MRN-2026-0038',
-    phone: '+91 97110 44290',
-    age: 56,
-    gender: 'Male',
-    doctor: 'Dr. Kiran Patel',
-    dept: 'Internal Medicine',
-    method: 'PM_JAY',
-    methodLabel: 'Ayushman Bharat PM-JAY',
-    ref: 'NHA-ABPMJAY-99412',
-    amount: 0,
-    gross: 18500,
-    scheme: 'PM-JAY 100% Cashless',
-    date: 'Today, 03:55 PM',
-    status: 'SETTLED',
-    abdmLinked: true
-  },
-  {
-    id: 'RCP-2026-079',
-    invNo: 'INV-2026-0912',
-    patientName: 'Kavita Sundaram',
-    mrn: 'MRN-2026-0035',
-    phone: '+91 98200 11923',
-    age: 39,
-    gender: 'Female',
-    doctor: 'Dr. Alok Mehta',
-    dept: 'General Surgery',
-    method: 'CARD',
-    methodLabel: 'POS Card Swipe (VISA)',
-    ref: 'AUTH-661902-ICICI',
-    amount: 9800,
-    gross: 24500,
-    scheme: 'Star Health (75% Claim)',
-    date: 'Today, 03:15 PM',
-    status: 'SETTLED',
-    abdmLinked: true
-  },
-  {
-    id: 'RCP-2026-078',
-    invNo: 'INV-2026-0911',
-    patientName: 'Rajeshwer Sen',
-    mrn: 'MRN-2026-0031',
-    phone: '+91 99401 22345',
-    age: 62,
-    gender: 'Male',
-    doctor: 'Dr. Ananya Sharma',
-    dept: 'Cardiology',
-    method: 'CASH',
-    methodLabel: 'Cash Counter Drawer',
-    ref: 'SLIP-CSH-014',
-    amount: 3200,
-    gross: 3200,
-    scheme: 'Direct Cash',
-    date: 'Today, 02:40 PM',
-    status: 'SETTLED',
-    abdmLinked: true
-  },
-  {
-    id: 'RCP-2026-077',
-    invNo: 'INV-2026-0910',
-    patientName: 'Sunita Mehra',
-    mrn: 'MRN-2026-0029',
-    phone: '+91 94451 88921',
-    age: 51,
-    gender: 'Female',
-    doctor: 'Dr. Kiran Patel',
-    dept: 'Internal Medicine',
-    method: 'UPI',
-    methodLabel: 'Dynamic UPI QR',
-    ref: 'UPI-771923-SBI',
-    amount: 8400,
-    gross: 8400,
-    scheme: 'Direct Self-Pay',
-    date: 'Today, 01:50 PM',
-    status: 'SETTLED',
-    abdmLinked: true
-  },
-  {
-    id: 'RCP-2026-076',
-    invNo: 'INV-2026-0909',
-    patientName: 'Govind Narayanan',
-    mrn: 'MRN-2026-0026',
-    phone: '+91 98840 55192',
-    age: 67,
-    gender: 'Male',
-    doctor: 'Dr. Alok Mehta',
-    dept: 'Cardiology Diagnostics',
-    method: 'TPA',
-    methodLabel: 'Private TPA Pre-Auth',
-    ref: 'TPA-MEDV-19924',
-    amount: 4500,
-    gross: 28000,
-    scheme: 'Medi Assist TPA',
-    date: 'Today, 01:10 PM',
-    status: 'SETTLED',
-    abdmLinked: true
-  },
-  {
-    id: 'RCP-2026-075',
-    invNo: 'INV-2026-0908',
-    patientName: 'Anil Sengupta',
-    mrn: 'MRN-2026-0022',
-    phone: '+91 97177 33419',
-    age: 44,
-    gender: 'Male',
-    doctor: 'Dr. Kiran Patel',
-    dept: 'Internal Medicine',
-    method: 'CASH',
-    methodLabel: 'Cash Counter Drawer',
-    ref: 'SLIP-CSH-013',
-    amount: 6500,
-    gross: 6500,
-    scheme: 'Direct Cash',
-    date: 'Today, 12:20 PM',
-    status: 'SETTLED',
-    abdmLinked: true
-  },
-  {
-    id: 'RCP-2026-074',
-    invNo: 'INV-2026-0907',
-    patientName: 'Lakshmi Venkatesh',
-    mrn: 'MRN-2026-0019',
-    phone: '+91 99620 44810',
-    age: 58,
-    gender: 'Female',
-    doctor: 'Dr. Ananya Sharma',
-    dept: 'Cardiology Diagnostics',
-    method: 'PM_JAY',
-    methodLabel: 'Ayushman Bharat PM-JAY',
-    ref: 'NHA-ABPMJAY-88102',
-    amount: 0,
-    gross: 22000,
-    scheme: 'PM-JAY 100% Cashless',
-    date: 'Today, 11:45 AM',
-    status: 'SETTLED',
-    abdmLinked: true
-  }
-];
+// Settled receipts archive for the dedicated Settlement & Receipts tab
+const SETTLED_RECEIPTS_DATA = [];
 
 // Hourly inflow telemetry data for interactive analytics graph
 const HOURLY_INFLOW_DATA = [
@@ -479,7 +318,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
       gender: patient?.gender || 'Male',
       mrn: patient?.mrn || 'MRN-2026-0001',
       phone: patient?.phone || '+91 98000 00000',
-      doctorAssigned: patient?.doctorAssigned || 'Dr. Ananya Sharma (General Medicine)',
+      doctorAssigned: patient?.doctorAssigned || 'DevDoc (Consultant Physician)',
       provider: patient?.insurance?.provider || 'Direct Self-Pay',
       policyNumber: patient?.insurance?.policyNumber || 'POL-9921034',
       paymentMethod: paymentMethod === 'GOVT_PORTAL' ? 'PM-JAY NHA Cashless Portal' : paymentMethod,
@@ -1625,7 +1464,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                   Itemized Bill & Pharmacy Dispensing — {patient.fullName}
                 </h3>
                 <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.95)', marginTop: 2 }}>
-                  {patient.age}y {patient.gender} • Doctor: {patient.doctorAssigned} • Insurance: {patient.insurance.provider}
+                  {patient?.age}y {patient?.gender} • Doctor: {patient?.doctorAssigned || 'DevDoc'} • Insurance: {patient?.insurance?.provider || 'Self-Pay / Cash'}
                 </div>
               </div>
 
@@ -1676,7 +1515,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
                             {isGovtScheme ? (
                               <span style={{ color: '#b45309', fontWeight: 700, fontSize: 11 }}>✓ 100% PM-JAY</span>
                             ) : isPrivateInsured ? (
-                              <span style={{ color: '#0284c7', fontWeight: 700, fontSize: 11 }}>✓ TPA ({patient.insurance.coveragePct}%)</span>
+                              <span style={{ color: '#0284c7', fontWeight: 700, fontSize: 11 }}>✓ TPA ({patient?.insurance?.coveragePct || 80}%)</span>
                             ) : (
                               <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>Self-Pay</span>
                             )}

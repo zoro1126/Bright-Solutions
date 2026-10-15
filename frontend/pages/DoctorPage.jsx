@@ -96,8 +96,8 @@ export default function DoctorPage({ currentRole = 'doctor', onSwitchRole, onSwi
   const [isSearchingFormulary, setIsSearchingFormulary] = useState(false);
 
   // Current Patient
-  const patient = patients.find(p => p.id === selectedPatientId) || patients[0];
-  const insights = patient.mlInsights;
+  const patient = patients.find(p => p.id === selectedPatientId) || patients[0] || null;
+  const insights = patient?.mlInsights || null;
 
   // Auto-fetch real clinical dossier from backend whenever selected patient changes
   useEffect(() => {
@@ -394,6 +394,26 @@ TREATMENT & FOLLOW-UP PLAN:
             onSwitchToReception={onSwitchToReception}
             onOpenGuide={() => setIsGuideOpen(true)}
           />
+        ) : !patient ? (
+          <main className="page-container doctor-page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: '0', boxSizing: 'border-box' }}>
+            <div className="card" style={{ padding: '60px 24px', textAlign: 'center', margin: '40px auto', maxWidth: 600, background: 'var(--bg-surface)' }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'var(--primary)' }}>
+                <Stethoscope size={28} />
+              </div>
+              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: 'var(--text-primary)' }}>No Patient in Active Consultation</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5, marginBottom: 24 }}>
+                Your clinical chamber is ready. As walk-in patients register at the Reception counter and complete intake, they will appear in your queue.
+              </p>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                <button className="m3-btn m3-btn-outlined" onClick={() => setDoctorNav('dashboard')}>
+                  Doctor Dashboard
+                </button>
+                <button className="m3-btn m3-btn-filled" onClick={() => onSwitchToReception && onSwitchToReception()}>
+                  Open Reception Desk
+                </button>
+              </div>
+            </div>
+          </main>
         ) : (
           <main className="page-container doctor-page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: '0', boxSizing: 'border-box' }}>
 
@@ -404,14 +424,14 @@ TREATMENT & FOLLOW-UP PLAN:
 
         <div className="m3-patient-banner-info" style={{ position: 'relative', zIndex: 1 }}>
           <div className="stat-squircle-badge" style={{ width: 42, height: 42, borderRadius: 12, fontSize: 14, fontWeight: 800, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #0f172a, #1e3a8a))', color: '#ffffff', boxShadow: 'var(--doc-brand-shadow, 0 4px 10px rgba(30, 58, 138, 0.35))' }}>
-            {patient.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+            {(patient.fullName || patient.full_name || 'PT').split(' ').map(n => n[0]).join('').slice(0, 2)}
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <h2 style={{ fontSize: 17, fontWeight: 900, color: 'var(--doc-banner-title, #0f172a)', letterSpacing: '-0.02em', margin: 0 }}>
-                {patient.fullName}
+                {patient.fullName || patient.full_name}
               </h2>
-              <span className="brand-counter-pill" style={{ fontSize: 10, background: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 700 }}>{patient.mrn}</span>
+              <span className="brand-counter-pill" style={{ fontSize: 10, background: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 700 }}>{patient.mrn || patient.uhid}</span>
               {insights?.overallRisk === 'HIGH' && (
                 <span className="brand-counter-pill" style={{ fontSize: 10.5, padding: '2px 8px', background: 'var(--warning-container, #fef3c7)', color: 'var(--on-warning-container, #78350f)', border: '1px solid var(--warning, #d97706)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                   <AlertTriangle size={11} color="var(--warning, #d97706)" /> High Risk Recurrence
@@ -419,7 +439,7 @@ TREATMENT & FOLLOW-UP PLAN:
               )}
             </div>
             <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <span>{patient.age}y {patient.gender} • Coverage: <strong style={{ color: 'var(--doc-accent-color, #2563eb)' }}>{patient.insurance.provider}</strong> • Appt: {patient.appointmentTime}</span>
+              <span>{patient.age}y {patient.gender} • Coverage: <strong style={{ color: 'var(--doc-accent-color, #2563eb)' }}>{patient.insurance?.provider || 'Self-Pay / Cash'}</strong> • Appt: {patient.appointmentTime || '09:00 AM'}</span>
               {patient.vitals && (
                 <span className="anim-hover-lift" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#eff6ff', padding: '3px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#1e3a8a', border: '1px solid #bfdbfe', boxShadow: '0 2px 8px rgba(30, 58, 138, 0.12)' }}>
                   <span className="anim-radar-ping live-dot" style={{ backgroundColor: '#2563eb', width: 7, height: 7, borderRadius: '50%', flexShrink: 0 }} />
@@ -833,11 +853,11 @@ TREATMENT & FOLLOW-UP PLAN:
                   <span className="section-label">Prior Clinical Comorbidities</span>
                   <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4 }}>
                     {patient.questionnaire?.clinical_scores?.reported_comorbidities?.length > 0 
-                      ? patient.questionnaire.clinical_scores.reported_comorbidities.join(', ')
+                      ? patient.questionnaire?.clinical_scores?.reported_comorbidities?.join(', ')
                       : (patient.questionnaire?.responses?.q14 === 1 ? 'Hypertension' : patient.questionnaire?.responses?.q14 === 2 ? 'Diabetes Mellitus' : 'No prior chronic comorbidity history')}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
-                    Recorded Allergies: {patient.questionnaire?.clinical_scores?.reported_allergies?.length > 0 ? patient.questionnaire.clinical_scores.reported_allergies.join(', ') : 'No drug hypersensitivities declared'}
+                    Recorded Allergies: {patient.questionnaire?.clinical_scores?.reported_allergies?.length > 0 ? patient.questionnaire?.clinical_scores?.reported_allergies?.join(', ') : 'No drug hypersensitivities declared'}
                   </div>
                 </div>
 
@@ -1282,7 +1302,7 @@ TREATMENT & FOLLOW-UP PLAN:
                       {patient.fullName} ({patient.age}y {patient.gender})
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
-                      MRN: <strong>{patient.mrn}</strong> • {patient.insurance.provider}
+                      MRN: <strong>{patient.mrn}</strong> • {patient.insurance?.provider || 'Self-Pay / Cash'}
                     </div>
 
                     <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border-subtle)', fontSize: 11 }}>
@@ -1606,7 +1626,7 @@ TREATMENT & FOLLOW-UP PLAN:
                 Clinical Insights & CDSS Dossier — {patient.fullName}
               </h3>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-                {patient.age}y {patient.gender} • Consulting Doctor: {patient.doctorAssigned} • Insurance: {patient.insurance.provider}
+                {patient.age}y {patient.gender} • Consulting Doctor: {patient.doctorAssigned} • Insurance: {patient.insurance?.provider || 'Self-Pay / Cash'}
               </div>
             </div>
 

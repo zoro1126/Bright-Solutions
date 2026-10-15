@@ -318,7 +318,7 @@ export default function PatientQueue({ onOpenRegister, onOpenQuestionnaire, exte
                           <span>Details</span>
                         </button>
 
-                        {!patient.questionnaire.completed ? (
+                        {(!patient.questionnaire?.completed && !patient.questionnaire_completed) ? (
                           <button
                             type="button"
                             className="m3-btn m3-btn-intake"

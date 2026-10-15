@@ -64,7 +64,7 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
     };
   });
 
-  if (!isOpen || !patient) return null;
+  if (!isOpen || !patient || typeof patient.then === 'function') return null;
 
   // Single-select MCQ handler for integer question values
   const handleSelect = (field, value) => {
@@ -120,8 +120,11 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
     if (formData.q14 === 4) comorbidities.push('CAD');
     if (formData.q14 === 5) comorbidities.push('CKD');
 
+    const patientId = patient.patient_id || patient.id;
+    const visitId = patient.visit_id || patient.id;
+
     const payload = {
-      patient_id: patient.patient_id || patient.id,
+      patient_id: patientId,
       answers,
       voice_notes: formData.voiceNotes || '',
       allergies,
@@ -130,7 +133,7 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
     };
 
     try {
-      await submitQuestionnaire(patient.id, payload, patient.visit_id || patient.id);
+      await submitQuestionnaire(patient.id || patientId, payload, visitId);
     } catch (err) {
       console.error('Questionnaire submission error:', err);
     } finally {
@@ -168,10 +171,10 @@ export default function QuestionnaireModal({ isOpen, patient, onClose }) {
               <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
                 Standardized Clinical Intake & Triage Questionnaire (q1–q20)
               </h2>
-              <span className="mrn-tag" style={{ fontSize: 10, padding: '1px 6px' }}>{patient.mrn || patient.uhid}</span>
+              <span className="mrn-tag" style={{ fontSize: 10, padding: '1px 6px' }}>{patient.mrn || patient.uhid || 'UHID-NEW'}</span>
             </div>
             <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-secondary)' }}>
-              Patient: <strong>{patient.fullName || patient.first_name}</strong> ({patient.age}y {patient.gender}) • <span style={{ color: 'var(--primary)', fontWeight: 700 }}>WHO EML &amp; Validated Psychometrics</span>
+              Patient: <strong>{patient.fullName || patient.full_name || patient.first_name || 'Patient'}</strong> ({patient.age || '—'}y {patient.gender || '—'}) • <span style={{ color: 'var(--primary)', fontWeight: 700 }}>WHO EML &amp; Validated Psychometrics</span>
             </p>
           </div>
           <button 

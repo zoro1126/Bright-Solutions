@@ -51,10 +51,8 @@ export default function ReceptionistDashboardView({
   ];
 
   const doctorLoads = [
-    { name: 'Dr. Kiran Patel (Medical Onc.)', station: 'Station 03', activeCount: patients.filter(p => p.doctorAssigned?.includes('Kiran')).length || 3, avgWait: '5.8 min', capacity: 6, color: '#0284c7' },
-    { name: 'Dr. Swaminathan (Surgical Onc.)', station: 'Station 01', activeCount: patients.filter(p => p.doctorAssigned?.includes('Swami')).length || 2, avgWait: '7.2 min', capacity: 5, color: '#10b981' },
-    { name: 'Dr. Radhika Sen (Radiation Onc.)', station: 'Station 04', activeCount: 1, avgWait: '3.4 min', capacity: 4, color: '#f59e0b' },
-    { name: 'Dr. Anand Deshmukh (Hematology)', station: 'Station 02', activeCount: 2, avgWait: '4.1 min', capacity: 4, color: '#8b5cf6' }
+    { name: 'DevDoc (Consultant Physician)', station: 'OPD Chamber 01', activeCount: patients.filter(p => (p.doctorAssigned || '').toLowerCase().includes('devdoc')).length || 1, avgWait: '4.5 min', capacity: 8, color: '#0284c7' },
+    { name: 'Dr. Vikram Kulkarni (Internal Med.)', station: 'OPD Chamber 02', activeCount: patients.filter(p => (p.doctorAssigned || '').toLowerCase().includes('kulkarni')).length || 0, avgWait: '6.0 min', capacity: 6, color: '#10b981' }
   ];
 
   return (
