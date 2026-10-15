@@ -3,6 +3,7 @@ from typing import Dict, Any, List
 from fastapi import HTTPException, status
 from app.repositories.billing_repo import BillingRepository
 from app.repositories.patient_repo import PatientRepository
+from app.repositories.user_repo import UserRepository
 from app.schemas.billing import PaymentTenderRequest
 
 class BillingService:
@@ -155,7 +156,7 @@ class BillingService:
 
         txn_ref = req.transaction_reference or f"TXN-{datetime.now().strftime('%Y%m%d%H%M%S')}-{bill_id}"
         now_dt = datetime.now()
-        settling_cashier_id = req.cashier_id or bill["cashier_id"] or 5
+        settling_cashier_id = req.cashier_id or bill.get("cashier_id") or UserRepository.get_default_cashier_id()
 
         payment_id = BillingRepository.record_payment_and_close(
             bill_id=bill_id,

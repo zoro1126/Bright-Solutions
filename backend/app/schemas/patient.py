@@ -28,6 +28,7 @@ class PatientRegistrationRequest(BaseModel):
     emergency_contact_phone: Optional[str] = None
     doctor_id: Optional[int] = Field(None, description="Assigned Physician User ID. If omitted, queue auto-routing assigns by complaint & doctor load.")
     doctor_assigned: Optional[str] = Field(None, description="Optional doctor name string if selected directly from frontend dropdown")
+    receptionist_id: Optional[int] = Field(None, description="Logged in receptionist ID or None for auto-assignment")
     chief_complaint: Optional[str] = None
     insurance_type: Optional[str] = Field("CASH", description="CASH, INSURANCE, GOVT_SCHEME")
     insurance_provider: Optional[str] = None

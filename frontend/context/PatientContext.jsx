@@ -118,8 +118,18 @@ export function PatientProvider({ children }) {
       diastolic_bp = parseInt(parts[1], 10) || null;
     }
 
+    let currentStaffId = null;
+    try {
+      const stored = localStorage.getItem('bright_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        if (u.id) currentStaffId = u.id;
+      }
+    } catch (e) {}
+
     const regPayload = {
       full_name: patientData.fullName,
+      receptionist_id: currentStaffId,
       age: parseInt(patientData.age, 10) || null,
       gender: (patientData.gender || 'OTHER').toUpperCase(),
       dob: patientData.dob || null,
@@ -243,11 +253,14 @@ export function PatientProvider({ children }) {
   // Submit questionnaire to backend POST /api/visits/{id}/questionnaire
   const submitQuestionnaire = async (patientId, payload, visitId) => {
     const targetPatient = patients.find(p => p.id === patientId);
-    const resolvedVisitId = visitId || targetPatient?.visit_id || (
-      typeof patientId === 'number' 
-        ? patientId 
-        : (patientId?.startsWith?.('pat-') ? parseInt(patientId.replace('pat-', ''), 10) : 1)
-    );
+    let resolvedVisitId = null;
+    if (typeof visitId === 'number' && !isNaN(visitId) && visitId > 0) {
+      resolvedVisitId = visitId;
+    } else if (typeof targetPatient?.visit_id === 'number' && !isNaN(targetPatient.visit_id) && targetPatient.visit_id > 0) {
+      resolvedVisitId = targetPatient.visit_id;
+    } else if (typeof patientId === 'number' && !isNaN(patientId) && patientId > 0) {
+      resolvedVisitId = patientId;
+    }
 
     // Optimistically mark questionnaire completed
     setPatients(prev => prev.map(p => {
@@ -264,6 +277,10 @@ export function PatientProvider({ children }) {
     }));
 
     try {
+      if (!resolvedVisitId) {
+        console.warn('No numeric visit_id found for questionnaire submit, completed locally.');
+        return;
+      }
       const result = await questionnaireApi.submit(resolvedVisitId, payload);
       
       // Update patient with verified deterministic scores and WHO EML recommendations

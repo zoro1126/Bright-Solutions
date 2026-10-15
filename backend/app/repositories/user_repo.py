@@ -119,3 +119,60 @@ class UserRepository:
         finally:
             conn.close()
 
+    @staticmethod
+    def get_default_receptionist_id() -> Optional[int]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id FROM users 
+                    WHERE role = 'RECEPTIONIST' AND is_active = 1
+                    ORDER BY id ASC LIMIT 1;
+                """)
+                row = cur.fetchone()
+                if row:
+                    return row["id"]
+                cur.execute("SELECT id FROM users WHERE is_active = 1 ORDER BY id ASC LIMIT 1;")
+                row = cur.fetchone()
+                return row["id"] if row else None
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_default_doctor() -> Optional[Dict[str, Any]]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, full_name FROM users 
+                    WHERE role = 'DOCTOR' AND is_active = 1
+                    ORDER BY id ASC LIMIT 1;
+                """)
+                row = cur.fetchone()
+                if row:
+                    return row
+                cur.execute("SELECT id, full_name FROM users WHERE is_active = 1 ORDER BY id ASC LIMIT 1;")
+                return cur.fetchone()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_default_cashier_id() -> Optional[int]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id FROM users 
+                    WHERE role = 'CASHIER' AND is_active = 1
+                    ORDER BY id ASC LIMIT 1;
+                """)
+                row = cur.fetchone()
+                if row:
+                    return row["id"]
+                cur.execute("SELECT id FROM users WHERE is_active = 1 ORDER BY id ASC LIMIT 1;")
+                row = cur.fetchone()
+                return row["id"] if row else None
+        finally:
+            conn.close()
+
+
