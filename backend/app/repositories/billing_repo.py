@@ -162,3 +162,30 @@ class BillingRepository:
                 return cur.fetchall()
         finally:
             conn.close()
+
+    @staticmethod
+    def get_payment_by_bill_id(bill_id: int) -> Optional[Dict[str, Any]]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, bill_id, payment_mode, transaction_ref, amount_paid, payment_status, payment_time, created_at
+                    FROM payments
+                    WHERE bill_id = %s
+                    ORDER BY id DESC
+                    LIMIT 1;
+                """, (bill_id,))
+                return cur.fetchone()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_user_info(user_id: int) -> Optional[Dict[str, Any]]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, username, full_name, role FROM users WHERE id = %s;", (user_id,))
+                return cur.fetchone()
+        finally:
+            conn.close()
+
