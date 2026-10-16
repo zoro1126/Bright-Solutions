@@ -256,7 +256,17 @@ class DDIEngine:
             dclasses = cls.resolve_drug_classes(raw_name)
             strength_mg = cls.parse_strength_mg(item.get("strength") or item.get("dosage"))
             daily_mult = cls.parse_daily_multiplier(item.get("frequency"))
-            daily_dose_mg = (strength_mg * daily_mult) if strength_mg else None
+            
+            unit_mult = 1.0
+            dosage_str = (item.get("dosage") or "").strip()
+            unit_match = re.search(r"^(\d+(?:\.\d+)?)\s*(?:tab|cap|pill|puff|drop)", dosage_str, re.IGNORECASE)
+            if unit_match:
+                try:
+                    unit_mult = float(unit_match.group(1))
+                except ValueError:
+                    unit_mult = 1.0
+
+            daily_dose_mg = (strength_mg * unit_mult * daily_mult) if strength_mg else None
 
             analyzed_items.append({
                 "item_id": item.get("drug_id") or item.get("id"),

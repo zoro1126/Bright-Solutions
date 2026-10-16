@@ -273,13 +273,17 @@ class DoctorService:
             final_notes = f"Diagnosis: {req.diagnosis.strip()}\n\nClinical Notes: {notes}"
 
         attending_doctor_id = req.doctor_id or visit["doctor_id"]
-        if req.doctor_id:
-            doc = UserRepository.get_by_id(req.doctor_id)
-            if not doc:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Attending physician with ID {req.doctor_id} not found."
-                )
+        if not attending_doctor_id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="No attending physician assigned to sign off this encounter."
+            )
+        doc = UserRepository.get_by_id(attending_doctor_id)
+        if not doc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Attending physician with ID {attending_doctor_id} not found."
+            )
 
         insights = CDSSRepository.get_insights_by_visit_id(visit_id)
         if not insights:
