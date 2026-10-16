@@ -1,15 +1,37 @@
 from typing import Optional, Dict, Any
 from app.core.database import get_connection
 
+NAMED_KEY_TO_Q_SLOT = {
+    "triage_urgency": "q1",
+    "pain_site": "q2",
+    "symptom_duration": "q3",
+    "allergy_status": "q4",
+    "phq2_1": "q5",
+    "phq2_2": "q6",
+    "gad2_1": "q7",
+    "gad2_2": "q8",
+    "peg_pain": "q9",
+    "peg_enjoyment": "q10",
+    "peg_activity": "q11",
+    "chronic_comorbidity": "q14",
+    "red_flag_check": "q15",
+    "immunization_status": "q16",
+}
+
 class QuestionnaireRepository:
     @staticmethod
     def upsert_questionnaire(visit_id: int, patient_id: int, answers: Dict[str, Optional[int]], voice_notes: Optional[str]) -> Dict[str, Any]:
         conn = get_connection()
         try:
             with conn.cursor() as cur:
+                normalized_answers = dict(answers or {})
+                for named_key, q_key in NAMED_KEY_TO_Q_SLOT.items():
+                    if named_key in normalized_answers and q_key not in normalized_answers:
+                        normalized_answers[q_key] = normalized_answers[named_key]
+
                 valid_keys = [f"q{i}" for i in range(1, 21)]
                 filtered_answers = {
-                    k: answers[k] for k in valid_keys if k in answers and answers[k] is not None
+                    k: normalized_answers[k] for k in valid_keys if k in normalized_answers and normalized_answers[k] is not None
                 }
 
                 cols = ["visit_id", "patient_id", "voice_notes"] + valid_keys

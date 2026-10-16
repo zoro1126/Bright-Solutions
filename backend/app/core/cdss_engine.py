@@ -55,7 +55,10 @@ def score_questionnaire_responses(answers: Dict[str, Any]) -> Dict[str, Any]:
     q_p2 = answers.get("peg_enjoyment", answers.get("q10", 0))
     q_p3 = answers.get("peg_activity", answers.get("q11", 0))
     try:
-        avg_pain = (float(q_p1 or 0) + float(q_p2 or 0) + float(q_p3 or 0)) / 3.0
+        val1 = min(10.0, max(0.0, float(q_p1 or 0)))
+        val2 = min(10.0, max(0.0, float(q_p2 or 0)))
+        val3 = min(10.0, max(0.0, float(q_p3 or 0)))
+        avg_pain = (val1 + val2 + val3) / 3.0
         scores["peg3_average"] = round(avg_pain, 1)
         scores["peg3_significant_pain"] = scores["peg3_average"] >= 4.0
     except (ValueError, TypeError):
@@ -80,9 +83,14 @@ def score_questionnaire_responses(answers: Dict[str, Any]) -> Dict[str, Any]:
         allergies.append("SULFA")
     elif q_allergy == 3 or answers.get("allergy_nsaid"):
         allergies.append("NSAID")
-    if answers.get("allergies") and isinstance(answers["allergies"], list):
-        allergies.extend(answers["allergies"])
-    scores["reported_allergies"] = list(set(allergies))
+
+    if answers.get("allergies"):
+        raw_als = answers["allergies"]
+        if isinstance(raw_als, list):
+            allergies.extend([str(a).strip().upper() for a in raw_als if a])
+        elif isinstance(raw_als, str):
+            allergies.extend([a.strip().upper() for a in raw_als.split(",") if a.strip()])
+    scores["reported_allergies"] = sorted(list(set(allergies)))
 
     # 7. Chronic comorbidity screening (q14, 1=HTN, 2=Diabetes, 3=Asthma, 4=Cardiac, 5=CKD)
     comorbidities = []
@@ -91,9 +99,20 @@ def score_questionnaire_responses(answers: Dict[str, Any]) -> Dict[str, Any]:
         comorbidities.append("CKD")
     elif q_comorb == 3 or answers.get("comorbidity_asthma") or answers.get("asthma"):
         comorbidities.append("ASTHMA")
-    if answers.get("comorbidities") and isinstance(answers["comorbidities"], list):
-        comorbidities.extend(answers["comorbidities"])
-    scores["reported_comorbidities"] = list(set(comorbidities))
+    elif q_comorb == 2 or answers.get("comorbidity_diabetes") or answers.get("diabetes"):
+        comorbidities.append("DIABETES")
+    elif q_comorb == 1 or answers.get("comorbidity_htn") or answers.get("hypertension"):
+        comorbidities.append("HYPERTENSION")
+    elif q_comorb == 4 or answers.get("comorbidity_cardiac") or answers.get("cardiac"):
+        comorbidities.append("CARDIAC")
+
+    if answers.get("comorbidities"):
+        raw_com = answers["comorbidities"]
+        if isinstance(raw_com, list):
+            comorbidities.extend([str(c).strip().upper() for c in raw_com if c])
+        elif isinstance(raw_com, str):
+            comorbidities.extend([c.strip().upper() for c in raw_com.split(",") if c.strip()])
+    scores["reported_comorbidities"] = sorted(list(set(comorbidities)))
 
     return scores
 
@@ -117,8 +136,24 @@ def predict_conditions_from_context(
     spo2 = vitals.get("spo2_pct")
     resp = vitals.get("resp_rate")
 
-    # 1. Essential Hypertension (I10)
-    if (sys_bp and sys_bp >= 140) or (dia_bp and dia_bp >= 90):
+    # Emergency Red Flag Condition
+    if scores.get("red_flag_emergency"):
+        conditions.append({
+            "disease_code": "ACUTE_RED_FLAG_EMERGENCY",
+            "icd10_code": "R68.89",
+            "disease_name": "Acute Clinical Red Flag Presentation",
+            "rationale": "Patient intake flagged immediate critical warning symptoms requiring bedside physician evaluation."
+        })
+
+    # 1. Essential Hypertension (I10) / Hypertensive Crisis (I16.9)
+    if (sys_bp and sys_bp >= 180) or (dia_bp and dia_bp >= 120):
+        conditions.append({
+            "disease_code": "HYPERTENSION_CRISIS",
+            "icd10_code": "I16.9",
+            "disease_name": "Hypertensive Crisis with Acute Hemodynamic Risk",
+            "rationale": f"Triage blood pressure {sys_bp}/{dia_bp} mmHg exceeds crisis threshold (>= 180/120 mmHg)."
+        })
+    elif (sys_bp and sys_bp >= 140) or (dia_bp and dia_bp >= 90):
         conditions.append({
             "disease_code": "HYPERTENSION_STAGE2",
             "icd10_code": "I10",

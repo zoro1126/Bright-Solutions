@@ -7,6 +7,11 @@ from app.core.config import UPLOAD_DIR
 from app.repositories.patient_repo import PatientRepository
 from app.repositories.report_repo import ReportRepository
 
+ALLOWED_EXTENSIONS = {
+    ".dcm", ".dicom", ".pdf", ".png", ".jpg", ".jpeg",
+    ".tif", ".tiff", ".bmp", ".xml", ".txt", ".csv"
+}
+
 class ReportService:
     @staticmethod
     def upload_report(
@@ -24,6 +29,14 @@ class ReportService:
                 detail=f"Invalid report_type '{report_type}'. Allowed types: {', '.join(sorted(valid_types))}"
             )
 
+        orig_name = os.path.basename(file.filename or "report.bin")
+        _, ext = os.path.splitext(orig_name.lower())
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported file extension '{ext}'. Allowed diagnostic extensions: {', '.join(sorted(ALLOWED_EXTENSIONS))}"
+            )
+
         visit = PatientRepository.get_visit_by_id(visit_id)
         if not visit:
             raise HTTPException(
@@ -35,7 +48,6 @@ class ReportService:
         visit_dir = os.path.join(UPLOAD_DIR, str(visit_id))
         os.makedirs(visit_dir, exist_ok=True)
 
-        orig_name = os.path.basename(file.filename or "report.bin")
         timestamp = int(datetime.now().timestamp())
         clean_filename = f"{timestamp}_{orig_name.replace(' ', '_')}"
         dest_path = os.path.join(visit_dir, clean_filename)
@@ -44,18 +56,40 @@ class ReportService:
             shutil.copyfileobj(file.file, buffer)
 
         file_size_bytes = os.path.getsize(dest_path)
+        if file_size_bytes == 0:
+            if os.path.exists(dest_path):
+                os.remove(dest_path)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Uploaded diagnostic file is empty (0 bytes)."
+            )
+
+        max_allowed_bytes = 50 * 1024 * 1024  # 50 MB
+        if file_size_bytes > max_allowed_bytes:
+            if os.path.exists(dest_path):
+                os.remove(dest_path)
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="File size exceeds maximum allowed upload limit of 50 MB."
+            )
+
         file_size_mb = round(file_size_bytes / (1024.0 * 1024.0), 2)
         web_path = f"/uploads/{visit_id}/{clean_filename}"
 
-        report_id = ReportRepository.insert_report(
-            visit_id=visit_id,
-            patient_id=patient_id,
-            report_type=normalized_type,
-            modality=modality,
-            file_path=web_path,
-            file_size_mb=file_size_mb,
-            findings_summary=findings_summary
-        )
+        try:
+            report_id = ReportRepository.insert_report(
+                visit_id=visit_id,
+                patient_id=patient_id,
+                report_type=normalized_type,
+                modality=modality,
+                file_path=web_path,
+                file_size_mb=file_size_mb,
+                findings_summary=findings_summary
+            )
+        except Exception:
+            if os.path.exists(dest_path):
+                os.remove(dest_path)
+            raise
 
         return {
             "message": "External report uploaded successfully",

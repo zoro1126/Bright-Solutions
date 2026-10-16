@@ -11,6 +11,7 @@ from app.core.cdss_engine import (
     filter_candidate_medications,
     generate_clinical_insights
 )
+from app.core.nlp_summarizer import ClinicalNLPParser
 
 class QuestionnaireService:
     @staticmethod
@@ -49,6 +50,29 @@ class QuestionnaireService:
         # 3. Deterministic Clinical Scoring (PHQ-2, GAD-2, PEG-3, Red Flags)
         scores = score_questionnaire_responses(req.answers or {})
 
+        # Extract patient allergies and chronic comorbidities
+        patient_allergies = list(req.allergies or []) + scores.get("reported_allergies", [])
+        patient_comorbidities = list(req.comorbidities or []) + scores.get("reported_comorbidities", [])
+
+        # NLP voice notes extraction with MedSpaCy
+        if req.voice_notes and req.voice_notes.strip():
+            affirmed_syms, _ = ClinicalNLPParser.extract_symptoms_with_negation(req.voice_notes)
+            if affirmed_syms:
+                affirmed_text = ", ".join(s["symptom"] for s in affirmed_syms)
+                chief_complaint = f"{chief_complaint}; Dictated: {affirmed_text}".strip("; ")
+
+            # Detect voice-dictated drug hypersensitivities
+            vn_upper = req.voice_notes.upper()
+            common_allergy_triggers = {
+                "PENICILLIN": ["PENICILLIN", "AMOXICILLIN", "AMPICILLIN"],
+                "SULFA": ["SULFA", "SULFONAMIDE", "BACTRIM", "CO-TRIMOXAZOLE"],
+                "NSAID": ["NSAID", "IBUPROFEN", "DICLOFENAC", "ASPIRIN"]
+            }
+            for trig_class, terms in common_allergy_triggers.items():
+                if any(t in vn_upper for t in terms) and ("ALLERG" in vn_upper or "HYPERSENSITIV" in vn_upper):
+                    if trig_class not in patient_allergies:
+                        patient_allergies.append(trig_class)
+
         # 4. Deterministic Differential Condition Prediction
         conditions = predict_conditions_from_context(
             vitals=vitals,
@@ -60,10 +84,6 @@ class QuestionnaireService:
 
         # 5. Fetch Candidate WHO EML Generic Medicines
         raw_candidates = QuestionnaireRepository.get_candidate_medications_by_disease_codes(disease_codes)
-
-        # Extract patient allergies and chronic comorbidities
-        patient_allergies = list(req.allergies or []) + scores.get("reported_allergies", [])
-        patient_comorbidities = list(req.comorbidities or []) + scores.get("reported_comorbidities", [])
 
         # 6. Apply Deterministic Medication Safety Gate (Allergy & Organ Contraindications)
         recommended_meds = filter_candidate_medications(
