@@ -2642,12 +2642,16 @@ html, body {
 .doctor-page-container {
   height: calc(100vh - 50px);
   max-height: calc(100vh - 50px);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px 18px 14px;
+  gap: 12px;
+  padding: 14px 20px 48px;
   box-sizing: border-box;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #0077B6 rgba(0, 119, 182, 0.06);
 }
 
 @media (max-width: 860px) {
@@ -2655,6 +2659,7 @@ html, body {
     overflow-y: auto;
     height: auto;
     max-height: none;
+    padding: 12px 14px 40px;
   }
 }
 
@@ -3366,13 +3371,14 @@ html, body {
 }
 
 .dicom-controls-bar {
-  height: 52px;
+  min-height: 48px;
+  height: auto;
   background-color: #111827;
   border-bottom: 1px solid #1f2937;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 8px 16px;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -5146,6 +5152,121 @@ html, body {
   animation: pulseGlowAmber 2s infinite ease-in-out;
 }
 
+/* ==========================================================================
+   SMART SCROLL SYSTEM — Sleek, Non-Intrusive, Contextual Clinical Scrollbars
+   Ensures the whole application scrolls smoothly only where needed with 
+   zero clipping, zero double-scrollbars, and role-themed scroll indicators.
+   ========================================================================== */
 
+/* 1. Global Viewport Guard: Shell never spills outer browser scrolls */
+html, body, #root, .m3-app-shell {
+  overflow: hidden;
+  height: 100vh;
+  max-height: 100vh;
+}
 
+/* 2. Unified Smart Scrollbars for All Scrollable Surfaces */
+.page-container,
+.doctor-page-container,
+.doctor-dashboard-container,
+.cashier-page-container,
+.smart-scrollbar,
+.m3-scrollable-body,
+.m3-table-container,
+.m3-dialog {
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
 
+.page-container::-webkit-scrollbar,
+.doctor-page-container::-webkit-scrollbar,
+.doctor-dashboard-container::-webkit-scrollbar,
+.smart-scrollbar::-webkit-scrollbar,
+.m3-scrollable-body::-webkit-scrollbar,
+.m3-table-container::-webkit-scrollbar,
+.m3-dialog::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.page-container::-webkit-scrollbar-track,
+.doctor-page-container::-webkit-scrollbar-track,
+.doctor-dashboard-container::-webkit-scrollbar-track,
+.smart-scrollbar::-webkit-scrollbar-track,
+.m3-scrollable-body::-webkit-scrollbar-track,
+.m3-table-container::-webkit-scrollbar-track,
+.m3-dialog::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.page-container::-webkit-scrollbar-thumb,
+.doctor-page-container::-webkit-scrollbar-thumb,
+.doctor-dashboard-container::-webkit-scrollbar-thumb,
+.smart-scrollbar::-webkit-scrollbar-thumb,
+.m3-scrollable-body::-webkit-scrollbar-thumb,
+.m3-table-container::-webkit-scrollbar-thumb,
+.m3-dialog::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+.page-container::-webkit-scrollbar-thumb:hover,
+.doctor-page-container::-webkit-scrollbar-thumb:hover,
+.doctor-dashboard-container::-webkit-scrollbar-thumb:hover,
+.smart-scrollbar::-webkit-scrollbar-thumb:hover,
+.m3-scrollable-body::-webkit-scrollbar-thumb:hover,
+.m3-table-container::-webkit-scrollbar-thumb:hover,
+.m3-dialog::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* 3. Themed Smart Scrollbars by Portal Role */
+
+/* Doctor Portal (Cobalt & Cerulean Ice Blue) */
+.doctor-theme .page-container,
+.doctor-theme .doctor-page-container,
+.doctor-theme .doctor-dashboard-container {
+  scrollbar-color: #0077B6 rgba(0, 119, 182, 0.05);
+}
+
+.doctor-theme .page-container::-webkit-scrollbar-thumb,
+.doctor-theme .doctor-page-container::-webkit-scrollbar-thumb,
+.doctor-theme .doctor-dashboard-container::-webkit-scrollbar-thumb,
+.doctor-theme .smart-scrollbar::-webkit-scrollbar-thumb,
+.doctor-theme .m3-scrollable-body::-webkit-scrollbar-thumb {
+  background-color: #90E0EF;
+}
+
+.doctor-theme .page-container::-webkit-scrollbar-thumb:hover,
+.doctor-theme .doctor-page-container::-webkit-scrollbar-thumb:hover,
+.doctor-theme .doctor-dashboard-container::-webkit-scrollbar-thumb:hover,
+.doctor-theme .smart-scrollbar::-webkit-scrollbar-thumb:hover,
+.doctor-theme .m3-scrollable-body::-webkit-scrollbar-thumb:hover {
+  background-color: #0077B6;
+}
+
+/* Receptionist Portal (Sunbeam Amber & Deep Slate) */
+.theme-light .page-container::-webkit-scrollbar-thumb,
+.theme-light .smart-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+}
+
+.theme-light .page-container::-webkit-scrollbar-thumb:hover,
+.theme-light .smart-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* Admin Portal (Royal Indigo) */
+.admin-theme .page-container::-webkit-scrollbar-thumb,
+.admin-theme .smart-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #c7d2fe;
+}
+
+.admin-theme .page-container::-webkit-scrollbar-thumb:hover,
+.admin-theme .smart-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #4f46e5;
+}

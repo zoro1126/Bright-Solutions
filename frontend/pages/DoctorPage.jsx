@@ -4,6 +4,8 @@ import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import DoctorDashboard from '../components/DoctorDashboard';
 import DoctorFlowGuideModal from '../components/DoctorFlowGuideModal';
+import DoctorPatientDossierView from '../components/DoctorPatientDossierView';
+import DoctorDiagnosticScansView from '../components/DoctorDiagnosticScansView';
 import { 
   Stethoscope, 
   Sparkles, 
@@ -270,16 +272,6 @@ TREATMENT & FOLLOW-UP PLAN:
   };
 
   const handleDoctorNavChange = (tabId) => {
-    if (tabId === 'dossier') {
-      setActiveTab('history');
-      setDoctorNav('workspace');
-      return;
-    }
-    if (tabId === 'viewer') {
-      setActiveTab('dicom');
-      setDoctorNav('workspace');
-      return;
-    }
     setDoctorNav(tabId);
   };
 
@@ -303,7 +295,7 @@ TREATMENT & FOLLOW-UP PLAN:
           onOpenDoctorGuide={() => setIsGuideOpen(true)}
         />
 
-        {doctorNav === 'dashboard' ? (
+        {doctorNav === 'dashboard' && (
           <DoctorDashboard 
             onOpenWorkspace={(patientId, initialTab) => {
               if (patientId) setSelectedPatientId(patientId);
@@ -313,7 +305,36 @@ TREATMENT & FOLLOW-UP PLAN:
             onSwitchToReception={onSwitchToReception}
             onOpenGuide={() => setIsGuideOpen(true)}
           />
-        ) : (
+        )}
+
+        {doctorNav === 'dossier' && (
+          <DoctorPatientDossierView 
+            patients={patients}
+            onOpenWorkspace={(patientId) => {
+              if (patientId) setSelectedPatientId(patientId);
+              setDoctorNav('workspace');
+              setActiveTab('history');
+            }}
+            onOpenScans={(patientId) => {
+              if (patientId) setSelectedPatientId(patientId);
+              setDoctorNav('viewer');
+            }}
+          />
+        )}
+
+        {doctorNav === 'viewer' && (
+          <DoctorDiagnosticScansView 
+            patients={patients}
+            selectedPatientId={selectedPatientId}
+            onSelectPatient={(patientId) => setSelectedPatientId(patientId)}
+            onOpenWorkspace={(patientId) => {
+              if (patientId) setSelectedPatientId(patientId);
+              setDoctorNav('workspace');
+            }}
+          />
+        )}
+
+        {doctorNav === 'workspace' && (
           <main className="page-container doctor-page-container m3-page-animate" style={{ maxWidth: '100%', width: '100%', margin: '0', boxSizing: 'border-box' }}>
 
             {/* Active Patient Bar - Styled with Theme Palettes */}
@@ -359,38 +380,6 @@ TREATMENT & FOLLOW-UP PLAN:
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
-          <button
-            type="button"
-            onClick={() => setIsGuideOpen(true)}
-            className="m3-btn anim-hover-lift"
-            style={{
-              height: 32,
-              fontSize: 11.5,
-              padding: '0 12px',
-              background: 'linear-gradient(135deg, #CAF0F8, #ffffff)',
-              color: '#0077B6',
-              border: '1.5px solid #90E0EF',
-              fontWeight: 800,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(0, 119, 182, 0.15)'
-            }}
-            title="Open Doctor Interactive Clinical Guide"
-          >
-            <Sparkles size={13} color="#0077B6" />
-            <span>Doctor Guide ⚡</span>
-          </button>
-
-          <button 
-            className="m3-btn"
-            onClick={onSwitchToReception}
-            title="Return to Receptionist Desk"
-            style={{ height: 32, fontSize: 11.5, padding: '0 12px', background: 'var(--bg-subtle)', color: 'var(--text-primary)', border: '1px solid var(--border-default)', fontWeight: 700 }}
-          >
-            ← Reception Desk
-          </button>
           <button 
             className="m3-btn m3-btn-filled"
             onClick={handleFinalizeVisit}
@@ -471,12 +460,19 @@ TREATMENT & FOLLOW-UP PLAN:
               <span>AI Insights</span>
             </button>
             <button
-              className={`m3-view-tab ${activeTab === 'dicom' ? 'active' : ''}`}
-              onClick={() => setActiveTab('dicom')}
-              data-tour="doctor-tab-dicom"
+              type="button"
+              className="m3-view-tab anim-hover-lift"
+              onClick={() => setDoctorNav('viewer')}
+              title="View all diagnostic scans, lab reports and imaging PACS center"
+              style={{
+                background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
+                color: '#1d4ed8',
+                border: '1px solid #93c5fd',
+                fontWeight: 700
+              }}
             >
-              <Layers size={14} />
-              <span>DICOM Scans</span>
+              <Layers size={14} color="#1d4ed8" />
+              <span>Diagnostic Scans ↗</span>
             </button>
             <button
               className={`m3-view-tab ${activeTab === 'history' ? 'active' : ''}`}
@@ -619,116 +615,7 @@ TREATMENT & FOLLOW-UP PLAN:
             </div>
           )}
 
-          {/* VIEW 2: Integrated DICOM Viewer */}
-          {activeTab === 'dicom' && (
-            <div className="dicom-viewport-container m3-page-animate" style={{ flex: 1, minHeight: 0, height: '100%', overflowY: 'auto' }}>
-              {/* Radiology Availability Banner */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '6px 12px',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'rgba(245, 158, 11, 0.05)',
-                border: '1px solid rgba(245, 158, 11, 0.15)',
-                color: '#94a3b8',
-                fontSize: '11px',
-                margin: '8px 12px 6px 12px',
-                lineHeight: 1.4
-              }}>
-                <AlertCircle size={13} color="#f59e0b" style={{ flexShrink: 0, opacity: 0.75 }} />
-                <span>
-                  <strong style={{ color: '#cbd5e1', fontWeight: 600 }}>Radiology Department Note:</strong> This DICOM imaging window and scan series will only be available if the radiology department has uploaded and attached the study to this patient MRN; otherwise it will not appear.
-                </span>
-              </div>
 
-              {/* Tool Controls Bar */}
-              <div className="dicom-controls-bar">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#f8fafc', fontSize: 13, fontWeight: 700 }}>
-                  <Layers size={16} color="#2563eb" />
-                  <span>{selectedSeries}</span>
-                  <span style={{ fontSize: 11, color: '#94a3b8', background: '#1e293b', padding: '2px 8px', borderRadius: 4 }}>
-                    Slice {currentSlice} / 148
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <button 
-                    className="m3-btn m3-btn-tonal" 
-                    style={{ height: 32, fontSize: 11, padding: '0 10px', background: '#1f2937', color: '#f8fafc', border: '1px solid #374151' }}
-                    onClick={() => setZoomLevel(prev => Math.min(prev + 20, 200))}
-                  >
-                    <ZoomIn size={14} /> Zoom ({zoomLevel}%)
-                  </button>
-                  <button 
-                    className="m3-btn m3-btn-tonal" 
-                    style={{ height: 32, fontSize: 11, padding: '0 10px', background: '#1f2937', color: '#f8fafc', border: '1px solid #374151' }}
-                  >
-                    <Sun size={14} /> {windowPreset.split(' ')[0]}
-                  </button>
-                  <button 
-                    className="m3-btn m3-btn-tonal" 
-                    style={{ height: 32, fontSize: 11, padding: '0 10px', background: '#1f2937', color: '#f8fafc', border: '1px solid #374151' }}
-                  >
-                    <Ruler size={14} /> Caliper
-                  </button>
-                  <button 
-                    className="m3-btn m3-btn-tonal" 
-                    style={{ height: 32, fontSize: 11, padding: '0 10px', background: '#1f2937', color: '#f8fafc', border: '1px solid #374151' }}
-                    onClick={() => setIsDicomModalOpen(true)}
-                  >
-                    <Maximize2 size={14} /> Pop-up Fullscreen
-                  </button>
-                </div>
-              </div>
-
-              {/* Canvas Scan Area */}
-              <div className="dicom-canvas-area">
-                {/* Radiological Crosshair / Overlay */}
-                <div style={{ textAlign: 'center', color: '#cbd5e1' }}>
-                  <div style={{ width: 220, height: 220, border: '2px dashed rgba(37, 99, 235, 0.45)', borderRadius: '50%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%)' }}>
-                    <div style={{ border: '1.5px solid #22c55e', padding: '4px 10px', borderRadius: 4, background: 'rgba(0,0,0,0.6)', fontSize: 11, color: '#4ade80', fontWeight: 700 }}>
-                      📌 2.3 cm Nodular Opacity (RUL)
-                    </div>
-                  </div>
-                  <div style={{ marginTop: 16, fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>
-                    Axial High-Resolution Chest CT Scan
-                  </div>
-                  <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                    WW: 1500  WL: -600 (Lung Window) • 1.5mm Slice Thickness
-                  </div>
-                </div>
-
-                {/* Slice Navigation Slider Overlay */}
-                <div style={{ position: 'absolute', bottom: 16, left: 24, right: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 11, color: '#94a3b8', whiteSpace: 'nowrap' }}>Slice 1</span>
-                  <input 
-                    type="range" 
-                    min="1" 
-                    max="148" 
-                    value={currentSlice} 
-                    onChange={(e) => setCurrentSlice(Number(e.target.value))}
-                    style={{ flex: 1, accentColor: '#2563eb' }}
-                  />
-                  <span style={{ fontSize: 11, color: '#94a3b8', whiteSpace: 'nowrap' }}>Slice 148</span>
-                </div>
-              </div>
-
-              {/* Series Selector Bar */}
-              <div className="dicom-series-selector">
-                {['CT Chest with Contrast', 'CT Abdomen & Pelvis', 'MRI Brain Sequence', 'Whole Body PET Scan'].map(s => (
-                  <div 
-                    key={s} 
-                    className={`dicom-series-card ${selectedSeries === s ? 'selected' : ''}`}
-                    onClick={() => setSelectedSeries(s)}
-                  >
-                    <div style={{ fontWeight: 700 }}>{s}</div>
-                    <div style={{ opacity: 0.7, marginTop: 2 }}>{s.includes('PET') ? '42 Slices' : '148 Slices'}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* VIEW 3: History Summary */}
           {activeTab === 'history' && (
@@ -1887,9 +1774,7 @@ TREATMENT & FOLLOW-UP PLAN:
         setActiveTab(tabId);
       }}
       onOpenSampleDicom={() => {
-        setDoctorNav('workspace');
-        setActiveTab('dicom');
-        setIsDicomModalOpen(true);
+        setDoctorNav('viewer');
       }}
       onOpenSampleRx={() => {
         setDoctorNav('workspace');
