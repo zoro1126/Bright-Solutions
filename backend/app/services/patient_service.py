@@ -13,7 +13,7 @@ from app.core.triage_engine import (
 )
 
 def compute_bmi_and_category(weight_kg: Optional[float], height_cm: Optional[float]) -> Tuple[Optional[float], Optional[str]]:
-    if not weight_kg or not height_cm or height_cm <= 0:
+    if not weight_kg or not height_cm or weight_kg <= 0 or height_cm <= 0:
         return None, None
     height_m = height_cm / 100.0
     bmi = round(weight_kg / (height_m * height_m), 1)
@@ -38,6 +38,8 @@ def compute_bp_stage(systolic: Optional[int], diastolic: Optional[int]) -> Optio
         return "Stage 1 Hypertension"
     elif (120 <= systolic <= 129) and diastolic < 80:
         return "Elevated BP"
+    elif systolic < 90 or diastolic < 60:
+        return "Hypotension"
     elif systolic < 120 and diastolic < 80:
         return "Normal Blood Pressure"
     return "Borderline"
@@ -50,9 +52,7 @@ class PatientService:
 
     @staticmethod
     def get_next_token() -> Dict[str, str]:
-        today_count = PatientRepository.get_today_token_count()
-        next_num = 101 + today_count
-        return {"next_token": f"Q-{next_num}"}
+        return {"next_token": PatientRepository.get_next_available_token()}
 
     @staticmethod
     def auto_route_doctor(
@@ -251,10 +251,22 @@ class PatientService:
             }
             queue_items.append(item)
 
+        # Clinical Acuity Prioritization: EMERGENCY -> URGENT -> ROUTINE
+        acuity_weights = {"EMERGENCY": 0, "URGENT": 1, "ROUTINE": 2}
+        waiting_items = [it for it in queue_items if it["status"] not in ("COMPLETED", "CANCELLED")]
+        completed_items = [it for it in queue_items if it["status"] in ("COMPLETED", "CANCELLED")]
+
+        waiting_items.sort(key=lambda x: (acuity_weights.get(x["triage_priority"], 3), x["visit_id"]))
+
+        for idx, it in enumerate(waiting_items, start=1):
+            it["queue_position"] = idx
+            it["estimated_wait_mins"] = estimate_wait_time_minutes(idx, it["triage_priority"])
+
+        final_queue = waiting_items + completed_items
         active_docs = UserRepository.list_active_doctors()
         return {
             "counts": counts,
-            "queue": queue_items,
+            "queue": final_queue,
             "active_doctors_count": len(active_docs),
             "server_timestamp": datetime.now().isoformat()
         }
@@ -348,66 +360,19 @@ class PatientService:
             else:
                 any_staff = UserRepository.get_first_active_by_role()
                 receptionist_id = any_staff["id"] if any_staff else 1
-        current_year = datetime.now().year
-        patient_count_year = PatientRepository.get_patient_count_for_year(current_year)
-        patient_seq = patient_count_year + 1
-        uhid = f"UHID-{current_year}-{patient_seq:05d}"
-
-        patient_id = PatientRepository.insert_patient(
-            uhid=uhid,
-            first_name=first_name,
-            last_name=last_name,
-            dob=dob,
-            gender=req.gender.upper(),
-            blood_group=req.blood_group.upper() if req.blood_group else "UNKNOWN",
-            phone=req.phone.strip(),
-            email=req.email.strip() if req.email else None,
-            address=req.address.strip() if req.address else None,
-            emergency_contact=em_contact,
-            insurance_type=req.insurance_type or "CASH",
-            insurance_provider=req.insurance_provider or ("Ayushman Bharat PM-JAY" if req.insurance_type == "GOVT_SCHEME" else "Self-Pay / Cash"),
-            policy_number=req.policy_number or req.govt_scheme_name or "N/A"
-        )
-
-        today_visits = PatientRepository.get_today_token_count()
-        token_num = 101 + today_visits
-        queue_token = f"Q-{token_num}"
-
-        visit_id = PatientRepository.insert_visit(
-            patient_id=patient_id,
-            doctor_id=doctor_id,
-            receptionist_id=receptionist_id,
-            queue_token=queue_token,
-            chief_complaint=req.chief_complaint or "Routine General OPD Consultation"
-        )
-
+        # Pre-compute triage & vital sign metrics
         vitals_data = req.vitals
         bmi = None
         bmi_category = None
         bp_stage = None
-        vital_id = None
         news2_score = 0
         triage_priority = "ROUTINE"
         triage_rationale = "Routine checkup"
+        vitals_payload = None
 
         if vitals_data:
             bmi, bmi_category = compute_bmi_and_category(vitals_data.weight_kg, vitals_data.height_cm)
             bp_stage = compute_bp_stage(vitals_data.systolic_bp, vitals_data.diastolic_bp)
-
-            vital_id = PatientRepository.insert_vitals(
-                visit_id=visit_id,
-                sys_bp=vitals_data.systolic_bp,
-                dia_bp=vitals_data.diastolic_bp,
-                pulse=vitals_data.pulse_rate,
-                temp=vitals_data.temperature_f,
-                resp=vitals_data.resp_rate,
-                spo2=vitals_data.spo2_pct,
-                weight=vitals_data.weight_kg,
-                height=vitals_data.height_cm,
-                bmi=bmi,
-                bmi_category=bmi_category,
-                bp_stage=bp_stage
-            )
 
             news2_score, _ = calculate_news2_score(
                 resp_rate=vitals_data.resp_rate,
@@ -423,6 +388,54 @@ class PatientService:
                 systolic_bp=vitals_data.systolic_bp,
                 spo2_pct=vitals_data.spo2_pct
             )
+
+            vitals_payload = {
+                "systolic_bp": vitals_data.systolic_bp,
+                "diastolic_bp": vitals_data.diastolic_bp,
+                "pulse_rate": vitals_data.pulse_rate,
+                "temperature_f": vitals_data.temperature_f,
+                "resp_rate": vitals_data.resp_rate,
+                "spo2_pct": vitals_data.spo2_pct,
+                "weight_kg": vitals_data.weight_kg,
+                "height_cm": vitals_data.height_cm,
+                "bmi": bmi,
+                "bmi_category": bmi_category,
+                "bp_stage": bp_stage
+            }
+
+        ins_type = (req.insurance_type or "CASH").strip().upper()
+        patient_payload = {
+            "first_name": first_name,
+            "last_name": last_name,
+            "dob": dob,
+            "gender": req.gender.upper(),
+            "blood_group": req.blood_group.upper() if req.blood_group else "UNKNOWN",
+            "phone": req.phone.strip(),
+            "email": req.email.strip() if req.email else None,
+            "address": req.address.strip() if req.address else None,
+            "emergency_contact": em_contact,
+            "insurance_type": ins_type,
+            "insurance_provider": req.insurance_provider or ("Ayushman Bharat PM-JAY" if ins_type == "GOVT_SCHEME" else "Self-Pay / Cash"),
+            "policy_number": req.policy_number or req.govt_scheme_name or "N/A"
+        }
+
+        visit_payload = {
+            "doctor_id": doctor_id,
+            "receptionist_id": receptionist_id,
+            "chief_complaint": req.chief_complaint or "Routine General OPD Consultation"
+        }
+
+        record = PatientRepository.register_patient_atomic(
+            patient_data=patient_payload,
+            visit_data=visit_payload,
+            vitals_data=vitals_payload
+        )
+
+        patient_id = record["patient_id"]
+        visit_id = record["visit_id"]
+        vital_id = record["vital_id"]
+        uhid = record["uhid"]
+        queue_token = record["queue_token"]
 
         return {
             "message": "Patient registered and triage vitals recorded successfully",

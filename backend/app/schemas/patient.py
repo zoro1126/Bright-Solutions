@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Dict, Any, List
 from datetime import date
 
@@ -20,8 +20,8 @@ class PatientRegistrationRequest(BaseModel):
     age: Optional[int] = Field(None, ge=0, le=130, description="Optional age in years if dob is calculated")
     gender: str = Field(..., description="MALE, FEMALE, or OTHER")
     blood_group: Optional[str] = Field("UNKNOWN", description="e.g. A+, B+, O+, AB+, etc.")
-    phone: str = Field(..., min_length=7, max_length=25)
-    email: Optional[str] = None
+    phone: str = Field(..., min_length=7, max_length=20)
+    email: Optional[str] = Field(None, max_length=100)
     address: Optional[str] = None
     emergency_contact: Optional[str] = None
     emergency_contact_name: Optional[str] = None
@@ -39,6 +39,56 @@ class PatientRegistrationRequest(BaseModel):
     deductible: Optional[float] = None
     receptionist_id: Optional[int] = Field(None, description="Staff user ID registering the patient. Resolved dynamically if omitted.")
     vitals: Optional[VitalSignsInput] = None
+
+    @field_validator("gender", mode="before")
+    @classmethod
+    def normalize_gender(cls, v: Any) -> str:
+        if not v or not isinstance(v, str):
+            raise ValueError("Gender must be specified as MALE, FEMALE, or OTHER.")
+        clean = v.strip().upper()
+        if clean in ("M", "MALE", "MAN", "BOY"):
+            return "MALE"
+        if clean in ("F", "FEMALE", "WOMAN", "GIRL"):
+            return "FEMALE"
+        if clean in ("O", "OTHER", "NON-BINARY", "TRANSGENDER"):
+            return "OTHER"
+        raise ValueError(f"Invalid gender '{v}'. Allowed values are MALE, FEMALE, or OTHER.")
+
+    @field_validator("blood_group", mode="before")
+    @classmethod
+    def normalize_blood_group(cls, v: Any) -> str:
+        if not v or not isinstance(v, str):
+            return "UNKNOWN"
+        clean = v.strip().upper().replace(" ", "").replace("POSITIVE", "+").replace("NEGATIVE", "-").replace("POS", "+").replace("NEG", "-")
+        valid_groups = {"A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "UNKNOWN"}
+        if clean in valid_groups:
+            return clean
+        return "UNKNOWN"
+
+    @field_validator("insurance_type", mode="before")
+    @classmethod
+    def normalize_insurance_type(cls, v: Any) -> str:
+        if not v or not isinstance(v, str):
+            return "CASH"
+        clean = v.strip().upper().replace("-", "_").replace(" ", "_")
+        if "GOVT" in clean or "SCHEME" in clean or "PMJAY" in clean or "AYUSHMAN" in clean:
+            return "GOVT_SCHEME"
+        if "INSUR" in clean or "CORP" in clean or "TPA" in clean:
+            return "INSURANCE"
+        return "CASH"
+
+    @field_validator("phone", mode="before")
+    @classmethod
+    def normalize_phone(cls, v: Any) -> str:
+        if not v or not isinstance(v, str):
+            raise ValueError("Phone number is required.")
+        clean = v.strip()
+        if len(clean) > 20:
+            digits = "".join(ch for ch in clean if ch.isdigit() or ch == '+')
+            clean = digits[:20] if len(digits) >= 7 else clean[:20]
+        if len(clean) < 7:
+            raise ValueError("Phone number must contain at least 7 characters.")
+        return clean
 
 class QueueSummaryCounts(BaseModel):
     all: int

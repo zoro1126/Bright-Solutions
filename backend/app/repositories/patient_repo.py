@@ -1,4 +1,6 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
+from datetime import datetime
+import pymysql
 from app.core.database import get_connection
 
 class PatientRepository:
@@ -14,6 +16,23 @@ class PatientRepository:
             conn.close()
 
     @staticmethod
+    def get_next_available_token() -> str:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT MAX(CAST(SUBSTRING(queue_token, 3) AS UNSIGNED)) as max_token
+                    FROM visits
+                    WHERE DATE(visit_date) = CURDATE() AND queue_token LIKE 'Q-%';
+                """)
+                row = cur.fetchone()
+                max_tok = row["max_token"] if row and row["max_token"] is not None else 100
+                next_num = max(101, max_tok + 1)
+                return f"Q-{next_num}"
+        finally:
+            conn.close()
+
+    @staticmethod
     def count_matching_patients(search_term: Optional[str] = None) -> int:
         conn = get_connection()
         try:
@@ -24,11 +43,12 @@ class PatientRepository:
                     count_query += """
                         WHERE p.first_name LIKE %s 
                            OR p.last_name LIKE %s 
+                           OR CONCAT(p.first_name, ' ', p.last_name) LIKE %s
                            OR p.phone LIKE %s 
                            OR p.uhid LIKE %s
                     """
                     term = f"%{search_term}%"
-                    count_params.extend([term, term, term, term])
+                    count_params.extend([term, term, term, term, term])
                 cur.execute(count_query, count_params)
                 row = cur.fetchone()
                 return row["total"] if row else 0
@@ -89,11 +109,12 @@ class PatientRepository:
                     query += """
                         WHERE p.first_name LIKE %s 
                            OR p.last_name LIKE %s 
+                           OR CONCAT(p.first_name, ' ', p.last_name) LIKE %s
                            OR p.phone LIKE %s 
                            OR p.uhid LIKE %s
                     """
                     term = f"%{search_term}%"
-                    params.extend([term, term, term, term])
+                    params.extend([term, term, term, term, term])
                 query += " ORDER BY v.visit_date DESC, p.created_at DESC LIMIT %s OFFSET %s;"
                 params.extend([limit, offset])
 
@@ -259,12 +280,13 @@ class PatientRepository:
                     where_clauses.append("""
                         (p.first_name LIKE %s 
                          OR p.last_name LIKE %s 
+                         OR CONCAT(p.first_name, ' ', p.last_name) LIKE %s
                          OR p.phone LIKE %s 
                          OR p.uhid LIKE %s 
                          OR v.queue_token LIKE %s)
                     """)
                     t = f"%{search_term}%"
-                    params.extend([t, t, t, t, t])
+                    params.extend([t, t, t, t, t, t])
 
                 query += " WHERE " + " AND ".join(where_clauses)
                 query += " ORDER BY v.id ASC;"
@@ -334,5 +356,123 @@ class PatientRepository:
                     "visits": visits,
                     "latest_questionnaire": questionnaire
                 }
+        finally:
+            conn.close()
+
+    @staticmethod
+    def register_patient_atomic(
+        patient_data: Dict[str, Any],
+        visit_data: Dict[str, Any],
+        vitals_data: Optional[Dict[str, Any]] = None,
+        max_retries: int = 3
+    ) -> Dict[str, Any]:
+        """
+        Executes patient registration, initial visit creation, and optional vitals insertion
+        within a single ACID transaction. Handles concurrent UHID collisions via retries.
+        """
+        conn = get_connection()
+        try:
+            current_year = datetime.now().year
+            for attempt in range(max_retries):
+                try:
+                    conn.begin()
+                    with conn.cursor() as cur:
+                        # 1. Determine next UHID sequence safely
+                        cur.execute("""
+                            SELECT MAX(CAST(SUBSTRING_INDEX(uhid, '-', -1) AS UNSIGNED)) as max_seq
+                            FROM patients
+                            WHERE uhid LIKE %s;
+                        """, (f"UHID-{current_year}-%",))
+                        seq_row = cur.fetchone()
+                        max_seq = seq_row["max_seq"] if seq_row and seq_row["max_seq"] is not None else 0
+                        uhid = f"UHID-{current_year}-{(max_seq + 1 + attempt):05d}"
+
+                        # 2. Insert patient record
+                        cur.execute("""
+                            INSERT INTO patients (
+                                uhid, first_name, last_name, dob, gender, blood_group, 
+                                phone, email, address, emergency_contact,
+                                insurance_type, insurance_provider, policy_number
+                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                        """, (
+                            uhid,
+                            patient_data["first_name"],
+                            patient_data["last_name"],
+                            patient_data["dob"],
+                            patient_data["gender"],
+                            patient_data["blood_group"],
+                            patient_data["phone"],
+                            patient_data.get("email"),
+                            patient_data.get("address"),
+                            patient_data.get("emergency_contact"),
+                            patient_data["insurance_type"],
+                            patient_data.get("insurance_provider"),
+                            patient_data.get("policy_number")
+                        ))
+                        patient_id = cur.lastrowid
+
+                        # 3. Determine next OPD queue token safely
+                        cur.execute("""
+                            SELECT MAX(CAST(SUBSTRING(queue_token, 3) AS UNSIGNED)) as max_token
+                            FROM visits
+                            WHERE DATE(visit_date) = CURDATE() AND queue_token LIKE 'Q-%';
+                        """)
+                        tok_row = cur.fetchone()
+                        max_tok = tok_row["max_token"] if tok_row and tok_row["max_token"] is not None else 100
+                        queue_token = f"Q-{max(101, max_tok + 1)}"
+
+                        # 4. Insert visit encounter
+                        cur.execute("""
+                            INSERT INTO visits (patient_id, doctor_id, receptionist_id, queue_token, status, chief_complaint)
+                            VALUES (%s, %s, %s, %s, 'TRIAGED', %s);
+                        """, (
+                            patient_id,
+                            visit_data["doctor_id"],
+                            visit_data["receptionist_id"],
+                            queue_token,
+                            visit_data.get("chief_complaint") or "Routine General OPD Consultation"
+                        ))
+                        visit_id = cur.lastrowid
+
+                        # 5. Insert vital signs if provided
+                        vital_id = None
+                        if vitals_data:
+                            cur.execute("""
+                                INSERT INTO vital_signs (
+                                    visit_id, systolic_bp, diastolic_bp, pulse_rate, temperature_f,
+                                    resp_rate, spo2_pct, weight_kg, height_cm, bmi, bmi_category, bp_stage
+                                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                            """, (
+                                visit_id,
+                                vitals_data.get("systolic_bp"),
+                                vitals_data.get("diastolic_bp"),
+                                vitals_data.get("pulse_rate"),
+                                vitals_data.get("temperature_f"),
+                                vitals_data.get("resp_rate"),
+                                vitals_data.get("spo2_pct"),
+                                vitals_data.get("weight_kg"),
+                                vitals_data.get("height_cm"),
+                                vitals_data.get("bmi"),
+                                vitals_data.get("bmi_category"),
+                                vitals_data.get("bp_stage")
+                            ))
+                            vital_id = cur.lastrowid
+
+                    conn.commit()
+                    return {
+                        "patient_id": patient_id,
+                        "visit_id": visit_id,
+                        "vital_id": vital_id,
+                        "uhid": uhid,
+                        "queue_token": queue_token
+                    }
+                except pymysql.err.IntegrityError as ie:
+                    conn.rollback()
+                    if attempt < max_retries - 1 and "Duplicate entry" in str(ie):
+                        continue
+                    raise
+                except Exception:
+                    conn.rollback()
+                    raise
         finally:
             conn.close()
