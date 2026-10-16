@@ -483,40 +483,6 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
-          {onOpenGuide && (
-            <button
-              type="button"
-              onClick={onOpenGuide}
-              className="m3-btn anim-hover-lift"
-              style={{
-                height: 32,
-                fontSize: 11.5,
-                padding: '0 12px',
-                background: 'linear-gradient(135deg, #CAF0F8, #ffffff)',
-                color: '#0077B6',
-                border: '1.5px solid #90E0EF',
-                fontWeight: 800,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(0, 119, 182, 0.15)'
-              }}
-              title="Open Doctor Interactive Clinical Guide"
-            >
-              <Sparkles size={13} color="#0077B6" />
-              <span>Doctor Guide ⚡</span>
-            </button>
-          )}
-
-          <button 
-            className="m3-btn"
-            onClick={onSwitchToReception}
-            title="Switch to Reception Desk"
-            style={{ height: 32, fontSize: 11.5, padding: '0 12px', background: '#edf8fc', color: '#0077B6', border: '1px solid #bfe7f5', fontWeight: 700 }}
-          >
-            ← Reception Desk
-          </button>
           <button 
             className="m3-btn"
             onClick={() => onOpenWorkspace(selectedPatientId || 'pat-001', 'insights')}

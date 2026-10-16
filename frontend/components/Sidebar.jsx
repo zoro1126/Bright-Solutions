@@ -82,7 +82,7 @@ export default function Sidebar({
     navItems = [
       { id: 'dashboard', label: 'Clinical Dashboard', icon: LayoutDashboard },
       { id: 'workspace', label: 'Consultation & e-Rx', icon: Stethoscope, badge: stats?.total || 5, badgeBg: '#CAF0F8', badgeColor: '#1e3a8a' },
-      { id: 'dossier', label: 'Patient Dossier', icon: FileText },
+      { id: 'dossier', label: 'Patient History & Dossier', icon: FileText },
       { id: 'viewer', label: 'Diagnostic Scans', icon: Layers }
     ];
   } else if (role === 'cashier') {
