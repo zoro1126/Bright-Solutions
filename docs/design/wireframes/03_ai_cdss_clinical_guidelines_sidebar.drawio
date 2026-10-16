@@ -1,0 +1,133 @@
+<mxfile host="app.diagrams.net" version="21.0.0">
+  <diagram name="AI Clinical Decision Support Sidebar" id="cdss-sidebar-03">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1"
+                  tooltips="1" connect="1" arrows="1" fold="1" page="1"
+                  pageScale="1" pageWidth="1169" pageHeight="827"
+                  math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Screen Frame -->
+        <mxCell id="screen-frame" value=""
+          style="rounded=0;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;"
+          vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="1120" height="740" as="geometry" />
+        </mxCell>
+
+        <!-- Top Header Navigation Bar -->
+        <mxCell id="nav-header" value="  HealthOS CDSS | Patient Encounter #ENC-2026-9041  |  Ramesh Verma (M/54)  |  Dr. V. Kulkarni (Cardiology)"
+          style="rounded=0;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;align=left;"
+          vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="1120" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Left 60% Column: Core Prescription & Encounter Form -->
+        <mxCell id="panel-encounter-form" value=""
+          style="rounded=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;shadow=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="35" y="75" width="650" height="665" as="geometry" />
+        </mxCell>
+
+        <mxCell id="hdr-encounter-form" value="Active Prescription &amp; Clinical Orders Builder"
+          style="rounded=0;whiteSpace=wrap;fillColor=#ececec;strokeColor=#999999;fontSize=10;fontStyle=1;align=left;spacingLeft=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="35" y="75" width="650" height="35" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lbl-patient-vitals-strip" value="Recorded Vitals: BP: 168/102 mmHg | Pulse: 104 bpm | SpO2: 93% | BMI: 29.4 (Overweight) | Temp: 98.4°F"
+          style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=left;spacingLeft=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="50" y="125" width="620" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Prescription Line 1 -->
+        <mxCell id="rx-card-1" value="Item 1: Tab Telmisartan 40mg  |  Oral (PO) Once Daily  |  Qty: 30 Days  |  Status: Validated"
+          style="rounded=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="50" y="175" width="620" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Prescription Line 2 (Triggers Interaction) -->
+        <mxCell id="rx-card-2" value="Item 2: Tab Nitroglycerin 0.4mg  |  Sublingual PRN for Angina  |  Qty: 10 Tabs  |  [!] CRITICAL ALERT"
+          style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;fontStyle=1;align=left;spacingLeft=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="50" y="230" width="620" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Prescription Line 3 -->
+        <mxCell id="rx-card-3" value="Item 3: Tab Rosuvastatin 20mg  |  Oral (PO) Once Daily (Night)  |  Qty: 30 Days  |  Status: Validated"
+          style="rounded=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="50" y="285" width="620" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Patient Active Meds (From History) -->
+        <mxCell id="lbl-active-history" value="Current Home Medications (Reported during Intake):&#xa;• Tab Sildenafil 50mg PO PRN (Last taken 18 hours ago)&#xa;• Tab Metformin 500mg PO Twice Daily"
+          style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#999999;fontSize=10;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;"
+          vertex="1" parent="1">
+          <mxGeometry x="50" y="345" width="620" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="btn-add-drug" value="+ Add Another Medication / Lab Investigation"
+          style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#999999;fontSize=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="50" y="425" width="300" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Right 40% Column: Live AI CDSS Safety & Diagnostic Intelligence -->
+        <mxCell id="panel-cdss" value=""
+          style="rounded=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;shadow=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="700" y="75" width="425" height="665" as="geometry" />
+        </mxCell>
+
+        <mxCell id="hdr-cdss" value="AI Clinical Decision Support (CDSS) Feed"
+          style="rounded=0;whiteSpace=wrap;fillColor=#ececec;strokeColor=#999999;fontSize=10;fontStyle=1;align=left;spacingLeft=10;"
+          vertex="1" parent="1">
+          <mxGeometry x="700" y="75" width="425" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- CDSS Card 1: Critical Drug-Drug Interaction -->
+        <mxCell id="cdss-card-ddi" value="[CRITICAL CONTRAINDICATION ALERT]&#xa;Nitroglycerin + Sildenafil Co-administration&#xa;&#xa;Severity: FATAL HYPOTENSION RISK&#xa;Description: Patient reported taking Sildenafil within 24 hours. Combining nitrates with PDE-5 inhibitors causes severe, irreversible vasodilation, profound hypotension, and cardiovascular collapse.&#xa;Recommendation: DO NOT PRESCRIBE NITRATES. Utilize alternative anti-anginal agents (e.g., Beta-blockers / Calcium Channel Blockers).&#xa;Guideline: AHA/ACC 2021 Chest Pain Guidelines"
+          style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;"
+          vertex="1" parent="1">
+          <mxGeometry x="715" y="125" width="395" height="175" as="geometry" />
+        </mxCell>
+
+        <mxCell id="btn-cdss-override-ddi" value="Override with Reason"
+          style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#999999;fontSize=9;"
+          vertex="1" parent="1">
+          <mxGeometry x="725" y="260" width="140" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="btn-cdss-accept-ddi" value="[Accept] Remove Nitroglycerin"
+          style="rounded=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;fontStyle=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="880" y="260" width="220" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- CDSS Card 2: Differential Diagnosis Suggestion (LLM) -->
+        <mxCell id="cdss-card-dx" value="[DIAGNOSTIC GUIDANCE - Top Differentials]&#xa;&#xa;1. Acute Coronary Syndrome / Non-STEMI (Likelihood: 68%)&#xa;   • Matches: Exertional onset, left shoulder radiation, HTN, age 54, CAD family history.&#xa;&#xa;2. Aortic Dissection (Likelihood: 14%)&#xa;   • Rule out: Sudden tearing pain, pulse deficit, asymmetric BP.&#xa;&#xa;3. Gastroesophageal Reflux Disease (Likelihood: 12%)&#xa;   • Less probable given exertional trigger."
+          style="rounded=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;"
+          vertex="1" parent="1">
+          <mxGeometry x="715" y="315" width="395" height="175" as="geometry" />
+        </mxCell>
+
+        <!-- CDSS Card 3: Evidence Based Clinical Orders -->
+        <mxCell id="cdss-card-orders" value="[RECOMMENDED ORDERS CHECKLIST]&#xa;[X] Stat 12-Lead ECG (Within 10 mins of arrival)&#xa;[X] Serum High-Sensitivity Troponin-I at 0h and 3h&#xa;[ ] Lipid Profile &amp; Serum Electrolytes&#xa;[ ] Transthoracic Echocardiogram (Echo)"
+          style="rounded=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;"
+          vertex="1" parent="1">
+          <mxGeometry x="715" y="505" width="395" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="btn-add-all-orders" value="+ Order All Recommended Labs"
+          style="rounded=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;fontStyle=1;"
+          vertex="1" parent="1">
+          <mxGeometry x="715" y="635" width="395" height="35" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
