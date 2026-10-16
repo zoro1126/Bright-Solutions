@@ -37,6 +37,7 @@ class PatientRegistrationRequest(BaseModel):
     abha_address: Optional[str] = None
     coverage_pct: Optional[float] = None
     deductible: Optional[float] = None
+    receptionist_id: Optional[int] = Field(None, description="Staff user ID registering the patient. Resolved dynamically if omitted.")
     vitals: Optional[VitalSignsInput] = None
 
 class QueueSummaryCounts(BaseModel):

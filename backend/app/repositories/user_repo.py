@@ -65,6 +65,31 @@ class UserRepository:
             conn.close()
 
     @staticmethod
+    def get_first_active_by_role(role: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                if role:
+                    cur.execute("""
+                        SELECT id, username, full_name, role, email, phone 
+                        FROM users 
+                        WHERE role = %s AND is_active = 1
+                        ORDER BY id ASC
+                        LIMIT 1;
+                    """, (role.upper(),))
+                else:
+                    cur.execute("""
+                        SELECT id, username, full_name, role, email, phone 
+                        FROM users 
+                        WHERE is_active = 1
+                        ORDER BY id ASC
+                        LIMIT 1;
+                    """)
+                return cur.fetchone()
+        finally:
+            conn.close()
+
+    @staticmethod
     def create_user(username: str, password_hash: str, full_name: str, role: str, email: Optional[str], phone: Optional[str]) -> int:
         conn = get_connection()
         try:

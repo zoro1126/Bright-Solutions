@@ -25,12 +25,20 @@ class TestGroup5Endpoints(unittest.TestCase):
                 cur.execute("SELECT id FROM patients WHERE uhid = 'UHID-GRP5-TEST';")
                 cls.patient_id = cur.fetchone()["id"]
 
-                # 2. Insert test visit for Dr. Kulkarni (doctor_id=2)
+                cur.execute("SELECT id FROM users WHERE role = 'DOCTOR' AND is_active = 1 LIMIT 1;")
+                doc_row = cur.fetchone()
+                cls.doctor_id = doc_row["id"] if doc_row else 16
+
+                cur.execute("SELECT id FROM users WHERE role = 'RECEPTIONIST' AND is_active = 1 LIMIT 1;")
+                rec_row = cur.fetchone()
+                cls.receptionist_id = rec_row["id"] if rec_row else 17
+
+                # 2. Insert test visit
                 cur.execute("""
                     INSERT INTO visits (patient_id, doctor_id, receptionist_id, queue_token, status, chief_complaint)
-                    VALUES (%s, 2, 1, 'Q-G5-01', 'TRIAGED', 'Severe morning throbbing headaches, high fever, and knee pain')
+                    VALUES (%s, %s, %s, 'Q-G5-01', 'TRIAGED', 'Severe morning throbbing headaches, high fever, and knee pain')
                     ON DUPLICATE KEY UPDATE status='TRIAGED';
-                """, (cls.patient_id,))
+                """, (cls.patient_id, cls.doctor_id, cls.receptionist_id))
                 cls.visit_id = cur.lastrowid
                 if cls.visit_id == 0:
                     cur.execute("SELECT id FROM visits WHERE queue_token = 'Q-G5-01';")
@@ -70,7 +78,7 @@ class TestGroup5Endpoints(unittest.TestCase):
 
     def test_01_doctor_queue(self):
         """GET /api/doctor/queue returns waiting encounters with triage summary"""
-        res = self.client.get("/api/doctor/queue?doctor_id=2")
+        res = self.client.get(f"/api/doctor/queue?doctor_id={self.doctor_id}")
         self.assertEqual(res.status_code, 200)
         data = res.json()
         self.assertIn("queue", data)
@@ -175,7 +183,7 @@ class TestGroup5Endpoints(unittest.TestCase):
         dolo_id = res_dolo.json()["drugs"][0]["id"]
 
         rx_payload = {
-            "doctor_id": 2,
+            "doctor_id": self.doctor_id,
             "general_instructions": "Take medicines with water after breakfast.",
             "status": "FINALIZED",
             "items": [
@@ -210,7 +218,7 @@ class TestGroup5Endpoints(unittest.TestCase):
 
         # 3. Sign-off encounter
         signoff_payload = {
-            "doctor_id": 2,
+            "doctor_id": self.doctor_id,
             "diagnosis": "Essential Hypertension Stage 2 with Acute Viral Prodrome",
             "conclusion_notes": "Patient started on Amlodipine 5mg OD and symptomatic antipyretic. Advised low sodium diet.",
             "doctor_override_notes": "All alerts acknowledged."

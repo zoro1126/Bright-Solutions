@@ -27,12 +27,20 @@ class TestGroup4Endpoints(unittest.TestCase):
                 cur.execute("SELECT id FROM patients WHERE uhid = 'UHID-GRP4-TEST';")
                 cls.patient_id = cur.fetchone()["id"]
 
+                cur.execute("SELECT id FROM users WHERE role = 'DOCTOR' AND is_active = 1 LIMIT 1;")
+                doc_row = cur.fetchone()
+                cls.doctor_id = doc_row["id"] if doc_row else 16
+
+                cur.execute("SELECT id FROM users WHERE role = 'RECEPTIONIST' AND is_active = 1 LIMIT 1;")
+                rec_row = cur.fetchone()
+                cls.receptionist_id = rec_row["id"] if rec_row else 17
+
                 # 2. Insert test visit
                 cur.execute("""
                     INSERT INTO visits (patient_id, doctor_id, receptionist_id, queue_token, status, chief_complaint)
-                    VALUES (%s, 2, 1, 'Q-G4-99', 'REGISTERED', 'High fever, sore throat and severe knee pain')
+                    VALUES (%s, %s, %s, 'Q-G4-99', 'REGISTERED', 'High fever, sore throat and severe knee pain')
                     ON DUPLICATE KEY UPDATE status='REGISTERED';
-                """, (cls.patient_id,))
+                """, (cls.patient_id, cls.doctor_id, cls.receptionist_id))
                 cls.visit_id = cur.lastrowid or 1
                 if cur.lastrowid == 0:
                     cur.execute("SELECT id FROM visits WHERE queue_token = 'Q-G4-99';")

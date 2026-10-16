@@ -25,12 +25,24 @@ class TestGroup6Endpoints(unittest.TestCase):
                 cur.execute("SELECT id FROM patients WHERE uhid = 'UHID-GRP6-TEST';")
                 cls.patient_id = cur.fetchone()["id"]
 
+                cur.execute("SELECT id FROM users WHERE role = 'DOCTOR' AND is_active = 1 LIMIT 1;")
+                doc_row = cur.fetchone()
+                cls.doctor_id = doc_row["id"] if doc_row else 16
+
+                cur.execute("SELECT id FROM users WHERE role = 'RECEPTIONIST' AND is_active = 1 LIMIT 1;")
+                rec_row = cur.fetchone()
+                cls.receptionist_id = rec_row["id"] if rec_row else 17
+
+                cur.execute("SELECT id FROM users WHERE role = 'CASHIER' AND is_active = 1 LIMIT 1;")
+                cash_row = cur.fetchone()
+                cls.cashier_id = cash_row["id"] if cash_row else 18
+
                 # 2. Insert test visit for Dr. Kulkarni in READY_FOR_BILLING
                 cur.execute("""
                     INSERT INTO visits (patient_id, doctor_id, receptionist_id, queue_token, status, chief_complaint, conclusion_notes, conclusion_signed_at)
-                    VALUES (%s, 2, 1, 'Q-G6-01', 'READY_FOR_BILLING', 'Persistent migraine and palpitations', 'Diagnosed with Migraine. Prescribed SOS analgesics.', NOW())
+                    VALUES (%s, %s, %s, 'Q-G6-01', 'READY_FOR_BILLING', 'Persistent migraine and palpitations', 'Diagnosed with Migraine. Prescribed SOS analgesics.', NOW())
                     ON DUPLICATE KEY UPDATE status='READY_FOR_BILLING', queue_token='Q-G6-01';
-                """, (cls.patient_id,))
+                """, (cls.patient_id, cls.doctor_id, cls.receptionist_id))
                 cls.visit_id = cur.lastrowid
                 if cls.visit_id == 0:
                     cur.execute("SELECT id FROM visits WHERE queue_token = 'Q-G6-01';")
@@ -42,11 +54,11 @@ class TestGroup6Endpoints(unittest.TestCase):
                     VALUES (%s, %s, 'ECG', '12-Lead ECG Strip', '/uploads/test_ecg.pdf', 0.24);
                 """, (cls.visit_id, cls.patient_id))
 
-                # 4. Create a prescription with 2 line items (2 x ₹60 = ₹120)
+                # 4. Create a prescription with 2 line items
                 cur.execute("""
                     INSERT INTO prescriptions (visit_id, doctor_id, general_instructions, status)
-                    VALUES (%s, 2, 'Take medications as directed after meals.', 'FINALIZED');
-                """, (cls.visit_id,))
+                    VALUES (%s, %s, 'Take medications as directed after meals.', 'FINALIZED');
+                """, (cls.visit_id, cls.doctor_id))
                 cls.rx_id = cur.lastrowid
 
                 # Pick 2 formulary drugs
@@ -133,7 +145,7 @@ class TestGroup6Endpoints(unittest.TestCase):
             "payment_mode": "UPI",
             "amount_paid": 154.0,
             "transaction_reference": "UPI-G6-TEST-778899",
-            "cashier_id": 1,
+            "cashier_id": self.cashier_id,
             "notes": "Payment received via PhonePe QR"
         }
         res = self.client.post(f"/api/bills/{bill_id}/payments", json=pay_payload)

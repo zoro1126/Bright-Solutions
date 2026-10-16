@@ -15,8 +15,6 @@ class AnalyticsRepository:
 
                 cur.execute("SELECT COUNT(*) AS cnt FROM visits WHERE DATE(visit_date) = CURDATE();")
                 today_footfall = (cur.fetchone() or {}).get("cnt", 0)
-                if today_footfall == 0:
-                    today_footfall = total_visits
 
                 cur.execute("SELECT COUNT(*) AS cnt FROM visits WHERE status = 'COMPLETED';")
                 completed_count = (cur.fetchone() or {}).get("cnt", 0)
@@ -203,5 +201,23 @@ class AnalyticsRepository:
                     LIMIT %s;
                 """, (limit,))
                 return cur.fetchall()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_avg_throughput_minutes() -> float:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT AVG(TIMESTAMPDIFF(MINUTE, visit_date, conclusion_signed_at)) AS avg_mins
+                    FROM visits
+                    WHERE status IN ('READY_FOR_BILLING', 'COMPLETED')
+                      AND conclusion_signed_at IS NOT NULL
+                      AND conclusion_signed_at >= visit_date;
+                """)
+                row = cur.fetchone()
+                val = row.get("avg_mins") if row else None
+                return round(float(val), 1) if val is not None else 0.0
         finally:
             conn.close()

@@ -153,7 +153,7 @@ class BillingRepository:
         try:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT pi.id, pi.dosage, pi.duration_days, df.brand_name, df.strength, df.dosage_form
+                    SELECT pi.id, pi.dosage, pi.frequency, pi.duration_days, df.brand_name, df.strength, df.dosage_form
                     FROM prescription_items pi
                     JOIN prescriptions p ON p.id = pi.prescription_id
                     JOIN drug_formulary df ON df.id = pi.drug_id
@@ -186,6 +186,21 @@ class BillingRepository:
             with conn.cursor() as cur:
                 cur.execute("SELECT id, username, full_name, role FROM users WHERE id = %s;", (user_id,))
                 return cur.fetchone()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_default_cashier_id() -> Optional[int]:
+        conn = get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id FROM users WHERE role = 'CASHIER' AND is_active = 1 LIMIT 1;")
+                row = cur.fetchone()
+                if row:
+                    return row["id"]
+                cur.execute("SELECT id FROM users WHERE is_active = 1 LIMIT 1;")
+                fallback = cur.fetchone()
+                return fallback["id"] if fallback else None
         finally:
             conn.close()
 

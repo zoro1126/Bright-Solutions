@@ -155,7 +155,9 @@ class BillingService:
 
         txn_ref = req.transaction_reference or f"TXN-{datetime.now().strftime('%Y%m%d%H%M%S')}-{bill_id}"
         now_dt = datetime.now()
-        settling_cashier_id = req.cashier_id or bill["cashier_id"] or 5
+        settling_cashier_id = req.cashier_id or bill.get("cashier_id")
+        if not settling_cashier_id:
+            settling_cashier_id = BillingRepository.get_default_cashier_id() or 1
 
         payment_id = BillingRepository.record_payment_and_close(
             bill_id=bill_id,

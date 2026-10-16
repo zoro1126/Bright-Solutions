@@ -86,8 +86,13 @@ class PatientService:
         loads = PatientRepository.get_active_doctor_queue_loads()
 
         if not loads:
-            # Fallback if no active doctors found in db
-            return 2, "Dr. Vikram Kulkarni, MD"
+            active_docs = UserRepository.list_active_doctors()
+            if active_docs:
+                return active_docs[0]["id"], active_docs[0]["full_name"]
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No active physicians found in system to assign patient encounter."
+            )
 
         # Check for doctors matching specialty keywords in their name/profile
         specialty_keywords = specialty.lower().split()
@@ -334,7 +339,15 @@ class PatientService:
             phone_p = req.emergency_contact_phone or ""
             em_contact = f"{name_p} ({phone_p})".strip()
 
-        receptionist_id = 1
+        # Dynamic Receptionist Resolution (no hardcoded user IDs)
+        receptionist_id = req.receptionist_id if hasattr(req, "receptionist_id") and req.receptionist_id else None
+        if not receptionist_id:
+            active_rec = UserRepository.get_first_active_by_role("RECEPTIONIST")
+            if active_rec:
+                receptionist_id = active_rec["id"]
+            else:
+                any_staff = UserRepository.get_first_active_by_role()
+                receptionist_id = any_staff["id"] if any_staff else 1
         current_year = datetime.now().year
         patient_count_year = PatientRepository.get_patient_count_for_year(current_year)
         patient_seq = patient_count_year + 1

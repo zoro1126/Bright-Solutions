@@ -122,9 +122,33 @@ DURATION_PATTERN = re.compile(
 )
 
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", message=r".*The component 'matcher' does not have any patterns defined.*")
+from loguru import logger
+logger.disable("PyRuSH")
+import medspacy
+from medspacy.target_matcher import TargetRule
+
+_medspacy_nlp = None
+
+def get_medspacy_nlp():
+    global _medspacy_nlp
+    if _medspacy_nlp is None:
+        nlp = medspacy.load()
+        matcher = nlp.get_pipe("medspacy_target_matcher")
+        rules = []
+        for canonical_name, variants in CLINICAL_SYMPTOM_LEXICON.items():
+            for var in variants:
+                rules.append(TargetRule(literal=var, category="SYMPTOM"))
+        matcher.add(rules)
+        _medspacy_nlp = nlp
+    return _medspacy_nlp
+
+
 class ClinicalNLPParser:
     """
-    Lightweight RegEx + NegEx clinical text parser.
+    Clinical NLP entity extraction and NegEx negation parser powered by MedSpaCy.
     """
 
     @classmethod
@@ -134,14 +158,7 @@ class ClinicalNLPParser:
         return text
 
     @classmethod
-    def extract_symptoms_with_negation(cls, text: Optional[str]) -> Tuple[List[Dict[str, Any]], List[str]]:
-        """
-        Parses text and returns:
-        (affirmed_symptoms, pertinent_negatives)
-        """
-        if not text or not text.strip():
-            return [], []
-
+    def _regex_extract_fallback(cls, text: str, global_duration: Optional[str]) -> Tuple[List[Dict[str, Any]], List[str]]:
         cleaned_text = cls._mask_pseudo_negations(text.strip())
         sentences = re.split(r"[.;\n]+", cleaned_text)
 
@@ -149,21 +166,15 @@ class ClinicalNLPParser:
         negated: List[str] = []
         seen_canonical: Set[str] = set()
 
-        # Extract duration if present across the text
-        dur_match = DURATION_PATTERN.search(text)
-        global_duration = dur_match.group(0) if dur_match else None
-
         for sentence in sentences:
             sentence_clean = sentence.strip()
             if not sentence_clean:
                 continue
 
-            # Identify severity in this sentence
             sentence_lower = sentence_clean.lower()
             detected_severity = [s for s in SEVERITY_KEYWORDS if re.search(rf"\b{s}\b", sentence_lower)]
             primary_severity = detected_severity[0] if detected_severity else None
 
-            # Split sentence by reversal terminators (e.g. "but", "however", "except")
             terminator_pattern = "|".join([rf"{t}" for t in SCOPE_TERMINATORS])
             clauses = re.split(rf"({terminator_pattern})", sentence_clean, flags=re.IGNORECASE)
 
@@ -174,18 +185,14 @@ class ClinicalNLPParser:
                     continue
                 part_lower = part_clean.lower()
 
-                # If this part is a scope terminator, reset active negation
                 if any(re.match(rf"^{t}$", part_lower) for t in SCOPE_TERMINATORS):
                     active_negation = False
                     continue
 
-                # Check if this part contains an explicit affirmative trigger (e.g. "reports X", "complains of X")
                 if re.search(r"\b(reports?|reported|complains?\s+of|presented\s+with|presents\s+with|has|developed)\b", part_lower):
                     active_negation = False
 
-                # Check pre-negation trigger
                 has_pre_neg = any(re.search(trig, part_lower) for trig in PRE_NEGATION_TRIGGERS)
-                # Check post-negation trigger
                 has_post_neg = any(re.search(trig, part_lower) for trig in POST_NEGATION_TRIGGERS)
 
                 if has_pre_neg:
@@ -211,6 +218,66 @@ class ClinicalNLPParser:
                             break
 
         return affirmed, negated
+
+    @classmethod
+    def extract_symptoms_with_negation(cls, text: Optional[str]) -> Tuple[List[Dict[str, Any]], List[str]]:
+        """
+        Parses clinical text and returns:
+        (affirmed_symptoms, pertinent_negatives)
+        Uses MedSpaCy's ConText algorithm for clinical negation scope analysis.
+        """
+        if not text or not text.strip():
+            return [], []
+
+        dur_match = DURATION_PATTERN.search(text)
+        global_duration = dur_match.group(0) if dur_match else None
+
+        try:
+            nlp = get_medspacy_nlp()
+            doc = nlp(text.strip())
+
+            affirmed: List[Dict[str, Any]] = []
+            negated: List[str] = []
+            seen_canonical: Set[str] = set()
+
+            var_to_canonical = {}
+            for can, vars_list in CLINICAL_SYMPTOM_LEXICON.items():
+                for v in vars_list:
+                    var_to_canonical[v.lower()] = can
+
+            for ent in doc.ents:
+                ent_lower = ent.text.lower()
+                canonical_name = var_to_canonical.get(ent_lower)
+                if not canonical_name:
+                    for v_key, c_val in var_to_canonical.items():
+                        if v_key in ent_lower or ent_lower in v_key:
+                            canonical_name = c_val
+                            break
+                if not canonical_name:
+                    canonical_name = ent_lower
+
+                if canonical_name in seen_canonical:
+                    continue
+                seen_canonical.add(canonical_name)
+
+                sent_text = ent.sent.text.lower() if ent.sent else text.lower()
+                detected_severity = [s for s in SEVERITY_KEYWORDS if re.search(rf"\b{s}\b", sent_text)]
+                primary_severity = detected_severity[0] if detected_severity else None
+
+                is_neg = getattr(ent._, "is_negated", False)
+                if is_neg:
+                    negated.append(canonical_name)
+                else:
+                    affirmed.append({
+                        "symptom": canonical_name,
+                        "mention": ent.text,
+                        "severity": primary_severity,
+                        "duration": global_duration
+                    })
+
+            return affirmed, negated
+        except Exception:
+            return cls._regex_extract_fallback(text, global_duration)
 
 
 class ClinicalNarrativeSynthesizer:

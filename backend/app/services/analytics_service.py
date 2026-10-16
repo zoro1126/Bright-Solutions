@@ -40,7 +40,7 @@ class AnalyticsService:
                 "ready_for_billing": kpis["ready_for_billing"],
                 "in_consultation": kpis["in_consultation"],
                 "gross_revenue": rev_info["gross_revenue"],
-                "avg_throughput_minutes": 25.0
+                "avg_throughput_minutes": AnalyticsRepository.get_avg_throughput_minutes()
             },
             "revenue_by_mode": rev_info["revenue_by_mode"],
             "doctor_workload": doctor_workload,
