@@ -5,6 +5,14 @@ class LoginRequest(BaseModel):
     username: str = Field(..., min_length=1, description="Staff login username")
     password: str = Field(..., min_length=1, description="Staff account password")
 
+class RegisterUserRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50, description="Unique login identifier")
+    password: str = Field(..., min_length=6, max_length=128, description="Cleartext password (hashed with bcrypt)")
+    full_name: str = Field(..., min_length=2, max_length=100, description="Full staff name")
+    role: str = Field("RECEPTIONIST", description="Staff role: RECEPTIONIST, DOCTOR, CASHIER, or ADMIN")
+    email: Optional[str] = Field(None, description="Optional email address")
+    phone: Optional[str] = Field(None, description="Optional contact phone number")
+
 class CreateUserRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=50, description="Unique login identifier")
     password: Optional[str] = Field("Clinic@123", min_length=6, description="Cleartext password (hashed with bcrypt)")
@@ -26,10 +34,18 @@ class UserResponse(BaseModel):
     phone: Optional[str] = None
     is_active: bool
 
-class LoginResponse(BaseModel):
+class AuthResponse(BaseModel):
     token: str
+    token_type: str = "Bearer"
+    expires_in: int = 86400
     user: UserResponse
     message: str
+
+class LoginResponse(AuthResponse):
+    pass
+
+class RegisterResponse(AuthResponse):
+    pass
 
 class LogoutResponse(BaseModel):
     message: str

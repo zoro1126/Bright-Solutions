@@ -2,11 +2,70 @@ from typing import Dict, Any, List, Optional
 from fastapi import HTTPException, status
 from app.repositories.user_repo import UserRepository
 from app.services.audit_service import AuditService
-from app.core.security import verify_password, hash_password
-from app.schemas.auth import LoginRequest, CreateUserRequest, ChangePasswordRequest
+from app.core.security import verify_password, hash_password, generate_encrypted_bearer_token
+from app.schemas.auth import LoginRequest, RegisterUserRequest, CreateUserRequest, ChangePasswordRequest
 
 
 class AuthService:
+    @staticmethod
+    def register(req: RegisterUserRequest) -> Dict[str, Any]:
+        clean_username = req.username.strip().lower()
+        clean_role = (req.role or "RECEPTIONIST").strip().upper()
+
+        if clean_role not in ("RECEPTIONIST", "DOCTOR", "CASHIER", "ADMIN"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid staff role '{req.role}'. Must be one of: RECEPTIONIST, DOCTOR, CASHIER, ADMIN."
+            )
+
+        existing = UserRepository.get_by_username(clean_username)
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Staff user with username '{req.username.strip()}' already exists."
+            )
+
+        raw_password = req.password.strip()
+        pwd_hash = hash_password(raw_password)
+
+        user_id = UserRepository.create_user(
+            username=clean_username,
+            password_hash=pwd_hash,
+            full_name=req.full_name.strip(),
+            role=clean_role,
+            email=str(req.email).strip() if req.email else None,
+            phone=str(req.phone).strip() if req.phone else None
+        )
+
+        user = {
+            "id": user_id,
+            "username": clean_username,
+            "full_name": req.full_name.strip(),
+            "role": clean_role,
+            "email": str(req.email).strip() if req.email else None,
+            "phone": str(req.phone).strip() if req.phone else None,
+            "is_active": True
+        }
+
+        token = generate_encrypted_bearer_token(user)
+
+        AuditService.log(
+            category="USER_AUTH",
+            severity="INFO",
+            details=f"Registered new staff user '{clean_username}' ({clean_role}) with encrypted Bearer token",
+            user_id=user_id,
+            user_name=clean_username,
+            user_role=clean_role
+        )
+
+        return {
+            "token": token,
+            "token_type": "Bearer",
+            "expires_in": 86400,
+            "user": user,
+            "message": f"Account for {user['full_name']} registered and authenticated successfully!"
+        }
+
     @staticmethod
     def login(req: LoginRequest) -> Dict[str, Any]:
         user = UserRepository.get_by_username(req.username)
@@ -25,9 +84,11 @@ class AuthService:
 
         # Never leak password hash in API response
         user_safe = {k: v for k, v in user.items() if k != "password_hash"}
-        token = f"clinicos_session_{user['id']}_{user['role'].lower()}"
+        token = generate_encrypted_bearer_token(user_safe)
         return {
             "token": token,
+            "token_type": "Bearer",
+            "expires_in": 86400,
             "user": user_safe,
             "message": f"Welcome back, {user['full_name']}!"
         }

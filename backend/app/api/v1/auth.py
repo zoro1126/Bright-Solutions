@@ -1,16 +1,31 @@
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.services.auth_service import AuthService
-from app.schemas.auth import LoginRequest, ChangePasswordRequest
+from app.schemas.auth import (
+    LoginRequest,
+    RegisterUserRequest,
+    RegisterResponse,
+    LoginResponse,
+    ChangePasswordRequest
+)
 from app.core.security import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-@router.post("/login")
+@router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
+def register(req: RegisterUserRequest):
+    """
+    FEAT-AUTH-01: Registers a new clinic personnel / staff account, securely hashes
+    the password with 12-round bcrypt, persists the user in MySQL, and returns an encrypted
+    AES-128-CBC + HMAC-SHA256 authenticated Bearer token.
+    """
+    return AuthService.register(req)
+
+@router.post("/login", response_model=LoginResponse)
 def login(req: LoginRequest):
     """
     Authenticates clinic personnel by username and password.
-    Returns session token and safe user profile (zero password hash leakage).
+    Returns encrypted Bearer token and safe user profile (zero password hash leakage).
     """
     return AuthService.login(req)
 
