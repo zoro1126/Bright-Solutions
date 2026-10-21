@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useState } from 'react';
 import { INITIAL_PATIENTS } from '../utils/mockData';
+import { questionnaire } from '../services/api';
+import { 
+  DEFAULT_QUESTIONNAIRE_ANSWERS,
+  scoreQuestionnaireAnswers, 
+  predictConditionsLocal, 
+  generateRecommendedMedicationsLocal, 
+  mapAnswersToResponses 
+} from '../utils/cdssScorer';
 
 const PatientContext = createContext();
 
@@ -95,11 +103,37 @@ export function PatientProvider({ children }) {
     setPatients(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
   };
 
-  // Submit questionnaire and trigger ML insight generation
-  const submitQuestionnaire = (patientId, responses) => {
+  // Submit questionnaire and trigger CDSS insight generation
+  const submitQuestionnaire = async (patientId, submissionData) => {
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const fullTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    const patientObj = patients.find(p => p.id === patientId);
+
+    // Extract standardized 20 questions or adapt legacy payload
+    let answersToUse = submissionData?.answers;
+    let voiceNotesToUse = submissionData?.voiceNotes || '';
+    let allergiesToUse = submissionData?.allergies || [];
+    let comorbiditiesToUse = submissionData?.comorbidities || [];
+    let chiefComplaintToUse = submissionData?.chiefComplaint || patientObj?.chiefComplaint || 'General Consultation';
+    let finalResponses = submissionData?.responses;
+
+    if (!answersToUse) {
+      // Legacy fallback
+      answersToUse = { ...DEFAULT_QUESTIONNAIRE_ANSWERS };
+      finalResponses = submissionData;
+    }
+
+    if (!finalResponses) {
+      finalResponses = mapAnswersToResponses(
+        answersToUse, 
+        voiceNotesToUse, 
+        allergiesToUse, 
+        comorbiditiesToUse, 
+        chiefComplaintToUse
+      );
+    }
 
     // Step 1: Set questionnaire as completed & status to generating
     setPatients(prev => prev.map(p => {
@@ -110,109 +144,185 @@ export function PatientProvider({ children }) {
         questionnaire: {
           completed: true,
           completedAt: timeStr,
-          responses
+          answers: answersToUse,
+          voiceNotes: voiceNotesToUse,
+          responses: finalResponses
         }
       };
     }));
 
-    addToast(`Questionnaire submitted. AI model analysis in progress...`, 'info');
+    addToast(`Questionnaire submitted. Running CDSS clinical rules...`, 'info');
 
-    // Step 2: Simulate ML / DL model inference (takes 1.8 seconds)
-    setTimeout(() => {
-      setPatients(prev => prev.map(p => {
-        if (p.id !== patientId) return p;
+    // Step 2: Call backend API if available, or fall back to local deterministic CDSS
+    const visitId = patientObj?.visit_id || patientObj?.visitId || (typeof patientId === 'number' ? patientId : parseInt(String(patientId).replace(/\D/g, ''), 10) || 1);
 
-        // Determine dynamic risk flags based on MCQ choices
-        const hasPriorChronic = responses.priorCancer && !responses.priorCancer.includes('No Prior');
-        const hasSignificantWeightLoss = responses.weightLoss && responses.weightLoss.includes('Significant');
-        const hasSmokingRisk = responses.smokingStatus && (responses.smokingStatus.includes('Active') || responses.smokingStatus.includes('Heavy'));
-        const hasFamilyHistory = responses.familyHistory && !responses.familyHistory.includes('No Known');
-        const hasSeverePain = responses.painScore && responses.painScore.includes('Severe');
-        const hasBSymptoms = responses.feverSweats && responses.feverSweats.includes('Drenching');
+    let recordedAnswers = answersToUse;
+    let clinicalScores = null;
+    let predictedConditions = [];
+    let recommendedMedications = [];
 
-        const flags = [];
-        let riskLevel = "LOW";
-        let confidenceScore = 88;
+    try {
+      const payload = {
+        patient_id: patientObj?.patient_id || patientObj?.patientId || visitId,
+        answers: answersToUse,
+        voice_notes: voiceNotesToUse || null,
+        allergies: allergiesToUse,
+        comorbidities: comorbiditiesToUse,
+        chief_complaint: chiefComplaintToUse
+      };
+      const apiResult = await questionnaire.submit(visitId, payload);
+      if (apiResult && apiResult.clinical_scores) {
+        recordedAnswers = apiResult.recorded_answers || answersToUse;
+        clinicalScores = apiResult.clinical_scores;
+        predictedConditions = apiResult.predicted_conditions || [];
+        recommendedMedications = apiResult.recommended_medications || [];
+      }
+    } catch (apiErr) {
+      // Offline / mock fallback using local CDSS engine
+      console.warn('Backend API submission skipped, running local CDSS engine:', apiErr.message);
+    }
 
-        if (hasPriorChronic) {
-          flags.push({
-            label: "Chronic Comorbidity Management Alert",
-            severity: "HIGH",
-            note: `History: ${responses.cancerType || 'diagnosed medical conditions'}. Treatments: ${(responses.priorTreatments || []).join(', ') || 'ongoing'}. Close organ monitoring indicated.`
-          });
-          riskLevel = "HIGH";
-          confidenceScore = 92;
-        }
+    // If API did not return scores, compute via local CDSS engine
+    if (!clinicalScores) {
+      clinicalScores = scoreQuestionnaireAnswers(answersToUse, allergiesToUse, comorbiditiesToUse);
+      predictedConditions = predictConditionsLocal(answersToUse, clinicalScores, chiefComplaintToUse);
+      recommendedMedications = generateRecommendedMedicationsLocal(clinicalScores);
+    }
 
-        if (hasSignificantWeightLoss || hasBSymptoms) {
-          flags.push({
-            label: "Constitutional Metabolic Red Flag",
-            severity: "HIGH",
-            note: `${hasSignificantWeightLoss ? 'Significant unintentional weight loss' : ''} ${hasBSymptoms ? 'Drenching night sweats' : ''}. Requires urgent diagnostic workup.`
-          });
-          riskLevel = "HIGH";
-          confidenceScore = 89;
-        }
+    // Build risk flags and CDSS insights
+    const flags = [];
+    let riskLevel = "LOW";
+    let confidenceScore = 90;
 
-        if (hasSmokingRisk) {
-          flags.push({
-            label: "Cardiovascular & Respiratory Risk (Tobacco)",
-            severity: "HIGH",
-            note: `Tobacco use history: ${responses.smokingStatus}. Correlates with elevated cardiovascular and airway disease risk.`
-          });
-          if (riskLevel !== "HIGH") riskLevel = "MEDIUM";
-        }
+    if (clinicalScores.red_flag_emergency) {
+      flags.push({
+        label: "CRITICAL RED FLAG EMERGENCY",
+        severity: "CRITICAL",
+        note: "Immediate physician resuscitation required: acute emergency danger signs reported (q15)."
+      });
+      riskLevel = "HIGH";
+      confidenceScore = 98;
+    }
 
-        if (hasFamilyHistory) {
-          flags.push({
-            label: "Familial Cardiovascular / Metabolic Clustering",
-            severity: "MEDIUM",
-            note: `${responses.familyHistory}. Family conditions: ${(responses.familyTumors || []).join(', ') || 'Specified'}. Preventive risk scoring advised.`
-          });
-          if (riskLevel !== "HIGH") riskLevel = "MEDIUM";
-        }
+    if (clinicalScores.phq2_positive) {
+      flags.push({
+        label: "Major Depression Screen Positive (PHQ-2)",
+        severity: "HIGH",
+        note: `PHQ-2 score ${clinicalScores.phq2_score}/6 >= 3. Positive screen indicates elevated clinical sensitivity for depressive disorder (ICD-10 F32.9). Full PHQ-9 advised.`
+      });
+      if (riskLevel !== "HIGH") riskLevel = "MEDIUM";
+      confidenceScore = Math.max(confidenceScore, 92);
+    }
 
-        if (hasSeverePain) {
-          flags.push({
-            label: "Acute Analgesia & Pain Stabilization Required",
-            severity: "HIGH",
-            note: "Patient reports severe/excruciating pain score (7-10/10). Immediate physician review and analgesic titration needed."
-          });
-        }
+    if (clinicalScores.gad2_positive) {
+      flags.push({
+        label: "Generalized Anxiety Screen Positive (GAD-2)",
+        severity: "HIGH",
+        note: `GAD-2 score ${clinicalScores.gad2_score}/6 >= 3. Meets threshold for generalized anxiety screening (ICD-10 F41.1). GAD-7 assessment advised.`
+      });
+      if (riskLevel !== "HIGH") riskLevel = "MEDIUM";
+      confidenceScore = Math.max(confidenceScore, 91);
+    }
 
-        if (flags.length === 0) {
-          flags.push({
-            label: "Routine Clinical Triage",
-            severity: "LOW",
-            note: "No acute critical red flags detected. Standard outpatient clinical consultation recommended."
-          });
-          riskLevel = "LOW";
-          confidenceScore = 94;
-        }
+    if (clinicalScores.peg3_significant_pain) {
+      flags.push({
+        label: "Significant Pain Interference (PEG-3)",
+        severity: "HIGH",
+        note: `PEG-3 average score: ${clinicalScores.peg3_average}/10 (>= 4.0). Substantial pain interference with enjoyment and general activity.`
+      });
+      if (riskLevel !== "HIGH") riskLevel = "MEDIUM";
+    }
 
-        const generatedInsights = {
-          generatedAt: fullTime,
-          modelVersion: "ClinicalInsight-v2.1",
-          overallRisk: riskLevel,
-          confidence: confidenceScore,
-          riskFlags: flags,
-          symptomSummary: `${p.age}yo ${p.gender.toLowerCase()} presenting with ${responses.chiefComplaint} (${responses.primarySite || 'General'}, duration: ${responses.durationMonths || '1-3 months'}). Functional status: ${responses.ecogPerformance || 'ECOG 1'}.`,
-          recommendedInvestigations: [
-            { id: `inv-${Date.now()}-1`, name: "12-Lead Electrocardiogram (ECG) & 2D Echo", urgency: riskLevel === 'HIGH' ? 'Urgent' : 'Routine' },
-            { id: `inv-${Date.now()}-2`, name: "Comprehensive Metabolic Panel (HbA1c, LFT, KFT)", urgency: 'Routine' },
-            { id: `inv-${Date.now()}-3`, name: "High-Resolution Chest Radiography / USG Abdomen", urgency: 'Routine' }
-          ]
-        };
+    if (answersToUse.q12 === 2) {
+      flags.push({
+        label: "Constitutional Metabolic Red Flag",
+        severity: "HIGH",
+        note: "Significant unintentional weight loss (> 5 kg) in past 6 months. High metabolic red flag for wasting / occult disease."
+      });
+      riskLevel = "HIGH";
+      confidenceScore = Math.max(confidenceScore, 93);
+    }
 
-        return {
-          ...p,
-          status: "INSIGHTS_READY",
-          mlInsights: generatedInsights
-        };
-      }));
+    if (clinicalScores.reported_allergies && clinicalScores.reported_allergies.length > 0) {
+      flags.push({
+        label: "Drug Hypersensitivity Alert",
+        severity: "HIGH",
+        note: `Documented hypersensitivity: ${clinicalScores.reported_allergies.join(', ')}. Contraindicated generic medications masked in prescription engine.`
+      });
+    }
 
-      addToast(`✨ AI Insights generated & pushed to Doctor Dashboard for ${patients.find(p => p.id === patientId)?.fullName || 'patient'}!`, 'success');
-    }, 1800);
+    if (answersToUse.q18 >= 2) {
+      flags.push({
+        label: "Cardiovascular & Respiratory Risk (Tobacco)",
+        severity: "HIGH",
+        note: `Active tobacco use history (q18). Correlates with elevated cardiovascular and chronic airway disease risk.`
+      });
+      if (riskLevel === "LOW") riskLevel = "MEDIUM";
+    }
+
+    if (answersToUse.q20 > 0) {
+      flags.push({
+        label: "Familial Cardiovascular / Metabolic Clustering",
+        severity: "MEDIUM",
+        note: "Familial clustering in first-degree relatives reported (q20). Preventive cardiometabolic screening indicated."
+      });
+      if (riskLevel === "LOW") riskLevel = "MEDIUM";
+    }
+
+    if (flags.length === 0) {
+      flags.push({
+        label: "Routine Clinical Triage",
+        severity: "LOW",
+        note: "No acute critical red flags detected. Standard outpatient clinical consultation recommended."
+      });
+      riskLevel = "LOW";
+      confidenceScore = 95;
+    }
+
+    const generatedInsights = {
+      generatedAt: fullTime,
+      modelVersion: "Deterministic-CDSS-v2.2",
+      overallRisk: riskLevel,
+      confidence: confidenceScore,
+      riskFlags: flags,
+      scores: clinicalScores,
+      predictedConditions,
+      recommendedMedications,
+      symptomSummary: `${patientObj?.age || 35}yo ${(patientObj?.gender || 'patient').toLowerCase()} presenting with ${finalResponses.chiefComplaint} (${finalResponses.primarySite || 'General'}, duration: ${finalResponses.durationMonths || '< 24h'}). Functional status: ${finalResponses.ecogPerformance || 'ECOG 1'}.`,
+      recommendedInvestigations: [
+        { id: `inv-${Date.now()}-1`, name: "12-Lead Electrocardiogram (ECG) & 2D Echo", urgency: riskLevel === 'HIGH' ? 'Urgent' : 'Routine' },
+        { id: `inv-${Date.now()}-2`, name: "Comprehensive Metabolic Panel (HbA1c, LFT, KFT)", urgency: 'Routine' },
+        { id: `inv-${Date.now()}-3`, name: "High-Resolution Chest Radiography / USG Abdomen", urgency: 'Routine' }
+      ]
+    };
+
+    // Step 3: Update patient state
+    setPatients(prev => prev.map(p => {
+      if (p.id !== patientId) return p;
+      return {
+        ...p,
+        status: "INSIGHTS_READY",
+        questionnaire: {
+          completed: true,
+          completedAt: timeStr,
+          answers: recordedAnswers,
+          scores: clinicalScores,
+          predictedConditions,
+          recommendedMedications,
+          allergies: clinicalScores.reported_allergies,
+          comorbidities: clinicalScores.reported_comorbidities,
+          voiceNotes: voiceNotesToUse,
+          responses: finalResponses
+        },
+        mlInsights: generatedInsights
+      };
+    }));
+
+    if (clinicalScores.red_flag_emergency) {
+      addToast(`⚠️ CRITICAL RED FLAG: Emergency alert triggered for physician!`, 'error');
+    } else {
+      addToast(`✨ CDSS Insights generated & pushed to Doctor Dashboard!`, 'success');
+    }
   };
 
   // Quick stats
