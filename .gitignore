@@ -61,6 +61,7 @@ scratch/
 .DS_Store
 Thumbs.db
 docs/trash/
+demo_media/
 backend/tests/reports
 .idea/
 .vscode/
