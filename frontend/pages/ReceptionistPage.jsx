@@ -21,6 +21,7 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
   const [isQuestionnaireOpen, setIsQuestionnaireOpen] = useState(false);
   const [activeQuestionnairePatient, setActiveQuestionnairePatient] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [detailsPatient, setDetailsPatient] = useState(null);
   const [slipModalPatient, setSlipModalPatient] = useState(null);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
@@ -144,7 +145,10 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
                 <PatientQueue
                   onOpenRegister={() => setIsRegisterOpen(true)}
                   onOpenQuestionnaire={handleOpenQuestionnaire}
-                  onOpenPatientDetails={() => setIsDetailsOpen(true)}
+                  onOpenPatientDetails={(p) => {
+                    setDetailsPatient(p);
+                    setIsDetailsOpen(true);
+                  }}
                   externalFilter={activeNavTab === 'intake' || activeNavTab === 'register' ? 'queue' : activeNavTab}
                   onFilterChange={(tabId) => setActiveNavTab(tabId)}
                 />
@@ -164,7 +168,11 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
       {/* Patient Details Drawer Modal */}
       <PatientDetailsDrawer
         isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
+        patient={detailsPatient}
+        onClose={() => {
+          setIsDetailsOpen(false);
+          setDetailsPatient(null);
+        }}
         onOpenQuestionnaire={handleOpenQuestionnaire}
         onOpenDoctorWorkspace={() => onSwitchRole && onSwitchRole('doctor')}
       />

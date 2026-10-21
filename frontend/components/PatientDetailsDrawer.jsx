@@ -35,8 +35,8 @@ export default function PatientDetailsDrawer({
 
   if (!isOpen || !p) return null;
 
-  const isQuestionnaireDone = p.questionnaire?.completed;
-  const hasInsights = p.status === 'INSIGHTS_READY' && p.mlInsights;
+  const isQuestionnaireDone = Boolean(p.questionnaire?.completed && p.questionnaire?.responses);
+  const hasInsights = p.status === 'INSIGHTS_READY' && p.mlInsights && Array.isArray(p.mlInsights?.riskFlags);
 
   return (
     <div className="modal-overlay m3-dialog-backdrop" onClick={onClose}>
@@ -260,13 +260,13 @@ export default function PatientDetailsDrawer({
               )}
             </div>
 
-            {p.questionnaire.status === 'PENDING' ? (
+            {!isQuestionnaireDone ? (
               <div className="m3-intake-pending-card">
                 <p style={{ fontWeight: 700, color: '#92400e', fontSize: '13px' }}>
                   Intake Questionnaire Not Yet Submitted
                 </p>
                 <p style={{ fontSize: '12px', color: '#b45309', margin: '4px 0 14px' }}>
-                  Administer standardized MCQ intake to capture oncology history and baseline symptoms for AI triage.
+                  Administer standardized 20-question intake battery to capture clinical history and baseline symptoms for CDSS triage.
                 </p>
                 <button
                   className="m3-btn m3-btn-filled"
@@ -282,17 +282,17 @@ export default function PatientDetailsDrawer({
                 <div className="m3-intake-complaint-box">
                   <div className="m3-intake-complaint-meta">
                     <span className="m3-intake-site-chip">
-                      {p.questionnaire.responses.primarySite || 'General'}
+                      {p.questionnaire?.responses?.primarySite || 'General'}
                     </span>
                     <span className="m3-intake-duration-chip">
-                      {p.questionnaire.responses.durationMonths}
+                      {p.questionnaire?.responses?.durationMonths || '< 24 Hours'}
                     </span>
                     <span className="m3-intake-time">
-                      {p.questionnaire.completedAt}
+                      {p.questionnaire?.completedAt || 'Just now'}
                     </span>
                   </div>
                   <div className="m3-intake-complaint-body">
-                    "{p.questionnaire.responses.chiefComplaint}"
+                    "{p.questionnaire?.responses?.chiefComplaint || p.chiefComplaint || 'Clinical Consultation'}"
                   </div>
                 </div>
 
