@@ -2,6 +2,8 @@ from typing import List, Dict, Any, Optional
 from fastapi import HTTPException, status
 from app.repositories.cdss_repo import CDSSRepository
 from app.repositories.patient_repo import PatientRepository
+from app.repositories.questionnaire_repo import QuestionnaireRepository
+from app.core.cdss_engine import score_questionnaire_responses
 from app.schemas.cdss import InsightReviewRequest
 
 class CDSSService:
@@ -132,6 +134,50 @@ class CDSSService:
                 "description": f"Patient BMI {bmi} kg/m² exceeds 30.0 kg/m² threshold.",
                 "recommendation": "Consider screening for metabolic syndrome, lipid profile, and HbA1c testing."
             })
+
+        # Rule 6: Intake Questionnaire Clinical Screening
+        q_row = QuestionnaireRepository.get_by_visit_id(visit_id)
+        if q_row:
+            answers = q_row.get("answers")
+            if not isinstance(answers, dict):
+                answers = {f"q{i}": q_row[f"q{i}"] for i in range(1, 21) if q_row.get(f"q{i}") is not None}
+            q_scores = score_questionnaire_responses(answers)
+            if q_scores.get("red_flag_emergency"):
+                rules.append({
+                    "rule_code": "RULE_RED_FLAG_EMERGENCY",
+                    "severity_level": "CRITICAL",
+                    "category": "VITALS",
+                    "title": "Immediate Red-Flag Triage Warning",
+                    "description": "Patient intake reported acute critical warning symptoms (chest pain, dyspnea, or neurological deficit).",
+                    "recommendation": "Perform immediate bedside physician assessment, check continuous vitals, and prepare emergency ECG/resuscitation."
+                })
+            if q_scores.get("phq2_positive"):
+                rules.append({
+                    "rule_code": "RULE_PHQ2_DEPRESSION",
+                    "severity_level": "WARNING",
+                    "category": "GUIDELINE",
+                    "title": "Positive Depression Screen (PHQ-2 >= 3)",
+                    "description": f"Patient scored {q_scores.get('phq2_score')}/6 on intake depression screen (anhedonia/depressed mood).",
+                    "recommendation": "Administer full PHQ-9 diagnostic questionnaire. Evaluate for clinical depression and screen for active suicidal ideation."
+                })
+            if q_scores.get("gad2_positive"):
+                rules.append({
+                    "rule_code": "RULE_GAD2_ANXIETY",
+                    "severity_level": "INFO",
+                    "category": "GUIDELINE",
+                    "title": "Positive Anxiety Screen (GAD-2 >= 3)",
+                    "description": f"Patient scored {q_scores.get('gad2_score')}/6 on intake generalized anxiety screen.",
+                    "recommendation": "Consider formal GAD-7 evaluation. Assess for panic triggers, somatic anxiety, or concurrent insomnia."
+                })
+            if q_scores.get("peg3_significant_pain"):
+                rules.append({
+                    "rule_code": "RULE_PEG3_SIGNIFICANT_PAIN",
+                    "severity_level": "WARNING",
+                    "category": "VITALS",
+                    "title": "Significant Pain Impact (PEG-3 >= 4.0)",
+                    "description": f"Patient reports high pain intensity & life interference (average score {q_scores.get('peg3_average')}/10).",
+                    "recommendation": "Prescribe multi-modal analgesia (Paracetamol + safe NSAID/weak opioid). Assess physical functional limitations."
+                })
 
         # Persist and return refreshed insights
         return CDSSRepository.sync_insights(visit_id, rules)

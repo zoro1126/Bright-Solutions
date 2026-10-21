@@ -29,10 +29,12 @@ class PrescriptionService:
 
         # Retrieve patient allergies from questionnaire if available
         q_row = QuestionnaireRepository.get_by_visit_id(visit_id) or {}
-        q_scores = score_questionnaire_responses(q_row)
+        q_answers = q_row.get("answers") or q_row
+        q_scores = score_questionnaire_responses(q_answers)
         patient_allergies = q_scores.get("reported_allergies", [])
 
         items_for_eval = []
+        unrecognized_ids = []
         for it in items:
             drug_id = getattr(it, "drug_id", None) or (it.get("drug_id") if isinstance(it, dict) else None)
             if drug_id:
@@ -45,11 +47,16 @@ class PrescriptionService:
                         "frequency": getattr(it, "frequency", None) or (it.get("frequency") if isinstance(it, dict) else "1-0-0"),
                         "dosage": getattr(it, "dosage", None) or (it.get("dosage") if isinstance(it, dict) else "1 tab")
                     })
+                else:
+                    unrecognized_ids.append(drug_id)
 
-        return DDIEngine.evaluate_prescription_safety(
+        safety_res = DDIEngine.evaluate_prescription_safety(
             prescribed_items=items_for_eval,
             patient_allergies=patient_allergies
         )
+        if unrecognized_ids:
+            safety_res["unrecognized_drug_ids"] = unrecognized_ids
+        return safety_res
 
     @staticmethod
     def create_prescription(visit_id: int, req: PrescriptionCreateRequest) -> Dict[str, Any]:
@@ -60,6 +67,11 @@ class PrescriptionService:
                 detail=f"Visit encounter with ID {visit_id} not found."
             )
 
+        if visit["status"] in ("READY_FOR_BILLING", "COMPLETED"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot author prescription for a visit in '{visit['status']}' state. Consultation is already signed off and locked."
+            )
         if visit["status"] == "CANCELLED":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -73,7 +85,8 @@ class PrescriptionService:
 
         # 1. Fetch drug details and run DDI / Safety Analysis
         q_row = QuestionnaireRepository.get_by_visit_id(visit_id) or {}
-        q_scores = score_questionnaire_responses(q_row)
+        q_answers = q_row.get("answers") or q_row
+        q_scores = score_questionnaire_responses(q_answers)
         patient_allergies = q_scores.get("reported_allergies", [])
 
         eval_items = []
