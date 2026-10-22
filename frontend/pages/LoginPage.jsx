@@ -14,7 +14,9 @@ import {
   Mail,
   Building2,
   KeyRound,
-  UserPlus
+  UserPlus,
+  Activity,
+  Pill
 } from 'lucide-react';
 import { auth as authApi } from '../services/api';
 
@@ -23,7 +25,7 @@ export const QUICK_PERSONAS = [
     role: 'receptionist',
     username: 'receptionist',
     displayName: 'Priya Raghavan',
-    title: 'Receptionist',
+    title: 'OPD (Reception)',
     dept: 'Counter 01',
     icon: Users,
     color: '#0284c7',
@@ -37,6 +39,26 @@ export const QUICK_PERSONAS = [
     dept: 'Room 03',
     icon: Stethoscope,
     color: '#15803d',
+    bg: '#dcfce7'
+  },
+  {
+    role: 'nurse',
+    username: 'nurse_mini',
+    displayName: 'Sr. Mini Joseph',
+    title: 'Charge Nurse',
+    dept: 'Ward Station 02',
+    icon: Activity,
+    color: '#0d9488',
+    bg: '#ccfbf1'
+  },
+  {
+    role: 'chemist',
+    username: 'chemist_karthik',
+    displayName: 'Karthik Ramamurthy',
+    title: 'Chief Pharmacist',
+    dept: 'Dispensary 01',
+    icon: Pill,
+    color: '#16a34a',
     bg: '#dcfce7'
   },
   {
@@ -92,6 +114,10 @@ export default function LoginPage({ onLoginSuccess }) {
         const u = userToLogin.toLowerCase();
         if (u.includes('doc') || u.includes('dr_') || u.includes('patel') || u.includes('swami')) {
           inferredRole = 'doctor';
+        } else if (u.includes('nurse') || u.includes('sister') || u.includes('mini') || u.includes('ward')) {
+          inferredRole = 'nurse';
+        } else if (u.includes('chem') || u.includes('pharm') || u.includes('karthik') || u.includes('dispensary')) {
+          inferredRole = 'chemist';
         } else if (u.includes('cash') || u.includes('ramesh') || u.includes('bill')) {
           inferredRole = 'cashier';
         } else if (u.includes('admin') || u.includes('mehta') || u.includes('director')) {

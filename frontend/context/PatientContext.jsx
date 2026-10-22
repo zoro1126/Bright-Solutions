@@ -9,12 +9,29 @@ import {
   mapAnswersToResponses 
 } from '../utils/cdssScorer';
 
+import { 
+  INITIAL_WARD_BEDS, 
+  INITIAL_MAR_RECORDS, 
+  INITIAL_NURSING_TASKS, 
+  INITIAL_PHARMACY_QUEUE, 
+  INITIAL_PHARMACY_INVENTORY 
+} from '../utils/nursingAndPharmacyData';
+
 const PatientContext = createContext();
 
 export function PatientProvider({ children }) {
   const [patients, setPatients] = useState(INITIAL_PATIENTS);
   const [selectedPatientId, setSelectedPatientId] = useState("pat-001");
   const [toasts, setToasts] = useState([]);
+
+  // Nursing OS State
+  const [wardBeds, setWardBeds] = useState(INITIAL_WARD_BEDS);
+  const [marRecords, setMarRecords] = useState(INITIAL_MAR_RECORDS);
+  const [nursingTasks, setNursingTasks] = useState(INITIAL_NURSING_TASKS);
+
+  // Pharmacy / Chemist OS State
+  const [pharmacyQueue, setPharmacyQueue] = useState(INITIAL_PHARMACY_QUEUE);
+  const [pharmacyInventory, setPharmacyInventory] = useState(INITIAL_PHARMACY_INVENTORY);
 
   // Toast notification helper
   const addToast = (message, type = 'info') => {
@@ -37,22 +54,74 @@ export function PatientProvider({ children }) {
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+    const isForeign = patientData.patientCategory === 'FOREIGN' || Boolean(patientData.passportNumber);
+    const resolvedCity = patientData.city || (isForeign ? (patientData.stayCityInIndia || 'Chennai') : 'Chennai');
+    const streetAddr = patientData.address || (isForeign ? (patientData.stayAddressInIndia || patientData.stayPlaceName || '') : '');
+    const fullDisplayAddress = streetAddr 
+      ? (resolvedCity && !streetAddr.toLowerCase().includes(resolvedCity.toLowerCase()) ? `${streetAddr}, ${resolvedCity}` : streetAddr)
+      : resolvedCity;
+
     const newPatient = {
       id: `pat-${Date.now()}`,
-      mrn: `MRN-2026-0${nextNum}`,
+      uhid: `UHID-2026-0${nextNum}`,
+      opdId: `OPD-26-${Math.floor(1000 + Math.random() * 9000)}`,
+      mrn: `UHID-2026-0${nextNum}`,
+      tokenNumber: nextNum,
       fullName: patientData.fullName,
+      photoUrl: patientData.photoUrl || '',
+      patientCategory: isForeign ? 'FOREIGN' : 'DOMESTIC',
+      aadhaarNumber: patientData.aadhaarNumber || (isForeign ? '' : '4521 8840 9123'),
+      city: resolvedCity,
+      state: patientData.state || (isForeign ? (patientData.stayStateInIndia || 'Tamil Nadu') : 'Tamil Nadu'),
+      pincode: patientData.pincode || (isForeign ? (patientData.stayPincodeInIndia || '600006') : '600045'),
+      nationality: patientData.nationality || (isForeign ? 'Foreign National' : 'Indian'),
       age: parseInt(patientData.age, 10) || 0,
       gender: patientData.gender,
       dob: patientData.dob,
       phone: patientData.phone,
-      address: patientData.address,
+      address: fullDisplayAddress,
+      referredBy: patientData.referredBy || '',
+      referrerContact: patientData.referrerContact || '',
       emergencyContact: {
         name: patientData.emergencyContactName || 'N/A',
         phone: patientData.emergencyContactPhone || 'N/A'
       },
+      frroDetails: isForeign ? {
+        isForeignNational: true,
+        nationality: patientData.nationality || 'Foreign National',
+        passportNumber: patientData.passportNumber || 'N/A',
+        passportCountry: patientData.passportCountry || patientData.nationality || 'Overseas',
+        passportExpiry: patientData.passportExpiry || '2030-12-31',
+        visaNumber: patientData.visaNumber || 'V-MED-2026',
+        visaType: patientData.visaType || 'MED',
+        visaExpiry: patientData.visaExpiry || '2027-01-31',
+        visaPlaceOfIssue: patientData.visaPlaceOfIssue || 'Indian Mission / e-Visa Portal',
+        arrivalDate: patientData.arrivalDate || new Date().toISOString().split('T')[0],
+        portOfEntry: patientData.portOfEntry || 'Delhi (IGI Airport)',
+        comingFromCountry: patientData.comingFromCountry || patientData.nationality || 'Overseas',
+        expectedDepartureDate: patientData.expectedDepartureDate || '',
+        stayAccommodationType: patientData.stayAccommodationType || 'Hospital Inpatient Suite',
+        stayPlaceName: patientData.stayPlaceName || 'Bright Solutions Hospital Suite',
+        stayAddressInIndia: patientData.stayAddressInIndia || 'Hospital Medical Campus, Greams Road',
+        stayCityInIndia: resolvedCity,
+        stayStateInIndia: patientData.stayStateInIndia || 'Tamil Nadu',
+        stayPincodeInIndia: patientData.stayPincodeInIndia || '600006',
+        localContactPhone: patientData.localContactPhone || patientData.phone || '',
+        permanentAddressAbroad: patientData.permanentAddressAbroad || 'Home Country Address',
+        homeCountryCity: patientData.homeCountryCity || 'London',
+        homeCountry: patientData.homeCountry || patientData.nationality || 'United Kingdom',
+        overseasEmergencyContact: patientData.overseasEmergencyContact || 'Emergency Contact Abroad',
+        formCNumber: patientData.formCNumber || `FRRO-C-2026-${Math.floor(100000 + Math.random() * 900000)}`,
+        formCStatus: patientData.formCStatus || 'COMPLIANT_SUBMITTED'
+      } : null,
       appointmentTime: timeStr,
-      doctorAssigned: patientData.doctorAssigned || "Dr. Ananya Sharma (General & Internal Medicine)",
-      status: "QUESTIONNAIRE_PENDING",
+      checkInTime: timeStr,
+      consultationStartTime: null,
+      checkOutTime: null,
+      waitTimeMinutes: 0,
+      consultationDurationMinutes: 0,
+      doctorAssigned: patientData.doctorAssigned || "Dr. Kiran Patel (General & Internal Medicine)",
+      status: "WAITING",
       registeredAt: timeStr,
       abhaId: patientData.abhaId || "",
       abhaAddress: patientData.abhaAddress || "",
@@ -60,14 +129,14 @@ export function PatientProvider({ children }) {
         type: patientData.insuranceType || "INSURANCE",
         provider: patientData.insuranceType === 'GOVT_SCHEME' 
           ? (patientData.govtSchemeName || "Ayushman Bharat — PM-JAY (AB-PMJAY)")
-          : (patientData.insuranceProvider || "Self-Pay / Cash"),
-        policyNumber: patientData.policyNumber || patientData.beneficiaryId || "N/A",
+          : (patientData.insuranceProvider || (isForeign ? "BUPA International Medical Travel Insurance" : "Self-Pay / Cash")),
+        policyNumber: patientData.policyNumber || patientData.beneficiaryId || (isForeign ? "INT-GOP-992140" : "N/A"),
         groupNumber: patientData.groupNumber || "N/A",
         coveragePct: patientData.insuranceType === 'GOVT_SCHEME' 
           ? 100 
           : (Number(patientData.coveragePct) || (patientData.insuranceType === 'CASH' ? 0 : 80)),
         deductible: patientData.insuranceType === 'GOVT_SCHEME' ? 0 : (Number(patientData.deductible) || 0),
-        preAuthNumber: patientData.preAuthNumber || (patientData.insuranceType === 'GOVT_SCHEME' ? 'PMJAY-AUTO-PREAUTH' : ''),
+        preAuthNumber: patientData.preAuthNumber || (patientData.insuranceType === 'GOVT_SCHEME' ? 'PMJAY-AUTO-PREAUTH' : (isForeign ? 'FRRO-GOP-APPROVED' : '')),
         abhaId: patientData.abhaId || "",
         abhaAddress: patientData.abhaAddress || "",
         govtSchemeName: patientData.govtSchemeName || "",
@@ -94,13 +163,57 @@ export function PatientProvider({ children }) {
 
     setPatients(prev => [newPatient, ...prev]);
     setSelectedPatientId(newPatient.id);
-    addToast(`Patient ${newPatient.fullName} registered (${newPatient.mrn}). Ready for intake questionnaire.`, 'success');
+    const catLabel = isForeign ? '🌍 Foreign National (FRRO Form-C Compliant)' : '🇮🇳 Domestic Resident';
+    addToast(`Patient ${newPatient.fullName} registered with Master UHID ${newPatient.uhid} (OPD Token #${newPatient.tokenNumber}) as ${catLabel}.`, 'success');
     return newPatient;
   };
 
   // Update existing patient data
   const updatePatient = (id, updates) => {
     setPatients(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+  };
+
+  // Receptionist manual timing & status editor
+  const updatePatientTiming = (patientId, timingUpdates) => {
+    setPatients(prev => prev.map(p => {
+      if (p.id !== patientId) return p;
+      return {
+        ...p,
+        ...timingUpdates
+      };
+    }));
+    addToast(`Updated clinic check-in / consultation timings for patient.`, 'success');
+  };
+
+  // Re-assign doctor on the ongoing queue
+  const updatePatientDoctor = (patientId, newDoctor) => {
+    setPatients(prev => prev.map(p => {
+      if (p.id !== patientId) return p;
+      return {
+        ...p,
+        doctorAssigned: newDoctor
+      };
+    }));
+    const doctorShort = newDoctor.split('(')[0];
+    addToast(`Transferred patient queue to ${doctorShort}`, 'info');
+  };
+
+  // 1-Click status progressor (Waiting -> In Consultation -> Completed)
+  const updatePatientStatus = (patientId, newStatus) => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    setPatients(prev => prev.map(p => {
+      if (p.id !== patientId) return p;
+      const updates = { status: newStatus };
+      if (newStatus === 'IN_CONSULTATION') {
+        if (!p.consultationStartTime) updates.consultationStartTime = timeStr;
+      } else if (newStatus === 'COMPLETED') {
+        if (!p.checkOutTime) updates.checkOutTime = timeStr;
+      }
+      return { ...p, ...updates };
+    }));
+    addToast(`Patient status transitioned to ${newStatus}.`, 'info');
   };
 
   // Submit questionnaire and trigger CDSS insight generation
@@ -325,14 +438,134 @@ export function PatientProvider({ children }) {
     }
   };
 
+  // Nursing Handlers: Administer Medication via MAR
+  const administerMedication = (marId, details = {}) => {
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setMarRecords(prev => prev.map(rec => {
+      if (rec.id !== marId) return rec;
+      return {
+        ...rec,
+        status: 'GIVEN',
+        windowStatus: 'GIVEN',
+        administeredAt: nowTime,
+        administeredBy: details.administeredBy || 'Sr. Mini Joseph, RN',
+        notes: details.notes || 'Bedside 5-Rights Barcode Verified'
+      };
+    }));
+    addToast(`✅ MAR: Dose verified & recorded at ${nowTime}`, 'success');
+  };
+
+  // Nursing Handlers: Record Bed Vitals & NEWS2
+  const recordBedVitals = (bedId, newVitals, calculatedNews2 = 2) => {
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    let riskTier = 'LOW';
+    if (calculatedNews2 >= 7) riskTier = 'HIGH';
+    else if (calculatedNews2 >= 5) riskTier = 'MEDIUM';
+
+    setWardBeds(prev => prev.map(bed => {
+      if (bed.id !== bedId) return bed;
+      return {
+        ...bed,
+        news2Score: calculatedNews2,
+        news2Risk: riskTier,
+        status: calculatedNews2 >= 7 ? 'CRITICAL_WATCH' : bed.status,
+        vitals: {
+          ...bed.vitals,
+          ...newVitals,
+          lastRecorded: timeStr
+        }
+      };
+    }));
+
+    if (calculatedNews2 >= 7) {
+      addToast(`🚨 CRITICAL NEWS2 ALERT (${calculatedNews2}): Rapid Response / MET Escalation advised!`, 'error');
+    } else {
+      addToast(`Telemetry logged for ${bedId}. NEWS2 Score: ${calculatedNews2} (${riskTier} Risk)`, 'info');
+    }
+  };
+
+  // Nursing Handlers: Toggle Task
+  const toggleNursingTask = (taskId) => {
+    setNursingTasks(prev => prev.map(t => {
+      if (t.id !== taskId) return t;
+      const willBe = !t.completed;
+      if (willBe) addToast(`Completed task: "${t.title}"`, 'success');
+      return { ...t, completed: willBe };
+    }));
+  };
+
+  // Pharmacy Handlers: Verify Rx
+  const verifyPharmacyRx = (rxId) => {
+    setPharmacyQueue(prev => prev.map(rx => {
+      if (rx.id !== rxId) return rx;
+      return { ...rx, status: 'READY_FOR_DISPENSE' };
+    }));
+    addToast(`Clinical pharmacist verified e-Rx ${rxId}. Ready for dispensing!`, 'success');
+  };
+
+  // Pharmacy Handlers: Dispense Rx
+  const dispensePharmacyRx = (rxId, dispenseMeta = {}) => {
+    setPharmacyQueue(prev => prev.map(rx => {
+      if (rx.id !== rxId) return rx;
+      // Decrement inventory stock
+      if (rx.items && Array.isArray(rx.items)) {
+        setPharmacyInventory(invPrev => invPrev.map(invItem => {
+          const matchedItem = rx.items.find(i => i.drug.toLowerCase().includes(invItem.genericName.toLowerCase()));
+          if (matchedItem) {
+            const newStock = Math.max(0, invItem.stock - (matchedItem.qty || 1));
+            return {
+              ...invItem,
+              stock: newStock,
+              status: newStock <= 0 ? 'OUT_OF_STOCK' : newStock <= invItem.minThreshold ? 'LOW_STOCK' : 'IN_STOCK'
+            };
+          }
+          return invItem;
+        }));
+      }
+      return { 
+        ...rx, 
+        status: 'DISPENSED', 
+        dispensedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        dispensedBy: dispenseMeta.dispensedBy || 'Karthik Ramamurthy, RPh',
+        labelPrinted: true
+      };
+    }));
+    addToast(`Dispensed Rx ${rxId}. Medication label generated & stock inventory decremented.`, 'success');
+  };
+
+  // Pharmacy Handlers: Reorder Stock
+  const reorderInventoryItem = (itemId, addQty = 100) => {
+    setPharmacyInventory(prev => prev.map(item => {
+      if (item.id !== itemId) return item;
+      const updatedStock = item.stock + addQty;
+      return {
+        ...item,
+        stock: updatedStock,
+        status: updatedStock > item.minThreshold ? 'IN_STOCK' : 'LOW_STOCK'
+      };
+    }));
+    addToast(`Reorder PO generated: +${addQty} units restocked for ${itemId}`, 'success');
+  };
+
   // Quick stats
   const stats = {
     total: patients.length,
+    waiting: patients.filter(p => p.status === 'WAITING' || p.status === 'REGISTERED' || p.status === 'QUESTIONNAIRE_PENDING' || p.status === 'INSIGHTS_READY').length,
     registered: patients.filter(p => p.status === 'REGISTERED').length,
     pendingQuestionnaire: patients.filter(p => p.status === 'QUESTIONNAIRE_PENDING').length,
     insightsReady: patients.filter(p => p.status === 'INSIGHTS_READY').length,
     inConsultation: patients.filter(p => p.status === 'IN_CONSULTATION').length,
-    completed: patients.filter(p => p.status === 'COMPLETED').length
+    completed: patients.filter(p => p.status === 'COMPLETED').length,
+    // Nursing stats
+    activeBeds: wardBeds.length,
+    medsDueNow: marRecords.filter(m => m.status === 'DUE_NOW' || m.status === 'OVERDUE').length,
+    criticalNews2: wardBeds.filter(b => b.news2Score >= 7).length,
+    pendingTasks: nursingTasks.filter(t => !t.completed).length,
+    // Pharmacy stats
+    pendingRx: pharmacyQueue.filter(q => q.status === 'PENDING_VERIFICATION').length,
+    readyToDispense: pharmacyQueue.filter(q => q.status === 'READY_FOR_DISPENSE').length,
+    dispensedToday: pharmacyQueue.filter(q => q.status === 'DISPENSED').length + 38,
+    lowStockCount: pharmacyInventory.filter(i => i.status === 'LOW_STOCK' || i.status === 'OUT_OF_STOCK').length
   };
 
   return (
@@ -343,11 +576,27 @@ export function PatientProvider({ children }) {
       setSelectedPatientId,
       registerPatient,
       updatePatient,
+      updatePatientTiming,
+      updatePatientDoctor,
+      updatePatientStatus,
       submitQuestionnaire,
       stats,
       toasts,
       addToast,
-      removeToast
+      removeToast,
+      // Nursing
+      wardBeds,
+      marRecords,
+      nursingTasks,
+      administerMedication,
+      recordBedVitals,
+      toggleNursingTask,
+      // Pharmacy
+      pharmacyQueue,
+      pharmacyInventory,
+      verifyPharmacyRx,
+      dispensePharmacyRx,
+      reorderInventoryItem
     }}>
       {children}
     </PatientContext.Provider>

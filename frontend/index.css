@@ -217,6 +217,44 @@
   --csh-nav-active-bg: #fef3c7;
   --csh-nav-active-color: #78350f;
   --csh-nav-active-border: #d97706;
+
+  /* =========================================================================
+     ROLE 4: NURSING STATION & BEDSIDE MAR — Soothing Seafoam Teal & Emerald
+     (Epic Rover & Bedside Telemetry Standard)
+     ========================================================================= */
+  --nur-brand-gradient: linear-gradient(135deg, #0f172a 0%, #0d9488 100%);
+  --nur-brand-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+  --nur-accent-color: #0d9488;
+  --nur-primary: #0d9488;
+  --nur-banner-bg: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+  --nur-banner-border: #99f6e4;
+  --nur-banner-title: #134e4a;
+  --nur-pill-bg: #ccfbf1;
+  --nur-pill-color: #0f766e;
+  --nur-pill-border: #99f6e4;
+  --nur-nav-active-bg: #ccfbf1;
+  --nur-nav-active-color: #115e59;
+  --nur-nav-active-border: #0d9488;
+  --nur-card-border-focus: #0d9488;
+
+  /* =========================================================================
+     ROLE 5: CHEMIST & PHARMACY DISPENSARY — Clinical Emerald & Botanical Green
+     (Epic Willow Inpatient / Outpatient Pharmacy Standard)
+     ========================================================================= */
+  --chm-brand-gradient: linear-gradient(135deg, #0f172a 0%, #16a34a 100%);
+  --chm-brand-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+  --chm-accent-color: #16a34a;
+  --chm-primary: #16a34a;
+  --chm-banner-bg: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  --chm-banner-border: #bbf7d0;
+  --chm-banner-title: #14532d;
+  --chm-pill-bg: #dcfce7;
+  --chm-pill-color: #15803d;
+  --chm-pill-border: #bbf7d0;
+  --chm-nav-active-bg: #dcfce7;
+  --chm-nav-active-color: #14532d;
+  --chm-nav-active-border: #16a34a;
+  --chm-card-border-focus: #16a34a;
 }
 
 

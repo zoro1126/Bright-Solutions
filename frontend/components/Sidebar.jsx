@@ -16,7 +16,12 @@ import {
   Sun,
   LayoutDashboard,
   ShieldCheck,
-  FileCheck
+  FileCheck,
+  Pill,
+  Heart,
+  ClipboardList,
+  Package,
+  Clock
 } from 'lucide-react';
 import { usePatients } from '../context/PatientContext';
 
@@ -31,13 +36,13 @@ export default function Sidebar({
   const { stats } = usePatients();
 
   // Role-specific config
-  let brandTag = 'Reception OS';
+  let brandTag = 'OPD (Reception)';
   let BrandIcon = Activity;
   let brandLogoIcon = Sun;
   let brandGradient = 'linear-gradient(135deg, #f59e0b, #d97706)';
   let brandShadow = '0 2px 6px rgba(245, 158, 11, 0.3)';
   let staffName = 'Priya Raghavan';
-  let staffRole = 'Receptionist • Counter 1';
+  let staffRole = 'OPD (Reception) • Counter 1';
   let staffAvatar = 'PR';
   let avatarGradient = 'linear-gradient(135deg, #f59e0b, #d97706)';
   let navItems = [];
@@ -104,16 +109,56 @@ export default function Sidebar({
       { id: 'billing', label: 'Itemized Checkout', icon: Receipt, badge: stats?.pendingBilling || 3, badgeColor: '#78350f', badgeBg: '#fef3c7' },
       { id: 'receipt', label: 'Settlement & Receipts', icon: FileCheck, badge: 18, badgeColor: '#78350f', badgeBg: '#fef3c7' }
     ];
+  } else if (role === 'nurse') {
+    brandTag = 'Nurse Station';
+    BrandIcon = Activity;
+    brandLogoIcon = Activity;
+    brandGradient = 'linear-gradient(135deg, #0d9488, #0f766e)';
+    brandShadow = '0 4px 12px rgba(13, 148, 136, 0.35)';
+    staffName = 'Sr. Mini Joseph';
+    staffRole = 'Charge Nurse • Station 02';
+    staffAvatar = 'MJ';
+    avatarGradient = 'linear-gradient(135deg, #0d9488, #0f766e)';
+    sectionLabel = 'Ward & Inpatient OS';
+    activeNavBg = '#ccfbf1';
+    activeNavColor = '#0f766e';
+    activeNavBorder = '#0d9488';
+    navItems = [
+      { id: 'ward', label: 'Ward Bed Census', icon: LayoutDashboard },
+      { id: 'mar', label: '5-Rights MAR Admin', icon: Pill },
+      { id: 'vitals', label: 'NEWS2 Vitals Flowsheet', icon: Activity },
+      { id: 'tasks', label: 'Nursing Shift Tasks', icon: ClipboardList },
+      { id: 'sos', label: 'Rapid Response / SOS', icon: Heart }
+    ];
+  } else if (role === 'chemist') {
+    brandTag = 'Dispensary OS';
+    BrandIcon = Pill;
+    brandLogoIcon = Pill;
+    brandGradient = 'linear-gradient(135deg, #16a34a, #059669)';
+    brandShadow = '0 4px 12px rgba(22, 163, 74, 0.35)';
+    staffName = 'Karthik Ramamurthy';
+    staffRole = 'Chief Pharmacist, RPh';
+    staffAvatar = 'KR';
+    avatarGradient = 'linear-gradient(135deg, #16a34a, #059669)';
+    sectionLabel = 'Pharmacotherapy & Stock';
+    activeNavBg = '#dcfce7';
+    activeNavColor = '#15803d';
+    activeNavBorder = '#16a34a';
+    navItems = [
+      { id: 'queue', label: 'e-Rx Review Queue', icon: Clock },
+      { id: 'dispense', label: 'Barcode Dispense Desk', icon: Package },
+      { id: 'generics', label: 'WHO Generic Engine', icon: Sparkles },
+      { id: 'inventory', label: 'Formulary Stock & PO', icon: Layers }
+    ];
   } else {
     // Receptionist
     avatarGradient = 'linear-gradient(135deg, #f59e0b, #d97706)';
     navItems = [
       { id: 'dashboard', label: 'Operations Dashboard', icon: LayoutDashboard },
-      { id: 'queue', label: 'Live Patient Queue', icon: Users, badge: stats?.total },
-      { id: 'register', label: 'New Patient Intake', icon: UserPlus, action: onOpenRegister },
-      { id: 'pending', label: 'Pending Intake MCQ', icon: FileText, badge: stats?.pendingQuestionnaire, badgeColor: '#b45309', badgeBg: '#fef3c7' },
-      { id: 'reports', label: 'Reports Ingestion', icon: Layers },
-      { id: 'insights', label: 'AI Insights Ready', icon: Sparkles, badge: stats?.insightsReady, badgeColor: '#15803d', badgeBg: '#dcfce7' }
+      { id: 'token-queue', label: 'Token & Queue System', icon: Clock, badge: stats?.waiting || stats?.total, badgeColor: '#b45309', badgeBg: '#fef3c7' },
+      { id: 'queue', label: 'All Patients Directory', icon: Users, badge: stats?.total },
+      { id: 'register', label: 'New Patient Registration', icon: UserPlus, action: onOpenRegister },
+      { id: 'reports', label: 'Reports Ingestion', icon: Layers }
     ];
   }
 

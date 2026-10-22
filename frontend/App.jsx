@@ -4,6 +4,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import { PatientProvider } from './context/PatientContext';
 import ReceptionistPage from './pages/ReceptionistPage';
 import DoctorPage from './pages/DoctorPage';
+import NursePage from './pages/NursePage';
+import ChemistPage from './pages/ChemistPage';
 import CashierPage from './pages/CashierPage';
 import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
@@ -232,6 +234,179 @@ function RoleRouter() {
                 onSwitchRole={handleRoleChange} 
                 onSwitchToReception={() => handleRoleChange('receptionist')}
                 activeSubTab="workspace"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* NURSE PORTAL (Inpatient Ward, MAR, NEWS2, Tasks) */}
+        <Route 
+          path="/nurse" 
+          element={
+            <ProtectedRoute allowedRole="nurse">
+              <NursePage 
+                currentRole="nurse" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="ward"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/nurse/dashboard" 
+          element={
+            <ProtectedRoute allowedRole="nurse">
+              <NursePage 
+                currentRole="nurse" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="ward"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/nurse/ward" 
+          element={
+            <ProtectedRoute allowedRole="nurse">
+              <NursePage 
+                currentRole="nurse" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="ward"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/nurse/mar" 
+          element={
+            <ProtectedRoute allowedRole="nurse">
+              <NursePage 
+                currentRole="nurse" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="mar"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/nurse/vitals" 
+          element={
+            <ProtectedRoute allowedRole="nurse">
+              <NursePage 
+                currentRole="nurse" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="vitals"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/nurse/tasks" 
+          element={
+            <ProtectedRoute allowedRole="nurse">
+              <NursePage 
+                currentRole="nurse" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="tasks"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/nurse/sos" 
+          element={
+            <ProtectedRoute allowedRole="nurse">
+              <NursePage 
+                currentRole="nurse" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="sos"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* CHEMIST / PHARMACY PORTAL (e-Rx, Dispense, WHO Generics, Stock) */}
+        <Route 
+          path="/chemist" 
+          element={
+            <ProtectedRoute allowedRole="chemist">
+              <ChemistPage 
+                currentRole="chemist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="queue"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/chemist/dashboard" 
+          element={
+            <ProtectedRoute allowedRole="chemist">
+              <ChemistPage 
+                currentRole="chemist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="queue"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/chemist/queue" 
+          element={
+            <ProtectedRoute allowedRole="chemist">
+              <ChemistPage 
+                currentRole="chemist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="queue"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/chemist/dispense" 
+          element={
+            <ProtectedRoute allowedRole="chemist">
+              <ChemistPage 
+                currentRole="chemist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="dispense"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/chemist/generics" 
+          element={
+            <ProtectedRoute allowedRole="chemist">
+              <ChemistPage 
+                currentRole="chemist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="generics"
+                onLogout={handleLogout}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/chemist/inventory" 
+          element={
+            <ProtectedRoute allowedRole="chemist">
+              <ChemistPage 
+                currentRole="chemist" 
+                onSwitchRole={handleRoleChange} 
+                activeSubTab="inventory"
                 onLogout={handleLogout}
               />
             </ProtectedRoute>

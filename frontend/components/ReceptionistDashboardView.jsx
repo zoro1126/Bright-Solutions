@@ -9,6 +9,7 @@ import {
   Activity, 
   Calendar,
   CheckCircle2,
+  Check,
   Stethoscope,
   TrendingUp,
   FileText
@@ -358,40 +359,73 @@ export default function ReceptionistDashboardView({
           <table className="m3-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-default)', textAlign: 'left', color: 'var(--text-muted)' }}>
-                <th style={{ padding: '8px 10px' }}>MRN / Token</th>
+                <th style={{ padding: '8px 10px' }}>Token / Master UHID</th>
                 <th style={{ padding: '8px 10px' }}>Patient Legal Name</th>
-                <th style={{ padding: '8px 10px' }}>Demographics</th>
+                <th style={{ padding: '8px 10px' }}>Demographics & City</th>
                 <th style={{ padding: '8px 10px' }}>Assigned Physician</th>
-                <th style={{ padding: '8px 10px' }}>Triage Vitals</th>
-                <th style={{ padding: '8px 10px' }}>Status</th>
+                <th style={{ padding: '8px 10px' }}>Check-in / Wait</th>
+                <th style={{ padding: '8px 10px' }}>Queue Status</th>
                 <th style={{ padding: '8px 10px', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {recentPatients.map((p, idx) => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <td style={{ padding: '8px 10px' }}>
-                    <span className="mrn-tag">#{141 + idx}</span>
-                    <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{p.mrn}</span>
-                  </td>
-                  <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    {p.fullName}
-                  </td>
-                  <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>
-                    {p.age}y {p.gender} • {p.phone}
-                  </td>
-                  <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>
-                    {p.doctorAssigned?.split('(')[0]}
-                  </td>
-                  <td style={{ padding: '8px 10px' }}>
-                    <span style={{ fontSize: 11, fontWeight: 600 }}>BP {p.vitals?.bp || '120/80'}</span>
-                    <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 4 }}>• SpO2 {p.vitals?.spo2 || '99'}%</span>
-                  </td>
-                  <td style={{ padding: '8px 10px' }}>
-                    <span className="badge badge-active" style={{ fontSize: 10 }}>{p.status}</span>
-                  </td>
-                  <td style={{ padding: '8px 10px', textAlign: 'right' }}>
-                    <div style={{ display: 'inline-flex', gap: 6 }}>
+              {recentPatients.map((p) => {
+                const isWaiting = p.status === 'WAITING' || p.status === 'REGISTERED' || p.status === 'QUESTIONNAIRE_PENDING';
+                const isConsultation = p.status === 'IN_CONSULTATION' || p.status === 'INSIGHTS_READY' || p.status === 'INSIGHTS_GENERATING';
+                const isCompleted = p.status === 'COMPLETED';
+
+                return (
+                  <tr key={p.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <td style={{ padding: '8px 10px' }}>
+                      <span className="mrn-tag">#{p.tokenNumber || 142}</span>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: '#0f172a', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
+                        {p.uhid || p.mrn}
+                      </div>
+                    </td>
+                    <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {p.photoUrl && (
+                          <img src={p.photoUrl} alt="" style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }} />
+                        )}
+                        <span>{p.fullName}</span>
+                      </div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                        OPD: {p.opdId || `OPD-26-${p.tokenNumber || 142}`}
+                      </div>
+                    </td>
+                    <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>
+                      <div>{p.age}y {p.gender}</div>
+                      <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>City: {p.city || (p.frroDetails ? p.frroDetails.stayCityInIndia : 'Chennai')}</div>
+                    </td>
+                    <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>
+                      {p.doctorAssigned?.split('(')[0]}
+                    </td>
+                    <td style={{ padding: '8px 10px' }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
+                        {p.checkInTime || p.registeredAt || '09:15 AM'}
+                      </div>
+                      <div style={{ fontSize: 10, color: '#d97706', fontWeight: 700 }}>
+                        ⏳ {p.waitTimeMinutes ? `${p.waitTimeMinutes}m wait` : (isWaiting ? '18m wait' : '15m wait')}
+                      </div>
+                    </td>
+                    <td style={{ padding: '8px 10px' }}>
+                      {isWaiting && (
+                        <span style={{ fontSize: 10, fontWeight: 800, background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: 9999, border: '1px solid #fde68a' }}>
+                          🟡 Waiting
+                        </span>
+                      )}
+                      {isConsultation && (
+                        <span style={{ fontSize: 10, fontWeight: 800, background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: 9999, border: '1px solid #bae6fd' }}>
+                          🔵 In Cabin
+                        </span>
+                      )}
+                      {isCompleted && (
+                        <span style={{ fontSize: 10, fontWeight: 800, background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 9999, border: '1px solid #86efac', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          <Check size={11} strokeWidth={3} /> 🟢 Done ✓
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>
                       <button
                         type="button"
                         onClick={() => onPrintSlip && onPrintSlip(p)}
@@ -402,20 +436,10 @@ export default function ReceptionistDashboardView({
                         <Printer size={12} />
                         <span>Slip</span>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => onSelectPatientForQuestionnaire && onSelectPatientForQuestionnaire(p)}
-                        className="m3-btn m3-btn-filled"
-                        style={{ height: 26, fontSize: 11, padding: '0 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
-                        title="Open Intake Questionnaire"
-                      >
-                        <FileText size={12} />
-                        <span>Intake</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

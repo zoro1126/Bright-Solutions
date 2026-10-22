@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Stethoscope, Users, Receipt, ShieldCheck, LogOut, Sparkles } from 'lucide-react';
+import { Menu, Stethoscope, Users, Receipt, ShieldCheck, LogOut, Sparkles, Activity, Pill } from 'lucide-react';
 
 export default function Navbar({ 
   onToggleSidebar, 
@@ -32,6 +32,16 @@ export default function Navbar({
     brandPillBg = 'var(--csh-pill-bg, #fef3c7)';
     brandPillColor = 'var(--csh-pill-color, #92400e)';
     brandPillBorder = 'var(--csh-pill-border, #fde68a)';
+  } else if (currentRole === 'nurse') {
+    brandRoleColor = '#0d9488';
+    brandPillBg = '#ccfbf1';
+    brandPillColor = '#0f766e';
+    brandPillBorder = '#99f6e4';
+  } else if (currentRole === 'chemist') {
+    brandRoleColor = '#16a34a';
+    brandPillBg = '#dcfce7';
+    brandPillColor = '#15803d';
+    brandPillBorder = '#bbf7d0';
   } else {
     brandRoleColor = '#d97706';
     brandPillBg = '#fef3c7';
@@ -60,11 +70,15 @@ export default function Navbar({
             <span className="brand-title-text" style={{ fontSize: 10.5, fontWeight: 700, color: brandRoleColor }}>
               {currentRole === 'doctor' 
                 ? 'Consultant Clinical Workspace' 
+                : currentRole === 'nurse'
+                ? 'Inpatient & Ward Station OS'
+                : currentRole === 'chemist'
+                ? 'Dispensary & Pharmacotherapy OS'
                 : currentRole === 'cashier'
                 ? 'Cashier & Settlement Desk'
                 : currentRole === 'admin'
                 ? 'Executive Governance & Audit'
-                : 'Front Desk & Reception'}
+                : 'OPD (Reception)'}
             </span>
             <span 
               className="brand-counter-pill" 
@@ -80,6 +94,10 @@ export default function Navbar({
             >
               {currentRole === 'doctor' 
                 ? 'Dr. Kiran Patel' 
+                : currentRole === 'nurse'
+                ? 'Sr. Mini Joseph, RN'
+                : currentRole === 'chemist'
+                ? 'Central Dispensary 01'
                 : currentRole === 'cashier'
                 ? 'Counter B-02'
                 : currentRole === 'admin'
@@ -97,12 +115,12 @@ export default function Navbar({
             <button
               className={`m3-role-btn ${currentRole === 'receptionist' ? 'active' : ''}`}
               onClick={() => onRoleChange('receptionist')}
-              title="Reception Desk"
+              title="OPD (Reception) Desk"
               data-tour="role-receptionist-btn"
               style={currentRole === 'receptionist' ? { backgroundColor: '#fef3c7', color: '#92400e', fontWeight: 800 } : undefined}
             >
               <Users size={11} />
-              <span>Receptionist</span>
+              <span>OPD (Reception)</span>
             </button>
             <button
               className={`m3-role-btn ${currentRole === 'doctor' ? 'active' : ''}`}
@@ -113,6 +131,26 @@ export default function Navbar({
             >
               <Stethoscope size={11} />
               <span>Doctor</span>
+            </button>
+            <button
+              className={`m3-role-btn ${currentRole === 'nurse' ? 'active' : ''}`}
+              onClick={() => onRoleChange('nurse')}
+              title="Inpatient & Ward Nurse Station"
+              data-tour="role-nurse-btn"
+              style={currentRole === 'nurse' ? { backgroundColor: '#ccfbf1', color: '#0f766e', border: '1px solid #99f6e4', fontWeight: 800 } : undefined}
+            >
+              <Activity size={11} />
+              <span>Nurse</span>
+            </button>
+            <button
+              className={`m3-role-btn ${currentRole === 'chemist' ? 'active' : ''}`}
+              onClick={() => onRoleChange('chemist')}
+              title="Dispensary & Pharmacy"
+              data-tour="role-chemist-btn"
+              style={currentRole === 'chemist' ? { backgroundColor: '#dcfce7', color: '#15803d', border: '1px solid #bbf7d0', fontWeight: 800 } : undefined}
+            >
+              <Pill size={11} />
+              <span>Chemist</span>
             </button>
             <button
               className={`m3-role-btn ${currentRole === 'cashier' ? 'active' : ''}`}

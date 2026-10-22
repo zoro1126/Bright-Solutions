@@ -4,30 +4,26 @@ import {
   User, 
   Phone, 
   MapPin, 
-  Sparkles, 
-  CheckCircle2, 
   Clock, 
-  Zap, 
-  Stethoscope,
-  SlidersHorizontal,
-  Check,
-  Landmark,
-  Award,
-  X,
-  ClipboardList,
-  Activity,
-  Heart,
-  Thermometer,
-  Scale,
-  Gauge,
-  Wind
+  Stethoscope, 
+  Check, 
+  Landmark, 
+  Award, 
+  X, 
+  Globe, 
+  ShieldCheck, 
+  FileCheck, 
+  Building2,
+  Camera,
+  Calendar,
+  AlertCircle,
+  UserPlus
 } from 'lucide-react';
 
 export default function PatientDetailsDrawer({ 
   isOpen, 
   onClose, 
   patient, 
-  onOpenQuestionnaire, 
   onOpenDoctorWorkspace 
 }) {
   const { selectedPatient } = usePatients();
@@ -35,58 +31,108 @@ export default function PatientDetailsDrawer({
 
   if (!isOpen || !p) return null;
 
-  const isQuestionnaireDone = Boolean(p.questionnaire?.completed && p.questionnaire?.responses);
-  const hasInsights = p.status === 'INSIGHTS_READY' && p.mlInsights && Array.isArray(p.mlInsights?.riskFlags);
+  const isForeign = p.patientCategory === 'FOREIGN' || Boolean(p.frroDetails);
+  const status = p.status || 'WAITING';
 
   return (
     <div className="modal-overlay m3-dialog-backdrop" onClick={onClose}>
       <div 
         className="modal-content m3-dialog-container" 
-        style={{ maxWidth: 860, width: '92%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', padding: 24, overflow: 'hidden' }}
+        style={{ maxWidth: 840, width: '94%', maxHeight: '92vh', display: 'flex', flexDirection: 'column', padding: 24, overflow: 'hidden' }}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="m3-dialog-header" style={{ padding: '16px 24px 14px', margin: '-24px -24px 16px -24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span className="mrn-tag">{p.mrn}</span>
-              {p.status === 'INSIGHTS_READY' && (
-                <span className="badge badge-ready">
-                  <CheckCircle2 size={12} /> Ready for Oncologist
-                </span>
+        <div className="m3-dialog-header" style={{ padding: '16px 24px 14px', margin: '-24px -24px 16px -24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0, borderBottom: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+            {/* Front-Desk Webcam Portrait / Avatar */}
+            <div style={{
+              width: 58,
+              height: 58,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              background: 'var(--bg-subtle)',
+              border: '2px solid var(--border-default)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+            }}>
+              {p.photoUrl ? (
+                <img src={p.photoUrl} alt={p.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <User size={30} color="var(--text-secondary)" />
               )}
-              {p.status === 'INSIGHTS_GENERATING' && (
-                <span className="badge badge-active m3-animate-pulse">
-                  <Sparkles size={12} /> ML In-Flight
-                </span>
-              )}
-              {p.status === 'QUESTIONNAIRE_PENDING' && (
-                <span className="badge badge-pending">
-                  <Clock size={12} /> Intake Needed
-                </span>
-              )}
-              {p.status === 'IN_CONSULTATION' && (
-                <span className="badge badge-active">
-                  <Stethoscope size={12} /> In Session
-                </span>
-              )}
-              {p.status === 'COMPLETED' && (
-                <span className="badge badge-neutral">
-                  <Check size={12} /> Finished
-                </span>
-              )}
-              <span className="badge badge-ready" style={{ fontSize: 11 }}>
-                <Award size={12} color="#059669" />
-                ABHA: {p.abhaId || p.insurance?.abhaId || '91-4820-1928-3819'}
-              </span>
             </div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', marginTop: 6 }}>
-              {p.fullName}
-            </h3>
-            <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 2 }}>
-              {p.age} years • {p.gender} • DOB: {p.dob} • Consulting Doctor: <strong>{p.doctorAssigned}</strong>
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                {/* Master UHID Badge */}
+                <span style={{ 
+                  background: 'linear-gradient(135deg, #1e293b, #0f172a)', 
+                  color: '#ffffff', 
+                  fontSize: 11, 
+                  fontWeight: 800, 
+                  padding: '3px 8px', 
+                  borderRadius: 6,
+                  fontFamily: 'var(--font-mono)',
+                  letterSpacing: '0.03em'
+                }}>
+                  UHID: {p.uhid || p.mrn} (Master ID)
+                </span>
+
+                {/* OPD Encounter ID */}
+                <span style={{ 
+                  background: '#f1f5f9', 
+                  color: '#334155', 
+                  fontSize: 11, 
+                  fontWeight: 700, 
+                  padding: '3px 8px', 
+                  borderRadius: 6,
+                  fontFamily: 'var(--font-mono)'
+                }}>
+                  OPD: {p.opdId || `OPD-26-${p.tokenNumber || '142'}`}
+                </span>
+
+                {/* Token Badge */}
+                <span style={{ 
+                  background: 'linear-gradient(135deg, #fef3c7, #fde68a)', 
+                  color: '#92400e', 
+                  fontSize: 11, 
+                  fontWeight: 800, 
+                  padding: '3px 8px', 
+                  borderRadius: 6,
+                  border: '1px solid #f59e0b'
+                }}>
+                  Token #{p.tokenNumber || 142}
+                </span>
+
+                {/* Status Badges with 3-Color Scheme */}
+                {status === 'WAITING' && (
+                  <span style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 9999, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <Clock size={12} /> 🟡 Waiting in Lounge
+                  </span>
+                )}
+                {status === 'IN_CONSULTATION' && (
+                  <span style={{ background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd', fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 9999, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <Stethoscope size={12} /> 🔵 In Doctor Cabin
+                  </span>
+                )}
+                {status === 'COMPLETED' && (
+                  <span style={{ background: '#dcfce7', color: '#15803d', border: '1px solid #86efac', fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 9999, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <Check size={12} strokeWidth={3} /> 🟢 Completed Consultation ✓
+                  </span>
+                )}
+              </div>
+
+              <h3 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text-primary)', marginTop: 5, marginBottom: 2 }}>
+                {p.fullName} {isForeign && <span style={{ fontSize: 12.5, fontWeight: 600, color: '#0284c7' }}>({p.nationality || 'Foreign National'})</span>}
+              </h3>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                {p.age} yrs • {p.gender} • DOB: {p.dob} • Doctor: <strong style={{ color: 'var(--text-primary)' }}>{p.doctorAssigned}</strong>
+              </div>
             </div>
           </div>
 
@@ -102,11 +148,67 @@ export default function PatientDetailsDrawer({
 
         {/* Scrollable Content */}
         <div className="m3-scrollable-body" style={{ flex: 1, overflowY: 'auto', paddingRight: 6 }}>
-          {/* Top 2-Column Cards: Contact & Insurance */}
+          {/* Section 1: Queue Timings & Flow Operational Summary */}
+          <div style={{
+            background: 'var(--bg-subtle)',
+            borderRadius: 'var(--radius-md)',
+            padding: 14,
+            marginBottom: 16,
+            border: '1px solid var(--border-subtle)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Clock size={14} color="var(--primary)" />
+                <span>OPD Operational Timings & Queue Flow</span>
+              </div>
+              <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>
+                Registered: {p.registeredAt || p.checkInTime || 'Today'}
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
+              <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 700 }}>CHECK-IN TIME</span>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', marginTop: 3 }}>
+                  {p.checkInTime || p.registeredAt || '09:15 AM'}
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 700 }}>START CONSULTATION</span>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#0284c7', marginTop: 3 }}>
+                  {p.consultationStartTime || (status === 'WAITING' ? 'Pending Call-in' : '09:40 AM')}
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 700 }}>CHECK-OUT TIME</span>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#10b981', marginTop: 3 }}>
+                  {p.checkOutTime || (status === 'COMPLETED' ? '10:05 AM' : 'In Progress')}
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 700 }}>WAIT IN QUEUE</span>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#d97706', marginTop: 3 }}>
+                  {p.waitTimeMinutes ? `${p.waitTimeMinutes} mins` : (status === 'WAITING' ? '18 mins (Live)' : '15 mins')}
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 700 }}>SESSION DURATION</span>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', marginTop: 3 }}>
+                  {p.consultationDurationMinutes ? `${p.consultationDurationMinutes} mins` : (status === 'COMPLETED' ? '25 mins' : 'Ongoing')}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Contact & Identity Details (2 Columns) */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14, marginBottom: 16 }}>
-            {/* Contact Card */}
-            <div style={{ background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: 14, border: 'none' }}>
-              <div className="section-label">Contact & Emergency</div>
+            {/* Contact & Demographics Card */}
+            <div style={{ background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: 14, border: '1px solid var(--border-subtle)' }}>
+              <div className="section-label">Identity & Contact</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: '12.5px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-secondary)', fontWeight: 600 }}>
                   <Phone size={14} color="var(--primary)" />
@@ -116,25 +218,67 @@ export default function PatientDetailsDrawer({
                   <MapPin size={14} color="var(--text-tertiary)" style={{ marginTop: 2, flexShrink: 0 }} />
                   <span style={{ fontSize: '12px', lineHeight: 1.4 }}>{p.address}</span>
                 </div>
-                <div className="m3-emergency-chip" style={{ marginTop: 4 }}>
-                  <span className="m3-chip-label">Emergency:</span>
-                  <strong style={{ color: 'var(--text-primary)' }}>{p.emergencyContact.name}</strong>
-                  <span style={{ color: 'var(--text-muted)' }}>({p.emergencyContact.phone})</span>
+
+                {/* Explicit City Field */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-secondary)' }}>
+                  <Building2 size={14} color="var(--primary)" />
+                  <span style={{ fontSize: '12px' }}>
+                    City: <strong style={{ color: 'var(--text-primary)', fontWeight: 800 }}>{p.city || (isForeign ? p.frroDetails?.stayCityInIndia : 'Chennai')}</strong>
+                    {p.state && <span> • State: {p.state}</span>}
+                    {p.pincode && <span> ({p.pincode})</span>}
+                  </span>
                 </div>
+
+                {/* Aadhaar Card Field for Domestic */}
+                {!isForeign && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-surface)', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-subtle)', marginTop: 2 }}>
+                    <ShieldCheck size={14} color="#059669" />
+                    <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                      Aadhaar Card: <strong style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', color: 'var(--text-primary)' }}>{p.aadhaarNumber || '4521 8840 9123'}</strong>
+                      <span style={{ fontSize: 9.5, color: '#059669', fontWeight: 800, marginLeft: 6 }}>✓ UIDAI VERIFIED</span>
+                    </span>
+                  </div>
+                )}
+
+                {/* Foreign Passport Tag */}
+                {isForeign && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f0f9ff', padding: '6px 10px', borderRadius: 6, border: '1px solid #bae6fd', marginTop: 2 }}>
+                    <Globe size={14} color="#0284c7" />
+                    <span style={{ fontSize: '11.5px', color: '#0369a1' }}>
+                      Nationality: <strong>{p.nationality || 'Foreign National'}</strong> • Passport: <strong style={{ fontFamily: 'var(--font-mono)' }}>{p.frroDetails?.passportNumber || 'N/A'}</strong>
+                    </span>
+                  </div>
+                )}
+
+                <div className="m3-emergency-chip" style={{ marginTop: 4 }}>
+                  <span className="m3-chip-label">Emergency Contact:</span>
+                  <strong style={{ color: 'var(--text-primary)' }}>{p.emergencyContact?.name || 'N/A'}</strong>
+                  <span style={{ color: 'var(--text-muted)' }}>({p.emergencyContact?.phone || 'N/A'})</span>
+                </div>
+
+                {p.referredBy && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--bg-surface)', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-subtle)', marginTop: 4 }}>
+                    <UserPlus size={13} color="var(--primary)" />
+                    <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                      Referred By: <strong style={{ color: 'var(--text-primary)' }}>{p.referredBy}</strong>
+                      {p.referrerContact && <span style={{ marginLeft: 4, color: 'var(--text-muted)' }}>({p.referrerContact})</span>}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Insurance Card */}
-            <div style={{ background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: 14, border: 'none' }}>
+            {/* Insurance & Payment Card */}
+            <div style={{ background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: 14, border: '1px solid var(--border-subtle)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span className="section-label" style={{ marginBottom: 0 }}>Billing & Coverage Overview</span>
-                {p.insurance.type === 'GOVT_SCHEME' ? (
+                <span className="section-label" style={{ marginBottom: 0 }}>Insurance & Billing</span>
+                {p.insurance?.type === 'GOVT_SCHEME' ? (
                   <span className="badge badge-ready" style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Landmark size={12} /> Govt PM-JAY Cashless
+                    <Landmark size={12} /> PM-JAY Cashless
                   </span>
-                ) : p.insurance.type === 'INSURANCE' ? (
+                ) : p.insurance?.type === 'INSURANCE' ? (
                   <span className="badge badge-active" style={{ fontSize: '11px' }}>
-                    Private TPA Insurance
+                    {isForeign ? 'International Travel GOP' : 'Private TPA Insurance'}
                   </span>
                 ) : (
                   <span className="badge badge-neutral" style={{ fontSize: '11px' }}>
@@ -146,245 +290,89 @@ export default function PatientDetailsDrawer({
               <div className="info-grid" style={{ gap: '8px 12px' }}>
                 <div className="info-item">
                   <span className="info-key">Plan / Scheme</span>
-                  <span className="info-val" style={{ color: 'var(--primary)', fontWeight: 800 }}>{p.insurance.provider}</span>
+                  <span className="info-val" style={{ color: 'var(--primary)', fontWeight: 800 }}>{p.insurance?.provider || 'Self-Pay'}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-key">Policy / Beneficiary ID</span>
-                  <span className="info-val">{p.insurance.policyNumber || 'N/A'}</span>
+                  <span className="info-val">{p.insurance?.policyNumber || p.insurance?.beneficiaryId || 'N/A'}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-key">Coverage Percentage</span>
-                  <span className="info-val">{p.insurance.coveragePct}%</span>
+                  <span className="info-val">{p.insurance?.coveragePct || 100}%</span>
                 </div>
                 <div className="info-item">
-                  <span className="info-key">Annual Deductible</span>
-                  <span className="info-val">₹{Number(p.insurance?.deductible || 0).toLocaleString()}</span>
+                  <span className="info-key">Pre-Authorization</span>
+                  <span className="info-val">{p.insurance?.preAuthNumber || 'Auto-Verified'}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Triage Vital Signs Card */}
-          {p.vitals && (
-            <div style={{ background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: 14, marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
-                <span className="section-label" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Activity size={14} color="var(--primary)" />
-                  <span>Triage Vital Signs & Biometrics</span>
+          {/* Section 3: FRRO Form-C Dossier Card (if Foreign) */}
+          {isForeign && p.frroDetails && (
+            <div style={{ 
+              background: 'linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%)', 
+              borderRadius: 'var(--radius-md)', 
+              padding: 16, 
+              marginBottom: 16,
+              border: '1px solid #bae6fd'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Globe size={16} color="#0284c7" />
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#0369a1' }}>
+                    FRRO Form-C Immigration Compliance
+                  </span>
+                </div>
+                <span style={{ fontSize: 10, background: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>
+                  ✓ {p.frroDetails?.formCNumber || 'FRRO-C-2026-SUBMITTED'}
                 </span>
-                <span className="m3-timestamp-tag">Recorded at {p.vitals.recordedAt || p.registeredAt} (Reception Desk)</span>
               </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(95px, 1fr))', gap: 8 }}>
-                <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    <Activity size={11} color="#ef4444" /> BP
-                  </div>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', marginTop: 2 }}>
-                    {p.vitals.bp || '120/80'} <span style={{ fontSize: 9.5, fontWeight: 500, color: 'var(--text-muted)' }}>mmHg</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    <Heart size={11} color="#ec4899" /> Pulse
-                  </div>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', marginTop: 2 }}>
-                    {p.vitals.pulse || '72'} <span style={{ fontSize: 9.5, fontWeight: 500, color: 'var(--text-muted)' }}>bpm</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    <Thermometer size={11} color="#f97316" /> Temp
-                  </div>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', marginTop: 2 }}>
-                    {p.vitals.temp || '98.6'} <span style={{ fontSize: 9.5, fontWeight: 500, color: 'var(--text-muted)' }}>°F</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    <Gauge size={11} color="#0284c7" /> SpO2
-                  </div>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', marginTop: 2 }}>
-                    {p.vitals.spo2 || '99'} <span style={{ fontSize: 9.5, fontWeight: 500, color: 'var(--text-muted)' }}>%</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    <Scale size={11} color="#6366f1" /> Weight
-                  </div>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', marginTop: 2 }}>
-                    {p.vitals.weight || '62'} <span style={{ fontSize: 9.5, fontWeight: 500, color: 'var(--text-muted)' }}>kg</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    <User size={11} color="#8b5cf6" /> Height
-                  </div>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', marginTop: 2 }}>
-                    {p.vitals.height || '165'} <span style={{ fontSize: 9.5, fontWeight: 500, color: 'var(--text-muted)' }}>cm</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    BMI
-                  </div>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: '#059669', marginTop: 2 }}>
-                    {p.vitals.bmi || '22.8'} <span style={{ fontSize: 9, fontWeight: 600, color: '#059669' }}>kg/m²</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--bg-surface)', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                    <Wind size={11} color="#0d9488" /> Resp Rate
-                  </div>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', marginTop: 2 }}>
-                    {p.vitals.respRate || '16'} <span style={{ fontSize: 9.5, fontWeight: 500, color: 'var(--text-muted)' }}>/min</span>
-                  </div>
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, fontSize: 11.5 }}>
+                <div><strong>Visa:</strong> {p.frroDetails?.visaNumber} ({p.frroDetails?.visaType})</div>
+                <div><strong>Arrival:</strong> {p.frroDetails?.arrivalDate} via {p.frroDetails?.portOfEntry}</div>
+                <div><strong>Stay:</strong> {p.frroDetails?.stayPlaceName}, {p.frroDetails?.stayCityInIndia}</div>
               </div>
             </div>
           )}
 
-          {/* Intake & AI Insights */}
-          <div style={{ border: 'none', borderRadius: 'var(--radius-md)', padding: 16, backgroundColor: 'var(--bg-subtle)', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span className="section-label" style={{ marginBottom: 0 }}>Oncology Intake & AI Insights</span>
-              {isQuestionnaireDone && (
-                <span className="m3-timestamp-tag">Logged at {p.questionnaire.completedAt}</span>
-              )}
-            </div>
-
-            {!isQuestionnaireDone ? (
-              <div className="m3-intake-pending-card">
-                <p style={{ fontWeight: 700, color: '#92400e', fontSize: '13px' }}>
-                  Intake Questionnaire Not Yet Submitted
-                </p>
-                <p style={{ fontSize: '12px', color: '#b45309', margin: '4px 0 14px' }}>
-                  Administer standardized 20-question intake battery to capture clinical history and baseline symptoms for CDSS triage.
-                </p>
-                <button
-                  className="m3-btn m3-btn-filled"
-                  onClick={() => { onClose(); onOpenQuestionnaire(p); }}
-                >
-                  <ClipboardList size={15} />
-                  <span>Launch Clinical Intake Questionnaire</span>
-                </button>
-              </div>
-            ) : (
-              <div className="m3-intake-unified-card">
-                {/* Chief Complaint Presentation */}
-                <div className="m3-intake-complaint-box">
-                  <div className="m3-intake-complaint-meta">
-                    <span className="m3-intake-site-chip">
-                      {p.questionnaire?.responses?.primarySite || 'General'}
-                    </span>
-                    <span className="m3-intake-duration-chip">
-                      {p.questionnaire?.responses?.durationMonths || '< 24 Hours'}
-                    </span>
-                    <span className="m3-intake-time">
-                      {p.questionnaire?.completedAt || 'Just now'}
-                    </span>
-                  </div>
-                  <div className="m3-intake-complaint-body">
-                    "{p.questionnaire?.responses?.chiefComplaint || p.chiefComplaint || 'Clinical Consultation'}"
-                  </div>
-                </div>
-
-                {/* AI Clinical Insights Section */}
-                {hasInsights ? (
-                  <div className="m3-ai-unified-section">
-                    <div className="m3-ai-header">
-                      <div className="m3-ai-title">
-                        <Sparkles size={16} className="m3-sparkle-icon" />
-                        <span>AI Clinical Synthesis</span>
-                      </div>
-                      <span className="m3-model-pill">
-                        {p.mlInsights.modelVersion}
-                      </span>
-                    </div>
-
-                    <p className="m3-ai-narrative">
-                      {p.mlInsights.symptomSummary}
-                    </p>
-
-                    {/* Clean M3 Tonal Risk Signals */}
-                    <div className="m3-risk-signals-unified">
-                      {p.mlInsights.riskFlags.map((flag, idx) => {
-                        const isHigh = flag.severity === 'HIGH';
-                        const isMed = flag.severity === 'MEDIUM';
-                        const tagType = isHigh ? 'high' : isMed ? 'caution' : 'info';
-                        return (
-                          <div key={idx} className={`m3-risk-row m3-risk-row-${tagType}`}>
-                            <div className="m3-risk-row-header">
-                              <span className={`m3-risk-tag m3-risk-tag-${tagType}`}>
-                                {isHigh ? 'HIGH RISK' : isMed ? 'CAUTION' : 'NOTE'}
-                              </span>
-                              <span className="m3-risk-row-title">{flag.label}</span>
-                            </div>
-                            <p className="m3-risk-row-desc">{flag.note}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Doctor Destination Footer */}
-                    <div className="m3-ai-footer">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <Stethoscope size={13} color="var(--primary)" />
-                        <span>Assigned to: <strong>{p.doctorAssigned}</strong></span>
-                      </div>
-                      <span className="m3-status-dot-active" title="Connected to console" />
-                    </div>
-                  </div>
-                ) : p.status === 'INSIGHTS_GENERATING' ? (
-                  <div className="m3-ai-generating-banner">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', color: '#0369a1', fontWeight: 800 }}>
-                      <Sparkles size={16} className="m3-animate-pulse" />
-                      <span>Processing Deep Learning Pipeline...</span>
-                    </div>
-                    <p style={{ fontSize: '12px', color: '#0369a1', marginTop: 4, lineHeight: 1.4 }}>
-                      Parsing questionnaire patterns and compiling clinical insights for the oncologist.
-                    </p>
-                  </div>
-                ) : null}
-              </div>
-            )}
+          {/* Notice: Nursing & Doctor Domain */}
+          <div style={{
+            padding: '10px 14px',
+            borderRadius: 8,
+            background: 'var(--bg-subtle)',
+            border: '1px dashed var(--border-default)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            fontSize: 11.5,
+            color: 'var(--text-secondary)'
+          }}>
+            <Stethoscope size={15} color="var(--primary)" style={{ flexShrink: 0 }} />
+            <span>
+              <strong>Clinical Workflow Separation:</strong> Clinical Vitals, Intake Questionnaires & AI Diagnostic Insights are strictly captured and evaluated at the Nursing Triage Desk and Doctor Console.
+            </span>
           </div>
         </div>
 
         {/* Modal Footer Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: 14, marginTop: 14, flexShrink: 0 }}>
-          <button 
-            type="button"
-            className="m3-btn m3-btn-outlined" 
-            onClick={() => { onClose(); onOpenQuestionnaire(p); }}
-          >
-            <SlidersHorizontal size={14} /> Review / Modify Intake MCQ
-          </button>
-          <div style={{ display: 'flex', gap: 10 }}>
-            {onOpenDoctorWorkspace && (
-              <button 
-                type="button"
-                className="m3-btn m3-btn-filled" 
-                onClick={() => { onClose(); onOpenDoctorWorkspace(); }}
-              >
-                <Stethoscope size={14} /> Open Doctor Workspace
-              </button>
-            )}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', borderTop: '1px solid var(--border-subtle)', paddingTop: 14, marginTop: 14, flexShrink: 0, gap: 10 }}>
+          {onOpenDoctorWorkspace && (
             <button 
               type="button"
-              className="m3-btn m3-btn-tonal" 
-              onClick={onClose}
+              className="m3-btn m3-btn-outlined" 
+              onClick={() => { onClose(); onOpenDoctorWorkspace(); }}
             >
-              Close
+              <Stethoscope size={14} /> Open Doctor Workspace
             </button>
-          </div>
+          )}
+          <button 
+            type="button"
+            className="m3-btn m3-btn-filled" 
+            onClick={onClose}
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>
