@@ -106,8 +106,8 @@ The impact:
 
 ### 4.2 Technical Goals
 
-- **MVP delivery:** Core clinical workflow functional and deployed on staging in 4 weeks.
-- **AI features:** NLP summaries + CDSS deterministic insights live in weeks 5–6 post-MVP.
+- **MVP delivery:** Full clinical workflow — including AI/CDSS/NLP features — functional and deployed on staging in 4 weeks.
+- **AI features:** NLP-based consultation summaries, CDSS deterministic insights from vitals + questionnaire, and questionnaire-driven differential suggestions are **in scope for the 4-week MVP**.
 - **Multi-tenant architecture:** Data model and service layers designed for multi-tenancy from Cycle 1, even if MVP is single-tenant.
 - **Compliance foundation:** Audit logging, PHI access tracking, and NABH documentation fields present from day one.
 - **Data migration readiness:** Schema and tooling ready to import from legacy HIS (specific system TBD — see Open Questions).
@@ -116,7 +116,7 @@ The impact:
 
 ## 5. MVP Scope — 4-Week Prototype
 
-The 4-week MVP delivers a **functional clinical web app** covering the full OPD + basic IPD patient journey, deployed on the staging server at `clinicalservices.paperbirdtech.com`.
+The 4-week MVP delivers a **full clinical web app** covering the complete OPD + basic IPD patient journey including AI-assisted clinical features, deployed on the staging server at `clinicalservices.paperbirdtech.com`.
 
 ### 5.1 What the MVP Delivers
 
@@ -133,24 +133,29 @@ Week 1: Foundation
 
 Week 2: OPD + IPD Core
 ├── OPD queue management (new vs. follow-up, token generation, call patient)
-├── OPD number — date-wise auto-increment
+├── OPD number — globally auto-incrementing per visit
 ├── IPD admission + UHID assignment
 ├── Vital signs entry (nurse triage station)
 ├── Intake questionnaire (structured symptom collection)
 └── Department routing (OPD, IPD, Pathology)
 
-Week 3: Clinical + Pathology
+Week 3: Clinical + AI + Pathology
 ├── Doctor consultation workspace (SOAP notes, ICD-10 code search + assignment)
 ├── E-prescription (drug + dosage + frequency + duration + instructions)
 ├── Prescription print (PDF + thermal printer format, NABH-compliant letterhead)
+├── Drug-Drug Interaction (DDI) deterministic checks
+├── CDSS — deterministic insights from vitals + questionnaire responses
+├── NLP-based consultation summary (auto-summarizes SOAP note into plain-language summary)
+├── Questionnaire-driven differential suggestion (rule-based, not LLM)
 ├── Pathology lab order entry (from OPD/IPD doctor)
 ├── Pathology result entry + normal/abnormal flagging
 └── Referred-by report linkage
 
-Week 4: Billing + Polish + Stabilization
+Week 4: Billing + AI Polish + Stabilization
 ├── OPD/IPD billing (itemized charges, payment modes: cash/UPI/card/insurance)
 ├── Receipt print (PDF)
-├── Bug fixes + integration testing
+├── AI feature integration testing + edge case hardening
+├── Bug fixes + end-to-end integration testing
 ├── Staff user management UI (Admin panel)
 └── Staging deployment + client walkthrough
 ```
@@ -163,7 +168,7 @@ Week 4: Billing + Polish + Stabilization
 | Multiple contact numbers | ✅ | P0 |
 | Categorized address (city + area) | ✅ | P0 |
 | Referred-by field | ✅ | P0 |
-| OPD number (date-wise unique auto-increment) | ✅ | P0 |
+| OPD number (globally auto-incrementing per visit) | ✅ | P0 |
 | OPD queue (new + follow-up, token, call system) | ✅ | P0 |
 | IPD admission + bed assignment (basic) | ✅ | P0 |
 | Vital signs entry | ✅ | P0 |
@@ -176,8 +181,9 @@ Week 4: Billing + Polish + Stabilization
 | Billing — OPD/IPD itemized bill + receipt print | ✅ | P1 |
 | Staff user management + RBAC | ✅ | P0 |
 | FRRO fields (Passport, Visa number, nationality) | ✅ | P0 |
-| **AI/NLP summaries** | ❌ Week 5–6 | P2 |
-| **CDSS deterministic insights** | ❌ Week 5–6 | P2 |
+| **AI/NLP consultation summaries** | ✅ Week 3 | P1 |
+| **CDSS deterministic insights (vitals + questionnaire)** | ✅ Week 3 | P1 |
+| **Questionnaire-driven differential suggestion** | ✅ Week 3 | P1 |
 | **ABDM live API integration** | ❌ Post-MVP | P3 |
 | **OT / Anaesthetic notes** | ❌ Post-MVP | P3 |
 | **Multitenancy (admin provisioning)** | ❌ Architecture only | — |
@@ -186,15 +192,15 @@ Week 4: Billing + Polish + Stabilization
 
 ## 6. Full Product Scope — Post-MVP Phases
 
-After the 4-week MVP, development continues in Shaped Kanban cycles:
+After the 4-week MVP (which includes core AI/CDSS), development continues in Shaped Kanban cycles:
 
 | Phase | Cycles | Scope |
 |:---|:---|:---|
-| **Phase 1: AI Layer** | Weeks 5–6 (1 cycle) | NLP-based consultation summary, CDSS deterministic insights from vitals + questionnaire, questionnaire-driven differential suggestion |
+| **Phase 1: AI Upgrade** | Weeks 5–6 (1 cycle) | LLM-powered SOAP note generation, Ambient AI Scribe (audio → transcript → SOAP), advanced CDSS with LLM differential diagnosis cards |
 | **Phase 2: ABDM Integration** | Cycle 3 | ABHA ID verification via ABDM sandbox API, Health Facility Registry enrollment, Health Information Exchange (consent-based record sharing) |
 | **Phase 3: OT & Anaesthetic** | Cycle 4 | OT scheduling, pre-operative checklist, anaesthetic notes, post-op vitals |
 | **Phase 4: Full Multi-Tenancy** | Cycle 4–5 | Tenant provisioning, per-hospital config, billing across tenants, Superadmin panel |
-| **Phase 5: Enterprise Features** | Cycle 5–6 | HR module, Maintenance management, NABH quality audit module, advanced reporting, Ambient AI Scribe |
+| **Phase 5: Enterprise Features** | Cycle 5–6 | HR module, Maintenance management, NABH quality audit module, advanced reporting, SMART on FHIR / HL7 FHIR R4 endpoints |
 
 ---
 
@@ -212,7 +218,7 @@ The following are explicitly **not** in the 4-week MVP:
 - Advanced reporting / analytics dashboard
 - Multitenancy provisioning UI (architecture supports it, UI not built)
 - Data migration tooling (pending confirmation of source system)
-- AI/NLP features (weeks 5–6)
+- LLM-powered AI Scribe / audio transcription (Phase 1 post-MVP)
 - SMART on FHIR / HL7 FHIR R4 endpoints
 
 ---
@@ -427,7 +433,7 @@ PATIENT
     │
     ├── OPD VISITS (0..*)
     │   └── OPD Number: Auto-increment per day — e.g. OPD-231026-001
-    │       (Resets to 001 each day. Unique constraint: date + sequence)
+    │       (Globally auto-incrementing. Each visit = new OPD number, even same day)
     │
     └── IPD ADMISSIONS (0..*)
         └── IPD Number: Auto-increment per admission — e.g. IPD-001, IPD-002
@@ -436,7 +442,7 @@ PATIENT
 
 **Key rules:**
 - A patient gets **one UHID** for life, assigned at first registration.
-- Each OPD visit generates a **new OPD number** (date + sequence).
+- Each OPD visit generates a **new OPD number** (global auto-increment, no date reset — multiple visits on the same day each get a distinct OPD number).
 - Each IPD admission generates a **new IPD number** (global sequence, not date-scoped).
 - OPD and IPD numbers are separate sequences — OPD-001 and IPD-001 can coexist for different patients.
 - Follow-up OPD visits get a new OPD number but are linked to the same UHID and optionally to the original encounter.
@@ -540,7 +546,7 @@ The hospital client is currently using one of the following (to be confirmed):
 | Term | Definition |
 |:---|:---|
 | **UHID** | Unique Health Identifier — lifetime unique ID assigned to a patient across all visits to the hospital |
-| **OPD Number** | Outpatient Department number — assigned per OPD visit, date-wise unique and auto-incrementing |
+| **OPD Number** | Outpatient Department number — assigned per OPD visit, globally auto-incrementing (no date reset; multiple visits on the same day each receive a unique OPD number) |
 | **IPD Number** | Inpatient Department number — assigned per admission, globally auto-incrementing |
 | **NABH** | National Accreditation Board for Hospitals & Healthcare Providers — Indian hospital accreditation body |
 | **ABDM** | Ayushman Bharat Digital Mission — India's national digital health initiative |
