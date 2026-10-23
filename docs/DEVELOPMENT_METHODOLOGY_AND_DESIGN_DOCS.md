@@ -1,4 +1,4 @@
-# ClinicOS — Development Methodology & Essential Design Documents
+# Bright Solutions — Development Methodology & Essential Design Documents
 
 > **Audience:** Core team (currently 2 devs, scaling to 5)  
 > **Timeline:** 6 months (≈ 26 weeks)  
@@ -67,7 +67,7 @@ The right methodology must be **lightweight enough for 2 people** but **structur
 - **Compliance gates** at the end of each cycle: a 30-minute review of whether anything built in the cycle triggers regulatory documentation updates (NABH, ABDM, DPDP).
 - **Audit trail requirements** are treated as first-class stories, not afterthoughts.
 
-### Why This Works for ClinicOS
+### Why This Works for Bright Solutions
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -149,35 +149,67 @@ These are written once and updated infrequently. They define the "what" and "why
 
 | # | Document | Purpose | Format | Pages | Status |
 |:--|:---|:---|:---|:---:|:---|
-| **D1** | **Product Requirements Document (PRD)** | What the product does, who it's for, success metrics, scope boundaries | Markdown | 5–8 | ⚠️ Partially exists as `01_project_brief.md` — needs expansion |
-| **D2** | **Feature Specification** | Detailed per-module feature breakdown with acceptance criteria | Markdown | 10–15 | ⚠️ Exists as `02_feature_spec.md` — needs compliance columns |
-| **D3** | **Technical Architecture Document (TAD)** | System topology, tech stack, data flow, multi-tenancy, AI pipeline | Markdown + Mermaid | 15–25 | ⚠️ Exists as `03_technical_architecture.md` — needs on-prem topology |
-| **D4** | **Data Model & Schema Specification** | Every table, column, index, constraint, RLS policy across all databases | SQL DDL + ERD | 15–20 | ⚠️ Partially in TAD — needs extraction into standalone doc |
-| **D5** | **API Contract Specification** | Every endpoint: method, path, request/response schemas, error codes, auth | OpenAPI 3.1 YAML + Markdown | 20–30 | ⚠️ Partially exists as `FRONTEND_API_AND_SCHEMA_SPEC.md` — needs OpenAPI formalization |
+| **D1** | **Product Requirements Document (PRD)** | What the product does, who it's for, success metrics, scope boundaries | Markdown | 5–8 | ✅ Exists — `docs/design/01_PRD.md` |
+| **D2** | **Feature Specification** | Detailed per-module feature breakdown with acceptance criteria | Markdown | 10–15 | ❌ Missing |
+| **D3** | **Technical Architecture Document (TAD)** | System topology, tech stack, data flow, multi-tenancy, AI pipeline | Markdown + Mermaid | 15–25 | ❌ Needs full rewrite for MySQL + on-prem |
+| **D4** | **Data Model & Schema Specification** | Every table, column, index, constraint across all MySQL databases | SQL DDL + ERD | 15–20 | ❌ Missing — must be created before backend dev starts |
+| **D5** | **API Contract Specification** | Every endpoint: method, path, request/response schemas, error codes, auth | OpenAPI 3.1 YAML + Markdown | 20–30 | ⚠️ Partial — needs full OpenAPI formalization |
 | **D6** | **Compliance & Regulatory Matrix** | NABH, ABDM, DPDP Act 2023, and other Indian healthcare standards mapped to features | Markdown table | 8–12 | ❌ **Missing — Critical** |
-| **D7** | **Deployment Architecture Document** | On-prem vs. cloud topology, Docker/K8s configs, network diagrams, backup strategy | Markdown + Diagrams | 8–12 | ❌ **Missing — Critical** |
+| **D7** | **Deployment Architecture Document** | Staging vs. on-prem topology, Docker configs, server setup, backup strategy | Markdown + Diagrams | 8–12 | ❌ **Missing — Critical** |
 | **D8** | **Security & Access Control Specification** | RBAC matrix, authentication flows, encryption standards, audit logging, PHI handling | Markdown | 8–10 | ❌ **Missing — Important** |
 
-### Tier 2: Living Documents (Created in Cycle 1, Updated Every Cycle)
+---
+
+### Tier 1B: Backend Documentation (Must Exist BEFORE Backend Dev Starts)
+
+These documents are what the **backend lead and backend junior** work from. Without them, development cannot start in a coordinated way.
+
+| # | Document | Purpose | Format | Owner |
+|:--|:---|:---|:---|:---|
+| **D9** | **Database Schema — Full DDL** | Every MySQL table, column type, constraint, index, foreign key, ENUM values — the canonical source of truth for the schema | SQL DDL file | Backend Lead |
+| **D10** | **Entity Relationship Diagrams (ERDs)** | Visual representation of all table relationships per functional domain (Patient, Clinical, Billing, Auth) | Mermaid erDiagram | Backend Lead |
+| **D11** | **API Endpoint Inventory** | Complete list of all REST endpoints grouped by module — method, URL, request body shape, response shape, auth required, role access | Markdown table | Backend Lead |
+| **D12** | **Service Layer Design** | For each module: what the service class does, what it validates, what it returns, what DB queries it runs — before a single line of service code is written | Markdown | Backend Lead |
+| **D13** | **RBAC Permission Matrix** | Every role × every endpoint/action — which roles can read, write, delete in each module | Markdown table | Backend Lead |
+| **D14** | **Background Jobs & Async Tasks Spec** | Any Celery/ARQ tasks, scheduled jobs, or async operations — trigger, payload, frequency, failure handling | Markdown | Backend Lead |
+
+---
+
+### Tier 1C: Frontend Documentation (Must Exist BEFORE Frontend Dev Starts)
+
+These documents are what the **frontend lead and frontend juniors** work from. Juniors especially cannot build isolated components without these.
+
+| # | Document | Purpose | Format | Owner |
+|:--|:---|:---|:---|:---|
+| **D15** | **Page & Route Map** | Every page in the app — URL route, page name, which role(s) can access it, which API endpoints it consumes | Markdown table | Frontend Lead |
+| **D16** | **UI Component Inventory** | Every reusable component — name, props, variants, which pages use it | Markdown | Frontend Lead |
+| **D17** | **Design System & Tokens** | Color palette, typography scale, spacing system, button variants, form field styles, status colors — the design foundation every junior builds from | Markdown + CSS vars | Frontend Lead |
+| **D18** | **Wireframes / Screen Mockups** | Low-fidelity screens for every page — layout, key UI elements, form fields, table columns — enough for a junior to implement without guessing | Figma / draw.io | Frontend Lead |
+| **D19** | **State Management Design** | How global/shared state is managed (Context API, Zustand, etc.) — what's stored, where, how updated | Markdown | Frontend Lead |
+| **D20** | **Print Template Specs** | Exact layout and content of every printable document — Rx slip, patient receipt, lab report, token slip — with field mappings | Markdown + mockup | Frontend Lead |
+
+---
+
+### Tier 2: Living Documents (Created Before Cycle 1, Updated Every Cycle)
 
 These evolve continuously throughout development.
 
 | # | Document | Purpose | Format | Update Frequency |
 |:--|:---|:---|:---|:---|
-| **D9** | **Architecture Decision Records (ADRs)** | Record every significant technical decision with context, options considered, and rationale | Markdown (1 per decision) | As decisions are made |
-| **D10** | **User Stories & Acceptance Criteria** | Structured user stories with Given/When/Then acceptance criteria for every feature | Markdown | Every cycle |
-| **D11** | **Cycle Pitch Documents** | Per-cycle problem statement, appetite, solution shape, no-goes | Markdown (1 per cycle) | Every cycle |
-| **D12** | **Test Strategy & Test Plan** | Testing approach: unit, integration, E2E, load testing; coverage targets; CI pipeline | Markdown | Updated each cycle |
-| **D13** | **API Changelog** | Breaking changes, deprecations, new endpoints — versioned | Markdown | Every release |
+| **D21** | **Architecture Decision Records (ADRs)** | Record every significant technical decision with context, options considered, and rationale | Markdown (1 per decision) | As decisions are made |
+| **D22** | **User Stories & Acceptance Criteria** | Structured user stories with Given/When/Then acceptance criteria for every feature | Markdown | Every cycle |
+| **D23** | **Cycle Pitch Documents** | Per-cycle problem statement, appetite, solution shape, no-goes | Markdown (1 per cycle) | Every cycle |
+| **D24** | **Test Strategy & Test Plan** | Testing approach: unit, integration, E2E, load testing; coverage targets; CI pipeline | Markdown | Updated each cycle |
+| **D25** | **API Changelog** | Breaking changes, deprecations, new endpoints — versioned | Markdown | Every release |
 
 ### Tier 3: Reference Documents (Created Once, Consulted Often)
 
 | # | Document | Purpose | Format |
 |:--|:---|:---|:---|
-| **D14** | **Developer Onboarding Guide** | Setup instructions, architecture overview, coding conventions, PR process | Markdown |
-| **D15** | **Coding Standards & Conventions** | Python/FastAPI patterns, naming conventions, error handling, logging standards | Markdown |
-| **D16** | **Environment Configuration Guide** | All env vars, secrets management, database connection strings, feature flags | Markdown + `.env.example` |
-| **D17** | **Incident Response & Rollback Playbook** | What to do when prod breaks — rollback procedures, on-call escalation | Markdown |
+| **D26** | **Developer Onboarding Guide** | Setup instructions, architecture overview, coding conventions, PR process | Markdown |
+| **D27** | **Coding Standards & Conventions** | Python/FastAPI backend patterns + React frontend patterns, naming conventions, error handling | Markdown |
+| **D28** | **Environment Configuration Guide** | All env vars, secrets management, database connection strings, feature flags | Markdown + `.env.example` |
+| **D29** | **Incident Response & Rollback Playbook** | What to do when prod breaks — rollback procedures, on-call escalation | Markdown |
 
 ---
 
@@ -189,7 +221,7 @@ Diagrams are not decorations. Each one answers a specific architectural question
 
 | # | Diagram | Type | Tool | What It Answers |
 |:--|:---|:---|:---|:---|
-| **DG1** | **System Context Diagram** | C4 Level 1 | Mermaid / draw.io | "What external systems does ClinicOS interact with?" (ABDM, payment gateways, hospital EHRs, LLM providers) |
+| **DG1** | **System Context Diagram** | C4 Level 1 | Mermaid / draw.io | "What external systems does Bright Solutions interact with?" (ABDM, payment gateways, hospital EHRs, LLM providers) |
 | **DG2** | **Container Diagram** | C4 Level 2 | Mermaid / draw.io | "What are the deployable units?" (Each microservice, databases, API gateway, message broker, AI gateway) |
 | **DG3** | **Entity Relationship Diagram (ERD)** | Database | dbdiagram.io / Mermaid | "What are the tables and how do they relate?" — one ERD per database |
 | **DG4** | **Deployment Topology — Cloud** | Infrastructure | draw.io / Mermaid | "How are containers deployed on AWS/Azure?" (K8s pods, managed DBs, load balancers, CDN) |
@@ -222,33 +254,73 @@ Diagrams are not decorations. Each one answers a specific architectural question
 
 ## 7. Document Ownership & Lifecycle
 
-| Document | Owner | Reviewer | Created | Updated |
-|:---|:---|:---|:---|:---|
-| PRD (D1) | Product Lead (Dev 1) | Dev 2 | Before Cycle 1 | Major pivots only |
-| Feature Spec (D2) | Product Lead | Dev 2 | Before Cycle 1 | Each cycle |
-| Tech Architecture (D3) | Tech Lead (Dev 2) | Dev 1 | Before Cycle 1 | Architecture changes |
-| Data Model (D4) | Tech Lead | Dev 1 | Before Cycle 1 | Schema migrations |
-| API Spec (D5) | Both | Both | Before Cycle 1 | Each endpoint change |
-| Compliance Matrix (D6) | Product Lead | External (NABH consultant) | Before Cycle 1 | Each compliance gate |
-| Deployment Arch (D7) | Tech Lead | Dev 1 | Before Cycle 1 | Infrastructure changes |
-| ADRs (D9) | Whoever makes the decision | Other dev | Ongoing | Immutable once decided |
-| Cycle Pitches (D11) | Both (shaping session) | Both | Each cool-down | Immutable once cycle starts |
-| Test Plan (D12) | Both | Both | Cycle 1 | Each cycle |
+### Core Documents
+
+| Document | Owner | Reviewer | Must Exist Before |
+|:---|:---|:---|:---|
+| PRD (D1) | Backend Lead | Frontend Lead | Any development |
+| Feature Spec (D2) | Backend Lead | Frontend Lead | Timeline creation |
+| Tech Architecture (D3) | Backend Lead | Frontend Lead | Any development |
+| Compliance Matrix (D6) | Backend Lead | Both | Any clinical feature |
+| Deployment Arch (D7) | Backend Lead | Frontend Lead | Staging setup |
+
+### Backend Documents — Backend Lead owns, Backend Junior consumes
+
+| Document | Owner | Reviewer | Must Exist Before |
+|:---|:---|:---|:---|
+| Database Schema DDL (D9) | Backend Lead | Backend Junior | Backend dev starts |
+| ERDs (D10) | Backend Lead | Both | Backend dev starts |
+| API Endpoint Inventory (D11) | Backend Lead | Frontend Lead | Frontend dev starts |
+| Service Layer Design (D12) | Backend Lead | Backend Junior | Backend junior picks up any task |
+| RBAC Permission Matrix (D13) | Backend Lead | Both | Auth implementation |
+| Background Jobs Spec (D14) | Backend Lead | Backend Junior | Any async task implementation |
+
+### Frontend Documents — Backend Lead creates, Frontend Lead owns + updates during dev
+
+| Document | Created By | Owner (During Dev) | Must Exist Before |
+|:---|:---|:---|:---|
+| Page & Route Map (D15) | Backend Lead | Frontend Lead | Frontend dev starts |
+| UI Component Inventory (D16) | Backend Lead | Frontend Lead | Juniors write any component |
+| Design System & Tokens (D17) | Backend Lead | Frontend Lead | Any UI work |
+| Wireframes / Mockups (D18) | Backend Lead | Frontend Lead | Juniors implement any page |
+| State Management Design (D19) | Backend Lead | Frontend Lead | Frontend dev starts |
+| Print Template Specs (D20) | Backend Lead | Frontend Lead | Any print feature |
+
+### Living Documents
+
+| Document | Owner | Reviewer | Updated |
+|:---|:---|:---|:---|
+| ADRs (D21) | Whoever decides | Other Lead | As decisions are made |
+| Cycle Pitches (D23) | Both Leads | Both | Each cool-down |
+| Test Plan (D24) | Both | Both | Each cycle |
 
 ### When a New Dev Joins (Scaling from 2 → 5)
 
 New developers should read documents in this exact order:
 
-1. **D14** (Onboarding Guide) → How to set up the environment
+**Junior Backend Dev:**
+1. **D26** (Onboarding Guide) → Environment setup
 2. **D1** (PRD) → What are we building and why
-3. **D3** (Technical Architecture) → How the system is structured
-4. **D4** (Data Model) → What the database looks like
-5. **D6** (Compliance Matrix) → What regulatory constraints we operate under
-6. **D15** (Coding Standards) → How we write code here
-7. **D5** (API Spec) → The contracts between frontend and backend
-8. Latest **D11** (Cycle Pitch) → What we're working on right now
+3. **D9** (Database Schema DDL) → Exact table/column structure
+4. **D10** (ERDs) → Visual relationships
+5. **D11** (API Endpoint Inventory) → Every endpoint they might touch
+6. **D12** (Service Layer Design) → How services are structured
+7. **D13** (RBAC Matrix) → Who can call what
+8. **D27** (Coding Standards) → How we write Python/FastAPI here
+9. Latest **D23** (Cycle Pitch) → What to build right now
 
-Time to productive contribution: **< 1 week** with this reading order.
+**Junior Frontend Dev:**
+1. **D26** (Onboarding Guide) → Environment setup
+2. **D1** (PRD) → What are we building and why
+3. **D15** (Page & Route Map) → Every page, route, and access level
+4. **D18** (Wireframes) → Visual target for every page
+5. **D17** (Design System & Tokens) → Colors, typography, spacing — never deviate
+6. **D16** (UI Component Inventory) → What reusable components exist already
+7. **D11** (API Endpoint Inventory) → Which APIs each page consumes
+8. **D27** (Coding Standards) → How we write React/CSS here
+9. Latest **D23** (Cycle Pitch) → What to build right now
+
+Time to productive contribution: **< 2 days** with this reading order.
 
 ---
 
@@ -270,28 +342,48 @@ Time to productive contribution: **< 1 week** with this reading order.
 
 ## 9. 6-Month Phased Timeline
 
-### Phase 0: Foundation & Documentation (Weeks 1–2) — Cool-down 0
+### Phase 0: Foundation & Documentation (Weeks 1–2) — MUST COMPLETE BEFORE DEV STARTS
 
-**Goal:** All Tier 1 documents and diagrams created or updated.
+**Goal:** All Tier 1, Tier 1B (Backend), and Tier 1C (Frontend) documents created. No development begins until both leads sign off on their respective doc sets.
 
 ```
-Week 1:
-├── Update PRD with on-prem + compliance scope (D1)
-├── Create Compliance Matrix — NABH + ABDM + DPDP (D6)
-├── Create Deployment Architecture — Cloud + On-Prem (D7)
-├── Create Security & Access Control Spec (D8)
-├── Draw System Context Diagram (DG1)
-└── Draw Container Diagram (DG2)
+Week 1: Architecture + Backend Docs
+├── D1  PRD — ✅ Done
+├── D2  Feature Specification (module-by-module with acceptance criteria)
+├── D3  Technical Architecture Document (updated for MySQL + on-prem)
+├── D4  Data Model & Schema Specification
+├── D6  Compliance Matrix — NABH + ABDM + DPDP
+├── D7  Deployment Architecture — Staging + On-Prem plan
+├── D8  Security & Access Control Spec (RBAC matrix)
+├── D9  Database Schema Full DDL (all MySQL tables)
+├── D10 ERDs (visual — all functional domains)
+├── D11 API Endpoint Inventory (all endpoints, grouped by module)
+├── D12 Service Layer Design (per module)
+└── D13 RBAC Permission Matrix (role × endpoint)
 
-Week 2:
-├── Extract Data Model into standalone doc (D4)
-├── Draw ERDs for all databases (DG3)
-├── Draw Cloud + On-Prem deployment topologies (DG4, DG5)
-├── Draw Auth flow sequence diagram (DG6)
-├── Draw PHI Data Flow diagram (DG7)
-├── Create Developer Onboarding Guide (D14)
-├── Create Coding Standards doc (D15)
-└── Write Cycle 1 Pitch (D11)
+Week 1: Frontend Docs (parallel with Backend Lead doing backend docs)
+├── D15 Page & Route Map
+├── D16 UI Component Inventory (planned components)
+├── D17 Design System & Tokens (palette, typography, spacing)
+├── D18 Wireframes for all MVP pages
+├── D19 State Management Design
+└── D20 Print Template Specs (Rx, receipt, lab report, token slip)
+
+End of Week 1: GATE — Both leads review each other's docs.
+           ← No dev starts until this gate is passed →
+
+Week 2: Reference Docs + Cycle Pitch
+├── D21 First ADRs (MySQL choice, FastAPI, React+Vite, auth approach)
+├── D22 User Stories + Acceptance Criteria (for Week 3–4 tasks)
+├── D23 Cycle 1 Pitch document
+├── D24 Test Strategy
+├── D26 Developer Onboarding Guide (so juniors can onboard)
+├── D27 Coding Standards (Python/FastAPI + React)
+├── D28 Environment Configuration Guide + .env.example
+└── Assign all Week 3 tasks to devs using D22 acceptance criteria
+
+End of Week 2: GATE — Juniors read their onboarding docs + confirm
+           environment is working → coding starts Week 3
 ```
 
 ### Cycle 1: Platform Foundation (Weeks 3–6)
@@ -350,45 +442,58 @@ Week 2:
 
 ## 10. Existing Documents — Gap Analysis
 
-| Document | Needed? | Exists? | File | Action Required |
-|:---|:---:|:---:|:---|:---|
-| PRD | ✅ | ⚠️ Partial | `docs/design/01_project_brief.md` | Add on-prem scope, Indian compliance, updated personas |
-| Feature Spec | ✅ | ⚠️ Partial | `docs/design/02_feature_spec.md` | Add NABH/ABDM compliance columns per feature |
-| Technical Architecture | ✅ | ⚠️ Partial | `docs/design/03_technical_architecture.md` | Add on-prem topology section, ABDM integration |
-| User Stories | ✅ | ⚠️ Partial | `docs/design/04_user_stories.md` | Add Given/When/Then acceptance criteria |
-| Roadmap | ✅ | ⚠️ Outdated | `docs/design/05_roadmap.md` | Replace with Shaped Kanban cycle plan |
-| **Data Model Spec** | ✅ | ❌ | — | **Create:** Extract from TAD + add migration strategy |
-| **Compliance Matrix** | ✅ | ❌ | — | **Create:** NABH + ABDM + DPDP mapping |
-| **Deployment Architecture** | ✅ | ❌ | — | **Create:** Cloud + On-prem + sync topology |
-| **Security Spec** | ✅ | ❌ | — | **Create:** RBAC matrix, encryption, audit logging |
-| **ADRs** | ✅ | ❌ | — | **Create:** Start with "Why FastAPI", "Why MySQL→PostgreSQL", "Shaped Kanban" |
-| **Coding Standards** | ✅ | ❌ | — | **Create:** Python/FastAPI patterns, PR checklist |
-| **Onboarding Guide** | ✅ | ❌ | — | **Create:** Setup steps, architecture summary |
-| **Test Strategy** | ✅ | ⚠️ Partial | `backend/tests/` | **Create:** Formal doc with coverage targets |
-| **API Changelog** | ✅ | ❌ | — | **Create:** Start maintaining from Cycle 1 |
-| System Context Diagram | ✅ | ❌ | — | **Create** |
-| Container Diagram | ✅ | ⚠️ Partial | In TAD | **Extract** into standalone |
-| ERDs | ✅ | ❌ | — | **Create** from DDL in TAD |
-| Cloud Deployment Topology | ✅ | ❌ | — | **Create** |
-| On-Prem Deployment Topology | ✅ | ❌ | — | **Create** |
-| Auth Flow Sequence | ✅ | ❌ | — | **Create** |
-| PHI Data Flow | ✅ | ❌ | — | **Create** |
+### Core Docs
+
+| Document | Status | File | Action |
+|:---|:---|:---|:---|
+| PRD (D1) | ✅ Done | `docs/design/01_PRD.md` | Keep updated |
+| Feature Spec (D2) | ❌ Missing | — | **Create before dev** |
+| Tech Architecture (D3) | ❌ Needs rewrite | Old file archived | **Rewrite for MySQL + on-prem** |
+| Data Model Spec (D4) | ❌ Missing | — | **Create before backend dev** |
+| API Contract Spec (D5) | ⚠️ Partial | `FRONTEND_API_AND_SCHEMA_SPEC.md` | **Formalize into OpenAPI** |
+| Compliance Matrix (D6) | ❌ Missing | — | **Create — Critical** |
+| Deployment Architecture (D7) | ❌ Missing | — | **Create — Critical** |
+| Security Spec (D8) | ❌ Missing | — | **Create — Important** |
+
+### Backend Docs
+
+| Document | Status | Action |
+|:---|:---|:---|
+| Database Schema Full DDL (D9) | ❌ Missing | **Create before backend dev starts** |
+| ERDs (D10) | ❌ Missing | **Create before backend dev starts** |
+| API Endpoint Inventory (D11) | ⚠️ Partial | **Complete before frontend dev starts** |
+| Service Layer Design (D12) | ❌ Missing | **Create before backend junior picks up tasks** |
+| RBAC Permission Matrix (D13) | ❌ Missing | **Create before auth implementation** |
+| Background Jobs Spec (D14) | ❌ Missing | Create when async tasks are scoped |
+
+### Frontend Docs
+
+| Document | Status | Action |
+|:---|:---|:---|
+| Page & Route Map (D15) | ❌ Missing | **Create before frontend dev starts** |
+| UI Component Inventory (D16) | ❌ Missing | **Create before juniors write any component** |
+| Design System & Tokens (D17) | ❌ Missing | **Create before any UI work** |
+| Wireframes / Mockups (D18) | ❌ Missing | **Create before frontend juniors start** |
+| State Management Design (D19) | ❌ Missing | **Create before frontend dev starts** |
+| Print Template Specs (D20) | ❌ Missing | **Create before any print feature** |
 
 ### Summary
 
-- **8 documents exist** (5 partially, 3 as specs)
-- **9 documents missing** (4 critical, 3 important, 2 reference)
-- **7 diagrams missing** (all Tier 1)
+- **1 document complete** (PRD)
+- **8 backend/core documents missing** — block all development
+- **6 frontend documents missing** — block all frontend development
+- **5 living documents missing** — needed in Week 2 before coding
+- **Total: 20 documents to create before timeline + work allocation**
 
 ---
 
 ## 11. Appendix: Indian Healthcare Compliance Standards
 
-These are the standards ClinicOS must comply with. Each must be mapped to specific features in the Compliance Matrix (D6).
+These are the standards Bright Solutions must comply with. Each must be mapped to specific features in the Compliance Matrix (D6).
 
 ### NABH (National Accreditation Board for Hospitals & Healthcare Providers)
 
-| Standard Area | Key Requirements | ClinicOS Impact |
+| Standard Area | Key Requirements | Bright Solutions Impact |
 |:---|:---|:---|
 | **Information Management System (IMS)** | Unique patient identification, standardized clinical documentation, data security | UHID generation, structured SOAP notes, encrypted storage |
 | **Patient Rights & Education** | Informed consent tracking, patient access to records | Consent management module, patient portal |
@@ -398,7 +503,7 @@ These are the standards ClinicOS must comply with. Each must be mapped to specif
 
 ### ABDM (Ayushman Bharat Digital Mission)
 
-| Component | Requirement | ClinicOS Impact |
+| Component | Requirement | Bright Solutions Impact |
 |:---|:---|:---|
 | **ABHA (Health ID)** | Verify/create 14-digit ABHA number for every patient | Patient registration integration |
 | **Health Information Exchange** | Push/pull health records via HIE-CM (Health Information Exchange - Consent Manager) | FHIR-based data exchange module |
@@ -407,7 +512,7 @@ These are the standards ClinicOS must comply with. Each must be mapped to specif
 
 ### DPDP Act 2023 (Digital Personal Data Protection)
 
-| Requirement | ClinicOS Impact |
+| Requirement | Bright Solutions Impact |
 |:---|:---|
 | **Purpose Limitation** | PHI only processed for stated clinical purpose; explicit consent required |
 | **Data Minimization** | Collect only necessary patient data |
@@ -429,18 +534,34 @@ These are the standards ClinicOS must comply with. Each must be mapped to specif
 
 ## Quick Reference: What to Create Next
 
-**Priority order for missing documents:**
+**These must be done before any timeline creation or work allocation.** Both leads work in parallel on their respective docs.
 
-1. 🔴 **Compliance Matrix (D6)** — Cannot build compliant software without knowing what compliance means
-2. 🔴 **Deployment Architecture (D7)** — On-prem vs. cloud is an architectural fork that affects everything
-3. 🟡 **Security Spec (D8)** — RBAC, encryption, and audit logging design before Cycle 1
-4. 🟡 **Data Model Spec (D4)** — Extract from TAD, add migration strategy
-5. 🟢 **ADRs (D9)** — Start recording decisions retroactively
-6. 🟢 **Coding Standards (D15)** — Before a 3rd dev joins
-7. 🟢 **Onboarding Guide (D14)** — Before a 3rd dev joins
-8. 🟢 **Test Strategy (D12)** — Formalize what's already happening
-9. 🟢 **API Changelog (D13)** — Start maintaining from next release
+### Backend Lead — Do First (Week 1)
+1. 🔴 **Feature Specification (D2)** — module-by-module breakdown with acceptance criteria
+2. 🔴 **Database Schema Full DDL (D9)** — all MySQL tables before any model is written
+3. 🔴 **ERDs (D10)** — visual table relationships per domain
+4. 🔴 **API Endpoint Inventory (D11)** — every route, method, request/response shape
+5. 🔴 **RBAC Permission Matrix (D13)** — role × endpoint access before auth is built
+6. 🟡 **Technical Architecture Doc (D3)** — rewrite for MySQL + on-prem
+7. 🟡 **Service Layer Design (D12)** — before backend junior starts any task
+8. 🟡 **Compliance Matrix (D6)** — NABH + ABDM + DPDP
+9. 🟡 **Deployment Architecture (D7)** — staging + on-prem plan
+10. 🟡 **Security Spec (D8)** — encryption + audit logging
+
+### Frontend Lead — Do First (Week 1, parallel)
+1. 🔴 **Page & Route Map (D15)** — every page, route, role access
+2. 🔴 **Wireframes / Mockups (D18)** — every MVP page, low-fi enough to build from
+3. 🔴 **Design System & Tokens (D17)** — colors, typography, spacing — before any CSS
+4. 🔴 **UI Component Inventory (D16)** — what components exist / need to be built
+5. 🟡 **Print Template Specs (D20)** — Rx, receipt, lab report, token slip layouts
+6. 🟡 **State Management Design (D19)** — before any frontend data-fetching
+
+### Both Leads — Week 2 (before coding starts)
+7. 🟢 **Developer Onboarding Guide (D26)** — so juniors can start on Day 1 of Week 3
+8. 🟢 **Coding Standards (D27)** — Python/FastAPI + React conventions
+9. 🟢 **User Stories + Acceptance Criteria (D22)** — task-level specs for every Week 3 task
+10. 🟢 **First Cycle Pitch (D23)** — what Week 3–6 delivers
 
 ---
 
-> **Next Step:** Review this document and confirm the methodology choice and document priorities. Once approved, we'll start creating the missing documents in priority order — beginning with the Compliance Matrix (D6) and Deployment Architecture (D7).
+> **Next Step:** Backend Lead starts D2 + D9 + D11 + D13 simultaneously. Frontend Lead starts D15 + D18 + D17 simultaneously. End of Week 1 review gate before any code is written.

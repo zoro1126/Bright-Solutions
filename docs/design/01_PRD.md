@@ -1,5 +1,5 @@
 # D1 — Product Requirements Document (PRD)
-## ClinicOS: Clinical Hospital Operating System
+## Bright Solutions: Clinical Hospital Operating System
 
 > **Document ID:** D1  
 > **Version:** 1.0  
@@ -34,7 +34,7 @@
 
 ## 1. Product Overview
 
-**ClinicOS** is a hospital clinical operating system built for Indian healthcare facilities, designed to replace legacy HIS platforms (EClinical, Gemini HIS, Vishual HIS). It provides a unified platform for managing the full patient journey — from registration at reception through OPD/IPD workflows, clinical consultation with NABH-compliant documentation, pathology orders, e-prescriptions, and billing.
+**Bright Solutions** is a hospital clinical operating system built for Indian healthcare facilities, designed to replace legacy HIS platforms (EClinical, Gemini HIS, Vishual HIS). It provides a unified platform for managing the full patient journey — from registration at reception through OPD/IPD workflows, clinical consultation with NABH-compliant documentation, pathology orders, e-prescriptions, and billing.
 
 The platform is architected as a **multi-tenant SaaS** from the foundation, but the first 4-week delivery is a **single-tenant prototype** for the initial hospital client, running in a staging environment and subsequently deployed on-premise.
 
@@ -65,7 +65,7 @@ The impact:
 - ABDM / ABHA integration is absent — hospitals cannot participate in India's national health mission.
 - Foreign patients require separate FRRO documentation — currently handled on paper.
 
-**ClinicOS solves this** with a unified, NABH-aware, ABDM-ready hospital operating system that a small team can deploy in weeks and staff can learn in days.
+**Bright Solutions solves this** with a unified, NABH-aware, ABDM-ready hospital operating system that a small team can deploy in weeks and staff can learn in days.
 
 ---
 
@@ -75,13 +75,14 @@ The impact:
 
 | Persona | Department | Core Workflow | Key Pain Points |
 |:---|:---|:---|:---|
-| **Receptionist / Front Desk** | Reception | Register new/follow-up patients, assign OPD/IPD numbers, manage walk-in queue, collect referred-by info, capture photo + ABHA + FRRO details | Manual paper registers, no queue visibility, no ABHA lookup |
+| **Receptionist / Front Desk** | Reception | Register new/follow-up patients, assign OPD/IPD numbers, manage walk-in queue, collect referred-by info, capture photo + ABHA + FRRO details, collect consultation fee | Manual paper registers, no queue visibility, no ABHA lookup |
 | **Triage Nurse** | OPD Triage | Record vital signs (BP, pulse, temp, SpO2, weight, height, BMI), administer intake questionnaire, flag emergency patients | Vitals written on paper, no ESI/acuity scoring |
 | **Consulting Doctor (MO/Specialist)** | OPD / Consultant Room | View patient queue, review vitals + questionnaire, write SOAP notes, assign ICD-10 codes, create e-prescription, sign consultation | Typing burden, no DDI alerts, no ICD-10 lookup |
-| **IPD Admissions Officer** | IPD Desk | Admit patient, assign UHID + bed, create IPD file, link to consulting doctor | Separate admission register, no link to OPD history |
-| **Pathology Lab Technician** | Laboratory | Receive lab orders from OPD/IPD, enter results, flag abnormal values | Paper lab slips, manual result entry into separate system |
-| **Billing Officer** | Billing | Generate OPD/IPD bill, record payment (cash/UPI/card/insurance), print receipt | No itemized billing tied to clinical orders, manual calculation |
-| **Medical Records / HR / Admin** | Admin | Manage staff accounts, view reports, manage department configurations | No central staff management, no audit trail |
+| **IPD Admissions Officer** | IPD Desk | Admit patient, assign UHID + bed + room type, create IPD file, link to admitting doctor | Separate admission register, no link to OPD history |
+| **Pathology Lab Technician** | Laboratory | Receive lab orders from OPD/IPD, enter results, flag abnormal values, generate lab bills | Paper lab slips, manual result entry into separate system |
+| **Pharmacist / Chemist** | Pharmacy | Receive signed prescriptions from OPD/IPD consultations, dispense drugs, mark availability, generate pharmacy bills | No digital prescription queue, manual drug dispensing record, no DDI visibility |
+| **Billing Officer** | Billing | Generate lab bills (OPD/IPD), generate consolidated IPD discharge bills, record payment, print receipts | No itemized billing tied to clinical orders, manual calculation of multi-day IPD charges |
+| **Medical Records / HR / Admin** | Admin | Manage staff accounts, configure hospital settings (UHID/OPD/IPD formats, tariffs, ward/bed setup, test catalog), view reports | No central staff management, no audit trail |
 
 ### 3.2 Secondary Users (Oversight & Management)
 
@@ -305,18 +306,53 @@ The following are explicitly **not** in the 4-week MVP:
 | RX-06 | **Thermal printer format** — condensed Rx slip for 80mm thermal printers | P1 |
 | RX-07 | Schedule H/H1 controlled substance flagging on prescription (CDSCO requirement) | P1 |
 
-### 8.6 IPD Admission
+### 8.6 IPD Admission, Stay & Discharge
 
-**Actor:** IPD Admissions Officer
+**Actors:** IPD Admissions Officer (admission), Doctor (daily rounds + discharge summary), Nurse (daily charges), Billing Officer (final bill)
+
+#### 8.6.1 Admission
 
 | ID | Requirement | Priority |
 |:--|:---|:---:|
 | IPD-01 | Create IPD admission record linked to existing patient UHID | P0 |
-| IPD-02 | Assign **IPD number** — auto-incremented per admission (not per day) | P0 |
-| IPD-03 | Assign ward, bed number, admitting doctor | P0 |
-| IPD-04 | IPD admission date/time, tentative discharge date | P0 |
-| IPD-05 | Admitting diagnosis (ICD-10), admission type (Emergency / Elective / Transfer) | P0 |
-| IPD-06 | IPD patients appear in doctor's inpatient list separately from OPD queue | P1 |
+| IPD-02 | Assign **IPD number** — admin-configured format, global auto-increment | P0 |
+| IPD-03 | Assign **ward**, **room type** (General / Semi-Private / Private / ICU), **bed number** | P0 |
+| IPD-04 | Room type drives daily bed rent rate (pre-configured per room type by admin) | P0 |
+| IPD-05 | Admission date/time, tentative discharge date, admission type (Emergency / Elective / Transfer) | P0 |
+| IPD-06 | Admitting doctor + admitting diagnosis (ICD-10) mandatory at admission | P0 |
+| IPD-07 | IPD patients visible in attending doctor's inpatient list (separate from OPD queue) | P1 |
+
+#### 8.6.2 During Stay — Charge Heads
+
+All charges accrue against the IPD admission record and are consolidated at discharge.
+
+| ID | Charge Head | How It Accrues | Priority |
+|:--|:---|:---|:---:|
+| IPD-08 | **Daily bed/room rent** | Auto-calculated: room type daily rate × number of days from admission to discharge | P0 |
+| IPD-09 | **Doctor visit charges** | Added per IPD ward round/visit by attending or consulting doctor | P0 |
+| IPD-10 | **Nursing charges** | Daily flat rate per nursing category (ICU nursing vs general ward) | P0 |
+| IPD-11 | **Procedure charges** | Added individually per procedure (IV line, catheter, wound dressing, injection administration, etc.) | P0 |
+| IPD-12 | **Pharmacy / medication charges** | Auto-populated from pharmacy dispenses linked to this IPD admission | P0 |
+| IPD-13 | **Lab / pathology charges** | Auto-populated from lab tests ordered against this IPD admission | P0 |
+| IPD-14 | **OT charges** | Added when OT is booked and used (operation theatre usage fee) | P0 |
+| IPD-15 | **Anaesthesia charges** | Added by anaesthetist per procedure | P0 |
+| IPD-16 | **Oxygen / equipment charges** | Daily rate for oxygen, ventilator, or special equipment usage | P0 |
+| IPD-17 | **Consumables** | Flat daily rate per patient category or itemized (gloves, syringes, bandages) | P1 |
+
+#### 8.6.3 Discharge Procedure
+
+| ID | Requirement | Priority |
+|:--|:---|:---:|
+| IPD-18 | Attending doctor initiates discharge — writes structured **Discharge Summary**: final diagnosis (ICD-10), treatment given, condition at discharge (Stable / Improved / LAMA / Expired / Transferred), medications at discharge, follow-up instructions, follow-up date | P0 |
+| IPD-19 | Doctor signs discharge summary — locks it (same as consultation sign-off mechanism) | P0 |
+| IPD-20 | System generates **consolidated IPD bill** from all accrued charge heads (IPD-08 through IPD-17) | P0 |
+| IPD-21 | IPD bill is itemized — each charge head listed separately with dates and unit counts | P0 |
+| IPD-22 | Billing officer reviews, applies any discount (with reason + approval if above threshold), confirms payment | P0 |
+| IPD-23 | Payment modes: Cash / UPI / Card / Insurance (manually recorded — no gateway) | P0 |
+| IPD-24 | Print IPD discharge bill (PDF) + print discharge summary (PDF) | P0 |
+| IPD-25 | Bed is marked available upon discharge | P0 |
+| IPD-26 | Discharge summary printable separately for patient as a take-home document | P1 |
+| IPD-27 | LAMA (Left Against Medical Advice) discharge requires reason entry and generates a LAMA certificate | P1 |
 
 ### 8.7 Pathology (Laboratory)
 
@@ -335,18 +371,34 @@ The following are explicitly **not** in the 4-week MVP:
 
 ### 8.8 Billing
 
-**Actor:** Billing Officer
+**Actors:** Receptionist (consultation fee), Pharmacist (pharmacy bill), Lab/Billing Officer (lab bill), Billing Officer (IPD consolidated bill)
+
+#### OPD Billing
 
 | ID | Requirement | Priority |
 |:--|:---|:---:|
-| BILL-01 | Generate itemized OPD bill from: consultation fee + lab orders + procedure charges | P0 |
-| BILL-02 | Generate itemized IPD bill from: admission charges + daily room rate + procedures + lab + pharmacy | P0 |
-| BILL-03 | Payment modes: Cash, UPI, Debit/Credit Card, Insurance | P0 |
-| BILL-04 | Partial payment / split payment support | P1 |
-| BILL-05 | Print receipt (PDF) — with GST breakdown if applicable | P0 |
-| BILL-06 | Bill status: Draft → Confirmed → Paid / Partially Paid / Refunded / Written Off | P0 |
-| BILL-07 | Configurable tariff catalog (service code, name, default price, category) managed by admin | P0 |
-| BILL-08 | Discount entry with reason (requires authorization for amounts above threshold) | P1 |
+| BILL-01 | Consultation fee receipt generated at registration (fixed per doctor/department) | P0 |
+| BILL-02 | Lab bill generated at billing counter after test results — itemized per test | P0 |
+| BILL-03 | Pharmacy bill generated at pharmacy counter — itemized per dispensed drug | P0 |
+
+#### IPD Billing
+
+| ID | Requirement | Priority |
+|:--|:---|:---:|
+| BILL-04 | Consolidated IPD discharge bill — all charge heads itemized (bed rent, doctor visits, nursing, procedures, pharmacy, lab, OT, anaesthesia, oxygen, consumables) | P0 |
+| BILL-05 | Bed rent auto-calculated: room type daily rate × (discharge date − admission date) in days | P0 |
+| BILL-06 | Each charge head entry shows: date, description, quantity, unit rate, total | P0 |
+
+#### Common
+
+| ID | Requirement | Priority |
+|:--|:---|:---:|
+| BILL-07 | Payment modes: Cash, UPI, Card, Insurance (recorded manually — no gateway) | P0 |
+| BILL-08 | Print receipt PDF for all bill types (OPD consultation, pharmacy, lab, IPD discharge) | P0 |
+| BILL-09 | Bill status: Draft → Confirmed → Paid / Partially Paid / Refunded / Written Off | P0 |
+| BILL-10 | Configurable tariff/price catalog managed by admin (charge codes, names, rates, category) | P0 |
+| BILL-11 | Discount entry with reason; discounts above configured threshold require admin authorization | P1 |
+| BILL-12 | GST breakdown on receipt where applicable | P1 |
 
 ### 8.9 Authentication & User Management
 
@@ -386,7 +438,7 @@ The following are explicitly **not** in the 4-week MVP:
 
 ### 10.1 NABH (National Accreditation Board for Hospitals & Healthcare Providers)
 
-| NABH Standard | Area | ClinicOS Implementation |
+| NABH Standard | Area | Bright Solutions Implementation |
 |:---|:---|:---|
 | **IMS.1** | Unique patient identification | UHID mandatory, non-reusable |
 | **IMS.2** | Standardized clinical documentation | Structured SOAP notes, mandatory ICD-10 coding |
@@ -458,7 +510,7 @@ The hospital client is currently using one of the following (to be confirmed):
 - Vishual HIS
 
 **Migration scope for MVP:** TBD pending client confirmation. Tentative plan:
-- Phase 1: Export existing patient registry (name, phone, UHID equivalent if any) and import as ClinicOS patients.
+- Phase 1: Export existing patient registry (name, phone, UHID equivalent if any) and import as Bright Solutions patients.
 - Phase 2: Historical encounter data — assess feasibility post-MVP.
 
 **Action Required:** Confirm with client which system is currently live and obtain a data export sample before end of Week 1.
@@ -534,7 +586,7 @@ The hospital client is currently using one of the following (to be confirmed):
 | **OQ-2** | Follow-up patient routing: always same doctor, or configurable per department? | Backend Lead | Week 1 Day 3 |
 | **OQ-3** | OPD number format: is `OPD-YYMMDD-NNN` format acceptable, or does the client have a preferred prefix (e.g., hospital abbreviation)? | Backend Lead | Week 1 Day 1 |
 | **OQ-4** | Thermal printer model at the hospital? (affects Rx + token print format dimensions) | Frontend Lead | Week 2 |
-| **OQ-5** | Are there existing staff accounts to import, or will all staff be created fresh in ClinicOS? | Backend Lead | Week 1 |
+| **OQ-5** | Are there existing staff accounts to import, or will all staff be created fresh in Bright Solutions? | Backend Lead | Week 1 |
 | **OQ-6** | NABH accreditation: is the hospital currently NABH-accredited, applying, or planning to apply? This affects how strictly NABH documentation fields must be enforced. | Backend Lead | Week 1 |
 | **OQ-7** | Is the Referred-by field a free text field, or should it link to a pre-populated list of referring doctors / facilities? | Frontend Lead | Week 1 |
 | **OQ-8** | Pathology test catalog: does the hospital have an existing test list with prices we should import? | Backend Lead | Week 1 |
@@ -556,7 +608,7 @@ The hospital client is currently using one of the following (to be confirmed):
 | **SOAP** | Subjective / Objective / Assessment / Plan — standard clinical note structure |
 | **DDI** | Drug-Drug Interaction — clinical safety check when multiple drugs are prescribed together |
 | **CDSCO** | Central Drugs Standard Control Organisation — regulates Schedule H/H1 controlled substance prescriptions |
-| **HIS** | Hospital Information System — legacy software category that ClinicOS replaces |
+| **HIS** | Hospital Information System — legacy software category that Bright Solutions replaces |
 | **MO** | Medical Officer — junior-level hospital doctor |
 | **ESI** | Emergency Severity Index — 5-level triage acuity scoring system (1=most critical, 5=non-urgent) |
 | **DPDP Act** | Digital Personal Data Protection Act 2023 — India's primary personal data protection law |
