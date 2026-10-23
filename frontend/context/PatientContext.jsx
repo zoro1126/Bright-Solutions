@@ -168,6 +168,47 @@ export function PatientProvider({ children }) {
     return newPatient;
   };
 
+  // Issue a Follow-Up Consultation Token for an existing registered patient
+  const issueFollowUpToken = (existingPatientId, followUpData = {}) => {
+    const existing = patients.find(p => p.id === existingPatientId || p.uhid === existingPatientId);
+    if (!existing) {
+      addToast('Patient record not found for follow-up.', 'error');
+      return null;
+    }
+
+    const nextTokenNum = 140 + patients.length + 1;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Generate a new encounter for this existing patient while preserving Master UHID and demographics
+    const followUpEncounter = {
+      ...existing,
+      id: `pat-${Date.now()}`,
+      opdId: `OPD-26-${Math.floor(1000 + Math.random() * 9000)}`,
+      tokenNumber: nextTokenNum,
+      isFollowUp: true,
+      visitType: 'FOLLOW_UP',
+      previousVisitDate: existing.registeredAt || 'Previous OPD Visit',
+      followUpReason: followUpData.followUpReason || 'Routine Post-Consultation Follow-Up',
+      doctorAssigned: followUpData.doctorAssigned || existing.doctorAssigned || "Dr. Kiran Patel (General & Internal Medicine)",
+      status: "WAITING",
+      appointmentTime: timeStr,
+      checkInTime: timeStr,
+      consultationStartTime: null,
+      checkOutTime: null,
+      waitTimeMinutes: 0,
+      consultationDurationMinutes: 0,
+      registeredAt: timeStr,
+      billingType: followUpData.billingType || (existing.insurance?.type === 'GOVT_SCHEME' ? 'PM-JAY Cashless' : 'Follow-Up (₹200)'),
+      notes: followUpData.notes || 'Follow-up encounter'
+    };
+
+    setPatients(prev => [followUpEncounter, ...prev]);
+    setSelectedPatientId(followUpEncounter.id);
+    addToast(`🔁 Follow-Up Token #${nextTokenNum} issued for ${existing.fullName} (Master UHID: ${existing.uhid})`, 'success');
+    return followUpEncounter;
+  };
+
   // Update existing patient data
   const updatePatient = (id, updates) => {
     setPatients(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
@@ -575,6 +616,7 @@ export function PatientProvider({ children }) {
       selectedPatientId,
       setSelectedPatientId,
       registerPatient,
+      issueFollowUpToken,
       updatePatient,
       updatePatientTiming,
       updatePatientDoctor,

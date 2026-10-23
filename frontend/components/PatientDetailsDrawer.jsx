@@ -17,14 +17,16 @@ import {
   Camera,
   Calendar,
   AlertCircle,
-  UserPlus
+  UserPlus,
+  RotateCcw
 } from 'lucide-react';
 
 export default function PatientDetailsDrawer({ 
   isOpen, 
   onClose, 
   patient, 
-  onOpenDoctorWorkspace 
+  onOpenDoctorWorkspace,
+  onOpenFollowUp
 }) {
   const { selectedPatient } = usePatients();
   const p = patient || selectedPatient;
@@ -357,11 +359,34 @@ export default function PatientDetailsDrawer({
 
         {/* Modal Footer Actions */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', borderTop: '1px solid var(--border-subtle)', paddingTop: 14, marginTop: 14, flexShrink: 0, gap: 10 }}>
+          {onOpenFollowUp && (
+            <button 
+              type="button"
+              className="m3-btn" 
+              onClick={() => { onClose(); onOpenFollowUp(p); }}
+              style={{
+                background: '#ede9fe',
+                color: '#6d28d9',
+                border: '1px solid #c4b5fd',
+                borderRadius: 9999,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '0 16px',
+                height: 36,
+                fontWeight: 700,
+                fontSize: 12
+              }}
+            >
+              <RotateCcw size={14} /> Issue Follow-Up Token
+            </button>
+          )}
           {onOpenDoctorWorkspace && (
             <button 
               type="button"
               className="m3-btn m3-btn-outlined" 
               onClick={() => { onClose(); onOpenDoctorWorkspace(); }}
+              style={{ borderRadius: 9999, height: 36, fontSize: 12 }}
             >
               <Stethoscope size={14} /> Open Doctor Workspace
             </button>

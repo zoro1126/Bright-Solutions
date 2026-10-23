@@ -30,20 +30,20 @@ export default function StatsRow() {
       {/* Card 3: Waiting in Lounge (Amber) */}
       <div className="stat-card">
         <div className="stat-card-accent-blob blob-yellow" />
-        <div className="stat-squircle-badge badge-bg-yellow" style={{ background: '#fef3c7', color: '#b45309' }}>
-          <Clock size={17} strokeWidth={2.4} />
+        <div className="stat-squircle-badge badge-bg-yellow">
+          <Clock size={17} strokeWidth={2.4} color="#ffffff" />
         </div>
-        <div className="stat-card-value" style={{ color: '#b45309' }}>{stats.waiting}</div>
+        <div className="stat-card-value">{stats.waiting}</div>
         <div className="stat-card-label">Waiting in Lounge</div>
       </div>
 
       {/* Card 4: In Consultation (Cobalt Blue) */}
       <div className="stat-card">
         <div className="stat-card-accent-blob blob-blue" />
-        <div className="stat-squircle-badge badge-bg-blue" style={{ background: '#e0f2fe', color: '#0284c7' }}>
-          <Stethoscope size={17} strokeWidth={2.4} />
+        <div className="stat-squircle-badge badge-bg-blue">
+          <Stethoscope size={17} strokeWidth={2.4} color="#ffffff" />
         </div>
-        <div className="stat-card-value" style={{ color: '#0284c7' }}>{stats.inConsultation}</div>
+        <div className="stat-card-value">{stats.inConsultation}</div>
         <div className="stat-card-label">In Consultation</div>
       </div>
     </div>

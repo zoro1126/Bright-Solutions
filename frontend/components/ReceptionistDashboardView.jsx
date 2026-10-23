@@ -116,37 +116,37 @@ export default function ReceptionistDashboardView({
         <div className="stat-card">
           <div className="stat-card-accent-blob blob-blue" />
           <div className="stat-squircle-badge badge-bg-blue">
-            <Users size={16} strokeWidth={2.4} />
+            <Users size={16} strokeWidth={2.4} color="#ffffff" />
           </div>
           <div className="stat-card-value">{patients.length}</div>
-          <div className="stat-card-label">Today's Intake Count</div>
+          <div className="stat-card-label">Today's Registrations</div>
         </div>
 
         <div className="stat-card">
           <div className="stat-card-accent-blob blob-yellow" />
           <div className="stat-squircle-badge badge-bg-yellow">
-            <Clock size={16} strokeWidth={2.4} />
+            <Clock size={16} strokeWidth={2.4} color="#ffffff" />
           </div>
           <div className="stat-card-value">#{nextToken}</div>
           <div className="stat-card-label">Next Token Number</div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-card-accent-blob blob-green" />
-          <div className="stat-squircle-badge badge-bg-green">
-            <Activity size={16} strokeWidth={2.4} />
+          <div className="stat-card-accent-blob blob-yellow" />
+          <div className="stat-squircle-badge badge-bg-yellow">
+            <Clock size={16} strokeWidth={2.4} color="#ffffff" />
           </div>
-          <div className="stat-card-value">5.2 min</div>
-          <div className="stat-card-label">Avg Triage Speed</div>
+          <div className="stat-card-value">{stats.waiting}</div>
+          <div className="stat-card-label">Waiting in Lounge</div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-card-accent-blob blob-rose" />
-          <div className="stat-squircle-badge badge-bg-rose">
-            <Sparkles size={16} strokeWidth={2.4} />
+          <div className="stat-card-accent-blob blob-blue" />
+          <div className="stat-squircle-badge badge-bg-blue">
+            <Stethoscope size={16} strokeWidth={2.4} color="#ffffff" />
           </div>
-          <div className="stat-card-value">{stats.insightsReady}</div>
-          <div className="stat-card-label">AI Insights Ready</div>
+          <div className="stat-card-value">{stats.inConsultation}</div>
+          <div className="stat-card-label">In Consultation</div>
         </div>
       </div>
 

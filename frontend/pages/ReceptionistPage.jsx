@@ -11,6 +11,7 @@ import ReceptionistDashboardView from '../components/ReceptionistDashboardView';
 import TokenSlipModal from '../components/TokenSlipModal';
 import TokenQueueManagementView from '../components/TokenQueueManagementView';
 import ReceptionistFlowGuideModal from '../components/ReceptionistFlowGuideModal';
+import FollowUpPatientModal from '../components/FollowUpPatientModal';
 import { usePatients } from '../context/PatientContext';
 
 export default function ReceptionistPage({ currentRole = 'receptionist', onSwitchRole, activeSubTab = 'dashboard', onLogout }) {
@@ -22,6 +23,13 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
   const [detailsPatient, setDetailsPatient] = useState(null);
   const [slipModalPatient, setSlipModalPatient] = useState(null);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
+  const [followUpPatient, setFollowUpPatient] = useState(null);
+
+  const handleOpenFollowUp = (patient = null) => {
+    setFollowUpPatient(patient);
+    setIsFollowUpOpen(true);
+  };
 
   // Synchronize state when activeSubTab prop changes (e.g. from URL routing or external links)
   useEffect(() => {
@@ -128,6 +136,7 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
           {(activeNavTab === 'token-queue' || activeNavTab === 'pending') && (
             <TokenQueueManagementView
               onOpenRegister={() => setIsRegisterOpen(true)}
+              onOpenFollowUp={handleOpenFollowUp}
               onPrintSlip={(patient) => setSlipModalPatient(patient)}
               onOpenPatientDetails={(p) => {
                 setDetailsPatient(p);
@@ -136,21 +145,19 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
             />
           )}
 
-          {/* TAB 3: All Patients Directory Queue */}
+          {/* TAB 3: All Patients Directory (Dedicated to records and roster, stats row removed) */}
           {activeNavTab === 'queue' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <StatsRow />
-              <div className="reception-workspace">
-                <PatientQueue
-                  onOpenRegister={() => setIsRegisterOpen(true)}
-                  onPrintSlip={(p) => setSlipModalPatient(p)}
-                  onOpenPatientDetails={(p) => {
-                    setDetailsPatient(p);
-                    setIsDetailsOpen(true);
-                  }}
-                  externalFilter="ALL"
-                />
-              </div>
+            <div className="reception-workspace" style={{ width: '100%' }}>
+              <PatientQueue
+                onOpenRegister={() => setIsRegisterOpen(true)}
+                onOpenFollowUp={handleOpenFollowUp}
+                onPrintSlip={(p) => setSlipModalPatient(p)}
+                onOpenPatientDetails={(p) => {
+                  setDetailsPatient(p);
+                  setIsDetailsOpen(true);
+                }}
+                externalFilter="ALL"
+              />
             </div>
           )}
 
@@ -172,6 +179,7 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
           setDetailsPatient(null);
         }}
         onOpenDoctorWorkspace={() => onSwitchRole && onSwitchRole('doctor')}
+        onOpenFollowUp={handleOpenFollowUp}
       />
 
       {/* Registration Modal (P-REC-02) */}
@@ -179,6 +187,19 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
         isOpen={isRegisterOpen}
         onClose={() => setIsRegisterOpen(false)}
         onRegisteredAndStartIntake={handleRegisteredAndStartIntake}
+      />
+
+      {/* Follow-Up Patient Encounter Modal */}
+      <FollowUpPatientModal
+        isOpen={isFollowUpOpen}
+        initialPatient={followUpPatient}
+        onClose={() => {
+          setIsFollowUpOpen(false);
+          setFollowUpPatient(null);
+        }}
+        onSuccess={(newEncounter) => {
+          setSlipModalPatient(newEncounter);
+        }}
       />
 
       {/* Printable Token Slip Modal */}

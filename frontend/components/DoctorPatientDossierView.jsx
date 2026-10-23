@@ -358,6 +358,11 @@ export default function DoctorPatientDossierView({
                                   High Risk
                                 </span>
                               )}
+                              {(p.isFollowUp || p.visitType === 'FOLLOW_UP') && (
+                                <span style={{ fontSize: 9.5, padding: '1px 6px', background: '#ede9fe', color: '#6d28d9', borderRadius: 4, fontWeight: 700, border: '1px solid #ddd6fe' }}>
+                                  🔁 Follow-Up
+                                </span>
+                              )}
                             </div>
                             <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
                               {p.age}y {p.gender} • <strong style={{ fontFamily: 'var(--font-mono)' }}>{p.mrn}</strong> • {p.insurance?.provider || 'Self-Pay'}

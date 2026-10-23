@@ -91,6 +91,11 @@ export default function TokenSlipModal({ isOpen, patient, tokenNumber, onClose }
               <div style={{ fontSize: 10, fontWeight: 800, color: '#b45309', background: '#fef3c7', padding: '2px 8px', borderRadius: 9999, marginTop: 4 }}>
                 🟡 STATUS: WAITING IN LOUNGE
               </div>
+              {(patient.isFollowUp || patient.visitType === 'FOLLOW_UP') && (
+                <div style={{ fontSize: 10, fontWeight: 800, color: '#6d28d9', background: '#ede9fe', padding: '2px 8px', borderRadius: 9999, marginTop: 3 }}>
+                  🔁 OPD FOLLOW-UP VISIT
+                </div>
+              )}
             </div>
           </div>
 
@@ -185,6 +190,15 @@ export default function TokenSlipModal({ isOpen, patient, tokenNumber, onClose }
                 {patient.checkInTime || patient.registeredAt || '09:15 AM'}
               </span>
             </div>
+
+            {(patient.isFollowUp || patient.visitType === 'FOLLOW_UP') && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #ddd6fe', paddingTop: 4, marginTop: 2 }}>
+                <span style={{ color: '#6d28d9', fontWeight: 700 }}>Follow-Up Reason:</span>
+                <span style={{ fontWeight: 700, color: '#7c3aed', fontSize: 11, textAlign: 'right', maxWidth: 220 }}>
+                  {patient.followUpReason || 'Routine Review'}
+                </span>
+              </div>
+            )}
           </div>
 
           <div style={{ fontSize: 10.5, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>

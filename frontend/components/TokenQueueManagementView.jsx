@@ -23,6 +23,7 @@ import {
   ChevronDown,
   X
 } from 'lucide-react';
+import FollowUpPatientModal from './FollowUpPatientModal';
 
 const DOCTOR_CABINS = [
   { name: 'Dr. Kiran Patel (General & Internal Medicine)', cabin: 'Cabin 01' },
@@ -31,7 +32,12 @@ const DOCTOR_CABINS = [
   { name: 'Dr. Ananya Roy (Radiation Oncology)', cabin: 'Cabin 04' }
 ];
 
-export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, onOpenPatientDetails }) {
+export default function TokenQueueManagementView({ 
+  onOpenRegister, 
+  onPrintSlip, 
+  onOpenPatientDetails,
+  onOpenFollowUp 
+}) {
   const { 
     patients, 
     updatePatientStatus, 
@@ -43,6 +49,10 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'WAITING' | 'IN_CONSULTATION' | 'COMPLETED'
   const [selectedDoctorFilter, setSelectedDoctorFilter] = useState('ALL');
+
+  // Follow-Up modal state
+  const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
+  const [followUpInitialPatient, setFollowUpInitialPatient] = useState(null);
   
   // Timing Edit Modal State
   const [editingPatient, setEditingPatient] = useState(null);
@@ -386,12 +396,23 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
         gap: 12
       }}>
         {/* Color-based filter buttons */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
           <button
             type="button"
             onClick={() => setStatusFilter('ALL')}
-            className={`m3-btn m3-btn-sm ${statusFilter === 'ALL' ? 'm3-btn-filled' : 'm3-btn-outlined'}`}
-            style={{ height: 32, fontSize: 11.5, fontWeight: 700 }}
+            style={{
+              height: 32,
+              padding: '0 16px',
+              borderRadius: 9999,
+              fontSize: 11.5,
+              fontWeight: 800,
+              cursor: 'pointer',
+              background: statusFilter === 'ALL' ? 'var(--primary)' : 'var(--bg-surface)',
+              color: statusFilter === 'ALL' ? '#ffffff' : 'var(--text-secondary)',
+              border: statusFilter === 'ALL' ? '1px solid var(--primary)' : '1px solid var(--border-default)',
+              boxShadow: statusFilter === 'ALL' ? '0 2px 6px rgba(247, 127, 0, 0.3)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
           >
             All Queue ({stats.total})
           </button>
@@ -401,8 +422,8 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
             onClick={() => setStatusFilter('WAITING')}
             style={{
               height: 32,
-              padding: '0 12px',
-              borderRadius: 8,
+              padding: '0 16px',
+              borderRadius: 9999,
               fontSize: 11.5,
               fontWeight: 800,
               cursor: 'pointer',
@@ -411,7 +432,9 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
               gap: 6,
               background: statusFilter === 'WAITING' ? '#f59e0b' : '#fef3c7',
               color: statusFilter === 'WAITING' ? '#ffffff' : '#92400e',
-              border: '1px solid #f59e0b'
+              border: '1px solid #f59e0b',
+              boxShadow: statusFilter === 'WAITING' ? '0 2px 6px rgba(245, 158, 11, 0.3)' : 'none',
+              transition: 'all 0.15s ease'
             }}
           >
             <span>🟡 Waiting ({stats.waiting})</span>
@@ -422,8 +445,8 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
             onClick={() => setStatusFilter('IN_CONSULTATION')}
             style={{
               height: 32,
-              padding: '0 12px',
-              borderRadius: 8,
+              padding: '0 16px',
+              borderRadius: 9999,
               fontSize: 11.5,
               fontWeight: 800,
               cursor: 'pointer',
@@ -432,7 +455,9 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
               gap: 6,
               background: statusFilter === 'IN_CONSULTATION' ? '#0284c7' : '#e0f2fe',
               color: statusFilter === 'IN_CONSULTATION' ? '#ffffff' : '#0369a1',
-              border: '1px solid #0284c7'
+              border: '1px solid #0284c7',
+              boxShadow: statusFilter === 'IN_CONSULTATION' ? '0 2px 6px rgba(2, 132, 199, 0.3)' : 'none',
+              transition: 'all 0.15s ease'
             }}
           >
             <span>🔵 In Consultation ({stats.inConsultation})</span>
@@ -443,8 +468,8 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
             onClick={() => setStatusFilter('COMPLETED')}
             style={{
               height: 32,
-              padding: '0 12px',
-              borderRadius: 8,
+              padding: '0 16px',
+              borderRadius: 9999,
               fontSize: 11.5,
               fontWeight: 800,
               cursor: 'pointer',
@@ -453,7 +478,9 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
               gap: 6,
               background: statusFilter === 'COMPLETED' ? '#10b981' : '#dcfce7',
               color: statusFilter === 'COMPLETED' ? '#ffffff' : '#15803d',
-              border: '1px solid #10b981'
+              border: '1px solid #10b981',
+              boxShadow: statusFilter === 'COMPLETED' ? '0 2px 6px rgba(16, 185, 129, 0.3)' : 'none',
+              transition: 'all 0.15s ease'
             }}
           >
             <Check size={13} strokeWidth={3} />
@@ -461,9 +488,9 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
           </button>
         </div>
 
-        {/* Master UHID / OPD Search Bar */}
+        {/* Master UHID / OPD Search Bar + Actions */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', width: 280 }}>
+          <div style={{ position: 'relative', width: 260 }}>
             <Search size={15} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input 
               type="text"
@@ -474,7 +501,7 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
                 width: '100%',
                 padding: '6px 10px 6px 32px',
                 fontSize: 12,
-                borderRadius: 8,
+                borderRadius: 9999,
                 border: '1px solid var(--border-default)',
                 background: 'var(--bg-surface)',
                 outline: 'none'
@@ -493,9 +520,36 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
 
           <button
             type="button"
+            className="m3-btn"
+            onClick={() => {
+              setFollowUpInitialPatient(null);
+              setIsFollowUpModalOpen(true);
+            }}
+            style={{
+              height: 32,
+              padding: '0 14px',
+              fontSize: 11.5,
+              fontWeight: 800,
+              borderRadius: 9999,
+              background: '#ede9fe',
+              color: '#6d28d9',
+              border: '1px solid #c4b5fd',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              cursor: 'pointer'
+            }}
+            title="Issue Follow-Up Consultation Token for an existing registered patient"
+          >
+            <RotateCcw size={13} />
+            <span>🔁 Issue Follow-Up Token</span>
+          </button>
+
+          <button
+            type="button"
             className="m3-btn m3-btn-filled"
             onClick={onOpenRegister}
-            style={{ height: 32, fontSize: 11.5 }}
+            style={{ height: 32, fontSize: 11.5, borderRadius: 9999, display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
             <UserPlus size={14} />
             <span>Issue New Token</span>
@@ -655,6 +709,13 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
                       ) : (
                         <span style={{ fontSize: 9.5, padding: '1px 6px', borderRadius: 4, background: '#ecfdf5', color: '#047857', fontWeight: 700 }}>
                           🇮🇳 Domestic
+                        </span>
+                      )}
+
+                      {/* Follow-Up Indicator Badge */}
+                      {(patient.isFollowUp || patient.visitType === 'FOLLOW_UP') && (
+                        <span style={{ fontSize: 9.5, padding: '1px 6px', borderRadius: 4, background: '#ede9fe', color: '#6d28d9', fontWeight: 800, border: '1px solid #ddd6fe' }} title={`Follow-Up: ${patient.followUpReason || 'Routine review'}`}>
+                          🔁 Follow-Up
                         </span>
                       )}
                     </div>
@@ -831,6 +892,34 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
                     </button>
                   )}
 
+                  {/* Follow-Up Quick Action Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFollowUpInitialPatient(patient);
+                      setIsFollowUpModalOpen(true);
+                    }}
+                    className="m3-btn m3-btn-sm"
+                    style={{
+                      height: 30,
+                      fontSize: 10.5,
+                      padding: '0 8px',
+                      background: '#ede9fe',
+                      color: '#6d28d9',
+                      border: '1px solid #c4b5fd',
+                      borderRadius: 6,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                    title="Issue Follow-Up OPD Token for this patient"
+                  >
+                    <RotateCcw size={11} />
+                    <span>Follow-Up</span>
+                  </button>
+
                   {/* View Details Button */}
                   {onOpenPatientDetails && (
                     <button
@@ -964,6 +1053,21 @@ export default function TokenQueueManagementView({ onOpenRegister, onPrintSlip, 
           </div>
         </div>
       )}
+
+      {/* Follow-Up Patient Encounter Modal */}
+      <FollowUpPatientModal
+        isOpen={isFollowUpModalOpen}
+        onClose={() => {
+          setIsFollowUpModalOpen(false);
+          setFollowUpInitialPatient(null);
+        }}
+        initialPatient={followUpInitialPatient}
+        onSuccess={(encounter) => {
+          if (onPrintSlip) {
+            onPrintSlip(encounter);
+          }
+        }}
+      />
     </div>
   );
 }

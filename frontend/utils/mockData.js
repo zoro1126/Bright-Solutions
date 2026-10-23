@@ -339,6 +339,10 @@ export const INITIAL_PATIENTS = [
     doctorAssigned: "Dr. Swaminathan (General & Laparoscopic Surgery)",
     status: "COMPLETED",
     registeredAt: "08:15 AM",
+    isFollowUp: true,
+    visitType: "FOLLOW_UP",
+    previousVisitDate: "2026-10-08 (OPD-26-87910)",
+    followUpReason: "Post-op Laparoscopy Day 14 Wound Healing & Diet Progression",
     insurance: {
       type: "INSURANCE",
       provider: "Star Health Comprehensive",
