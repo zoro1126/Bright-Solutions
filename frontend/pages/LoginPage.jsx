@@ -35,11 +35,11 @@ export const QUICK_PERSONAS = [
     role: 'doctor',
     username: 'dr_kiran',
     displayName: 'Dr. Kiran Patel',
-    title: 'Consultant Physician',
-    dept: 'Room 03',
+    title: 'OPD (Consultation)',
+    dept: 'Cabin 01',
     icon: Stethoscope,
-    color: '#15803d',
-    bg: '#dcfce7'
+    color: '#0077b6',
+    bg: '#caf0f8'
   },
   {
     role: 'nurse',

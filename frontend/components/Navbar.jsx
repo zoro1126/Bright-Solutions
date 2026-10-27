@@ -69,7 +69,7 @@ export default function Navbar({
             <span style={{ color: 'var(--border-default)', margin: '0 2px' }}>•</span>
             <span className="brand-title-text" style={{ fontSize: 10.5, fontWeight: 700, color: brandRoleColor }}>
               {currentRole === 'doctor' 
-                ? 'Consultant Clinical Workspace' 
+                ? 'OPD (Consultation) • Clinical Workspace' 
                 : currentRole === 'nurse'
                 ? 'Inpatient & Ward Station OS'
                 : currentRole === 'chemist'
@@ -93,7 +93,7 @@ export default function Navbar({
               }}
             >
               {currentRole === 'doctor' 
-                ? 'Dr. Kiran Patel' 
+                ? 'Cabin 01 • Dr. Kiran Patel' 
                 : currentRole === 'nurse'
                 ? 'Sr. Mini Joseph, RN'
                 : currentRole === 'chemist'
@@ -125,12 +125,12 @@ export default function Navbar({
             <button
               className={`m3-role-btn ${currentRole === 'doctor' ? 'active' : ''}`}
               onClick={() => onRoleChange('doctor')}
-              title="Doctor Desk"
+              title="OPD (Consultation) Desk"
               data-tour="role-doctor-btn"
               style={currentRole === 'doctor' ? { backgroundColor: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 800 } : undefined}
             >
               <Stethoscope size={11} />
-              <span>Doctor</span>
+              <span>OPD (Consultation)</span>
             </button>
             <button
               className={`m3-role-btn ${currentRole === 'nurse' ? 'active' : ''}`}
@@ -192,7 +192,7 @@ export default function Navbar({
             }}
             title={
               currentRole === 'doctor'
-                ? "Open Doctor Clinical Flow Guide"
+                ? "Open OPD (Consultation) Clinical Flow Guide"
                 : currentRole === 'admin'
                 ? "Open Executive Admin Guide"
                 : "Open Receptionist Interactive Quick Guide"
@@ -213,7 +213,7 @@ export default function Navbar({
             }}
           >
             <Sparkles size={11} className="m3-animate-pulse" color={currentRole === 'doctor' ? '#0077B6' : currentRole === 'admin' ? '#1e40af' : '#d97706'} />
-            <span>{currentRole === 'doctor' ? 'Doctor Guide ⚡' : currentRole === 'admin' ? 'Admin Guide ⚡' : 'Reception Guide ⚡'}</span>
+            <span>{currentRole === 'doctor' ? 'Consultation Guide ⚡' : currentRole === 'admin' ? 'Admin Guide ⚡' : 'Reception Guide ⚡'}</span>
           </button>
         )}
 

@@ -5308,3 +5308,81 @@ html, body, #root, .m3-app-shell {
 .admin-theme .smart-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #4f46e5;
 }
+
+/* ==========================================================================
+   PRINT STYLES FOR OFFICIAL PRESCRIPTION & TOKEN SLIPS (RX-F6, RX-F7)
+   ========================================================================== */
+@media print {
+  @page {
+    margin: 10mm 12mm;
+    size: auto;
+  }
+
+  body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide entire application shell and site chrome */
+  .no-print,
+  .app-header,
+  .sidebar,
+  .m3-navigation-drawer,
+  .m3-doctor-patient-banner,
+  .doctor-workspace,
+  .m3-view-tabs-container,
+  .m3-role-switcher,
+  .toast-container,
+  #rx-isolated-print-iframe {
+    display: none !important;
+  }
+
+  /* Unconstrain modal overlay so only document prints */
+  .modal-overlay,
+  .m3-dialog-backdrop,
+  .m3-dialog-scrim {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    inset: auto !important;
+  }
+
+  .print-modal-card {
+    box-shadow: none !important;
+    border: none !important;
+    max-height: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .print-prescription-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  /* Completely strip any scrollbars from print output */
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}

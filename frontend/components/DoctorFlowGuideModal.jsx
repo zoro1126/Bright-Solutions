@@ -369,7 +369,7 @@ export default function DoctorFlowGuideModal({
                 </span>
               </div>
               <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', margin: '2px 0 0' }}>
-                Doctor Clinical Desk • End-to-End Operational Flow
+                OPD (Consultation) • End-to-End Clinical Flow
               </h3>
             </div>
           </div>

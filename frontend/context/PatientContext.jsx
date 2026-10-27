@@ -257,6 +257,118 @@ export function PatientProvider({ children }) {
     addToast(`Patient status transitioned to ${newStatus}.`, 'info');
   };
 
+  // Doctor calls next waiting patient into consultation chamber (OPD-F2, AC-OPD-01)
+  const callNextPatient = (doctorName) => {
+    const nextPatient = patients.find(p => 
+      p.status === 'WAITING' || 
+      p.status === 'REGISTERED' || 
+      p.status === 'INSIGHTS_READY' || 
+      p.status === 'IN_TRIAGE'
+    );
+
+    if (!nextPatient) {
+      addToast('No waiting patients in queue for OPD consultation.', 'info');
+      return null;
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    setPatients(prev => prev.map(p => {
+      if (p.id === nextPatient.id) {
+        return {
+          ...p,
+          status: 'IN_CONSULTATION',
+          consultationStartTime: p.consultationStartTime || timeStr
+        };
+      }
+      return p;
+    }));
+
+    setSelectedPatientId(nextPatient.id);
+    addToast(`📢 Called Token #${nextPatient.tokenNumber} (${nextPatient.fullName}) into Cabin 01 for OPD Consultation!`, 'success');
+    return nextPatient;
+  };
+
+  // Sign & Lock Consultation Note (CON-F7, BR-CON-01, BR-CON-02, BR-CON-03, AC-CON-01)
+  const signAndLockConsultation = (patientId, consultationData) => {
+    const hasIcd10 = consultationData?.icd10Diagnoses && consultationData.icd10Diagnoses.length > 0;
+    if (!hasIcd10) {
+      addToast('Primary diagnosis (ICD-10 code) is mandatory before signing — NABH Statutory Requirement', 'error');
+      return false;
+    }
+
+    const targetPatient = patients.find(p => p.id === patientId);
+    if (!targetPatient) return false;
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // 1. Lock patient consultation
+    setPatients(prev => prev.map(p => {
+      if (p.id !== patientId) return p;
+      return {
+        ...p,
+        status: 'COMPLETED',
+        checkOutTime: timeStr,
+        isLocked: true,
+        signedAt: timeStr,
+        signedBy: consultationData.signedBy || 'Dr. Kiran Patel (Reg: MC-84920-CA)',
+        consultationData: consultationData,
+        prescriptions: consultationData.prescriptions || p.prescriptions || [],
+        labOrders: consultationData.labOrders || [],
+        followUp: consultationData.followUp || null,
+        internalReferral: consultationData.internalReferral || null,
+        nlpSummary: consultationData.nlpSummary || ''
+      };
+    }));
+
+    // 2. Dispatch prescription to pharmacy queue (BR-CON-03)
+    if (consultationData.prescriptions && consultationData.prescriptions.length > 0) {
+      const newPharmacyRx = {
+        id: `rx-${Date.now()}`,
+        tokenNumber: `T-${targetPatient.tokenNumber}`,
+        patientId: targetPatient.id,
+        patientName: targetPatient.fullName,
+        mrn: targetPatient.uhid || targetPatient.mrn,
+        age: targetPatient.age,
+        gender: targetPatient.gender,
+        prescribedBy: consultationData.signedBy || "Dr. Kiran Patel (Internal Medicine)",
+        prescribedAt: timeStr,
+        wardBed: "OPD Consultation • Cabin 01",
+        schemeType: targetPatient.insurance?.provider || "Self-Pay / Cash",
+        schemeBadge: targetPatient.insurance?.type === 'GOVT_SCHEME' ? '100% Cashless Govt' : (targetPatient.insurance?.coveragePct ? `${targetPatient.insurance.coveragePct}% Covered` : 'Cash Direct'),
+        status: "PENDING_VERIFICATION",
+        cdssAlerts: consultationData.ddiAlerts || [],
+        items: consultationData.prescriptions.map((rx, idx) => ({
+          id: `item-${Date.now()}-${idx}`,
+          drug: rx.drug,
+          brand: (rx.drug || '').split('(')[0].trim(),
+          form: rx.form || "Tablet",
+          qty: parseInt(rx.qty, 10) || 10,
+          unitPrice: 5.50,
+          stockAvailable: 250,
+          batch: `BAT-2026-${Math.floor(100 + Math.random() * 900)}`,
+          expiry: "12/2027",
+          status: "In Stock",
+          dosage: rx.dose,
+          frequency: rx.freq,
+          duration: rx.days,
+          route: rx.route || "Oral (PO)",
+          instructions: rx.notes || rx.mealTiming
+        })),
+        subtotal: consultationData.prescriptions.length * 60,
+        insuranceCovered: (targetPatient.insurance?.coveragePct ? (consultationData.prescriptions.length * 60 * targetPatient.insurance.coveragePct / 100) : 0),
+        patientPayable: (targetPatient.insurance?.coveragePct ? (consultationData.prescriptions.length * 60 * (100 - targetPatient.insurance.coveragePct) / 100) : consultationData.prescriptions.length * 60)
+      };
+
+      setPharmacyQueue(prev => [newPharmacyRx, ...prev]);
+    }
+
+    addToast(`✅ Consultation digitally signed & locked for ${targetPatient.fullName}. Prescriptions sent to Pharmacy!`, 'success');
+    return true;
+  };
+
   // Submit questionnaire and trigger CDSS insight generation
   const submitQuestionnaire = async (patientId, submissionData) => {
     const now = new Date();
@@ -621,6 +733,8 @@ export function PatientProvider({ children }) {
       updatePatientTiming,
       updatePatientDoctor,
       updatePatientStatus,
+      callNextPatient,
+      signAndLockConsultation,
       submitQuestionnaire,
       stats,
       toasts,

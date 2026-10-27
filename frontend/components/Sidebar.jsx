@@ -71,24 +71,24 @@ export default function Sidebar({
       { id: 'audit', label: 'Clinical Audit Trail', icon: FileText }
     ];
   } else if (role === 'doctor') {
-    brandTag = 'Doctor Desk';
+    brandTag = 'OPD (Consultation)';
     BrandIcon = Stethoscope;
     brandLogoIcon = Stethoscope;
     brandGradient = 'var(--doc-brand-gradient, linear-gradient(135deg, #0f172a, #1e3a8a))';
     brandShadow = 'var(--doc-brand-shadow, 0 4px 12px rgba(30, 58, 138, 0.35))';
     staffName = 'Dr. Kiran Patel';
-    staffRole = 'Consultant Physician • Station 03';
+    staffRole = 'OPD (Consultation) • Cabin 01';
     staffAvatar = 'KP';
     avatarGradient = 'linear-gradient(135deg, #0f172a, #1e3a8a)';
-    sectionLabel = 'Clinical Navigation';
+    sectionLabel = 'Consultation Navigation';
     activeNavBg = 'var(--doc-nav-active-bg, #CAF0F8)';
     activeNavColor = 'var(--doc-nav-active-color, #1e3a8a)';
     activeNavBorder = 'var(--doc-nav-active-border, #1e3a8a)';
     navItems = [
-      { id: 'dashboard', label: 'Clinical Dashboard', icon: LayoutDashboard },
       { id: 'workspace', label: 'Consultation & e-Rx', icon: Stethoscope, badge: stats?.total || 5, badgeBg: '#CAF0F8', badgeColor: '#1e3a8a' },
+      { id: 'dashboard', label: 'OPD Queue & Dashboard', icon: LayoutDashboard },
       { id: 'dossier', label: 'Patient History & Dossier', icon: FileText },
-      { id: 'viewer', label: 'Diagnostic Scans', icon: Layers }
+      { id: 'viewer', label: 'Diagnostic Scans & PACS', icon: Layers }
     ];
   } else if (role === 'cashier') {
     brandTag = 'Cashier Desk';

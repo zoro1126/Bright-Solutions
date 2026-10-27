@@ -472,9 +472,9 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
                 Dr. Kiran Patel, MD
               </h2>
               <span className="brand-counter-pill" style={{ textTransform: 'none', fontSize: 10, background: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 700 }}>
-                Senior Consultant Physician
+                OPD (Consultation) • Cabin 01
               </span>
-              <span style={{ fontSize: 11, color: 'var(--doc-accent-color, #0077B6)', fontWeight: 600 }}>• OPD Suite 03 • General & Internal Medicine</span>
+              <span style={{ fontSize: 11, color: 'var(--doc-accent-color, #0077B6)', fontWeight: 600 }}>• Senior Consultant Physician • General & Internal Medicine</span>
             </div>
             <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2, fontWeight: 500 }}>
               General Medicine & Multispeciality Care Stream • <strong>{patients.length} Consultations Booked</strong> • <strong style={{ color: 'var(--doc-accent-color, #0077B6)' }}>{sentinelAlerts.length} Sentinel AI Warnings</strong>
@@ -485,12 +485,12 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
           <button 
             className="m3-btn"
-            onClick={() => onOpenWorkspace(selectedPatientId || 'pat-001', 'insights')}
-            title="Open Station 03 Clinical Consultation Workspace"
+            onClick={() => onOpenWorkspace(selectedPatientId || 'pat-001', 'soap')}
+            title="Open Cabin 01 OPD Consultation Workspace"
             style={{ height: 32, fontSize: 11.5, padding: '0 12px', gap: 5, background: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 700 }}
           >
             <Stethoscope size={14} />
-            <span>Clinical Workspace →</span>
+            <span>Consultation Workspace →</span>
           </button>
           <button 
             className="m3-btn anim-hover-lift"

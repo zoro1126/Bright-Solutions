@@ -168,7 +168,7 @@ function RoleRouter() {
           } 
         />
 
-        {/* DOCTOR PORTAL (P-DOC-01 to P-DOC-04) */}
+        {/* OPD (CONSULTATION) PORTAL (P-DOC-01 to P-DOC-04) */}
         <Route 
           path="/doctor" 
           element={
@@ -177,7 +177,7 @@ function RoleRouter() {
                 currentRole="doctor" 
                 onSwitchRole={handleRoleChange} 
                 onSwitchToReception={() => handleRoleChange('receptionist')}
-                activeSubTab="dashboard"
+                activeSubTab="workspace"
                 onLogout={handleLogout}
               />
             </ProtectedRoute>
