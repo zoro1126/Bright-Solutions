@@ -221,7 +221,7 @@ Diagrams are not decorations. Each one answers a specific architectural question
 
 | # | Diagram | Type | Tool | What It Answers |
 |:--|:---|:---|:---|:---|
-| **DG1** | **System Context Diagram** | C4 Level 1 | Mermaid / draw.io | "What external systems does Bright Solutions interact with?" (ABDM, payment gateways, hospital EHRs, LLM providers) |
+| **DG1** | **System Context Diagram** | C4 Level 1 | Mermaid / draw.io | "What external systems does Bright Solutions interact with?" (ABDM, local hospital edge LAN, payment terminals) |
 | **DG2** | **Container Diagram** | C4 Level 2 | Mermaid / draw.io | "What are the deployable units?" (Each microservice, databases, API gateway, message broker, AI gateway) |
 | **DG3** | **Entity Relationship Diagram (ERD)** | Database | dbdiagram.io / Mermaid | "What are the tables and how do they relate?" — one ERD per database |
 | **DG4** | **Deployment Topology — Cloud** | Infrastructure | draw.io / Mermaid | "How are containers deployed on AWS/Azure?" (K8s pods, managed DBs, load balancers, CDN) |
@@ -234,10 +234,10 @@ Diagrams are not decorations. Each one answers a specific architectural question
 | # | Diagram | Type | Tool | When Created |
 |:--|:---|:---|:---|:---|
 | **DG8** | **Patient Journey Sequence Diagram** | Sequence | Mermaid | Cycle 2 (Clinical Core) — Registration → Triage → Consultation → Prescription → Billing → Discharge |
-| **DG9** | **AI Scribe Pipeline Sequence** | Sequence | Mermaid | Cycle 3 (AI Services) — Audio stream → STT → PII strip → LLM → SOAP → Doctor sign-off |
-| **DG10** | **CDSS Evaluation Flow** | Flowchart | Mermaid | Cycle 3 — Vitals + Medications → Deterministic rules → LLM fallback → Alert generation |
+| **DG9** | **Clinical Queue Priority Sequence** | Sequence | Mermaid | Cycle 2 (Clinical Core) — Triage vitals intake → Heuristic early warning score (NEWS2) → Automated priority queue sorting → Doctor callout |
+| **DG10** | **Deterministic CDSS Evaluation Flow** | Flowchart | Mermaid | Cycle 2 (Clinical Core) — Vitals + Active Medications + Patient Allergies → Relational DDI lookup (`cdss_ddi_rules`) → Hard contraindication block / Override audit log |
 | **DG11** | **Prescription & Drug Safety Flow** | Sequence | Mermaid | Cycle 2 — Drug entry → DDI check → Allergy check → Formulary validation → Rx sign |
-| **DG12** | **Billing & Invoice Lifecycle** | State Machine | Mermaid | Cycle 4 — Draft → Items Added → AI Audit → Payment → Settled/Refunded |
+| **DG12** | **Billing & Invoice Lifecycle** | State Machine | Mermaid | Cycle 4 — Draft → Items Added → Rule Audit → Payment → Settled/Refunded |
 | **DG13** | **Queue Token Lifecycle** | State Machine | Mermaid | Cycle 4 — Generated → Waiting → Called → In-Consultation → Completed/No-Show |
 | **DG14** | **ABDM Health Data Exchange** | Sequence | Mermaid | Cycle 5 — ABHA verification → Consent flow → Health record push/pull |
 | **DG15** | **On-Prem ↔ Cloud Sync Flow** | Sequence | Mermaid | Cycle 5 — Offline operation → Queue sync → Conflict resolution → Cloud reconciliation |
@@ -402,16 +402,14 @@ End of Week 2: GATE — Juniors read their onboarding docs + confirm
 - Dev 1: Patient CRUD + Encounter lifecycle + Queue integration
 - Dev 2: Prescription module + DDI engine + CDSS deterministic rules
 - Joint: Integration testing, sequence diagrams (DG8, DG11)
-- **Compliance Gate:** Patient data encrypted at rest, UHID generation follows ABDM ✅
+### Cycle 3: Deterministic CDSS & Clinical Safety Engine (Weeks 13–16)
 
-### Cycle 3: AI Services (Weeks 13–16)
+**Pitch:** Relational DDI Rule Engine (`cdss_ddi_rules`), Patient Allergy Cross-Check, NEWS2 Vital Threshold Heuristics, and Rule-based Template Summary Compiler.
 
-**Pitch:** AI Scribe (WebSocket + STT + SOAP), CDSS LLM layer, Intake questionnaire + ESI triage.
-
-- Dev 1: AI Scribe pipeline (audio → transcript → SOAP)
-- Dev 2: CDSS LLM integration + Intake triage engine
-- Joint: AI Gateway setup (Presidio + LiteLLM routing)
-- **Compliance Gate:** PII de-identification verified, zero-retention mode functional ✅
+- Dev 1: Relational CDSS DDI bilateral collision algorithm + override audit logger
+- Dev 2: NEWS2 early warning triage scoring + pediatric vitals alerting engine
+- Joint: Inpatient Treatment Sheet (Form 29) safety gate integration
+- **Compliance Gate:** 100% deterministic, zero medical hallucination, sub-5ms query performance verified ✅
 
 ### Cycle 4: Billing + Queue + Document Intelligence (Weeks 18–21)
 

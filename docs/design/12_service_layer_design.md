@@ -220,7 +220,8 @@ class IPDService:
 
     def admit_patient(self, dto: IPDAdmitDTO, user_id: int) -> IPDAdmission:
         """
-        Admits patient, locks bed, starts bed allocation history, and collects advance.
+        Admits patient (via OPD referral token or direct intake), locks bed,
+        captures MLC and Guardian/Kin consent data (Forms 8 & 9), and records advance.
         """
 ```
 - **Business Validations & Rules:**
@@ -228,9 +229,52 @@ class IPDService:
   - Validate `bed.status == 'AVAILABLE'`. If not, raise `BedNotAvailableException`.
   - Generate sequence `IPD_NUMBER` (e.g. `IPD-000512`).
   - Update `bed.status = 'OCCUPIED'`.
-  - Insert `ipd_admissions` (`status = 'ADMITTED'`).
+  - Insert `ipd_admissions` (`status = 'ADMITTED'`, `admission_source = dto.source`, `is_mlc = dto.is_mlc`, `guardian_name = dto.guardian_name`, `payment_category = dto.payment_category`).
   - Insert `ipd_bed_allocations` (`allocated_at = NOW()`, `daily_rate = room.daily_tariff`).
+  - If `dto.opd_appointment_id`: validate appointment exists and link reference.
   - If `advance_amount > 0`: invoke `BillingService.record_advance(patient_id, admission_id, amount)`.
+
+```python
+    def record_admission_assessment(self, admission_uuid: UUID, dto: IPDAdmissionAssessmentDTO, doctor_id: int) -> IPDAdmissionAssessment:
+        """
+        Records Doctor H&P Admission Note (AH/MRD/FORM - 10) with systemic exam and diagnosis.
+        """
+```
+- **Rules:**
+  - Verify admission exists and `status == 'ADMITTED'`.
+  - Insert or update `ipd_admission_assessments` record.
+
+```python
+    def create_treatment_order(self, admission_uuid: UUID, dto: IPDTreatmentOrderDTO, doctor_id: int) -> IPDTreatmentOrder:
+        """
+        Doctor creates inpatient medication order or Oxygen therapy on Treatment Sheet (Form 29).
+        """
+```
+- **Rules:**
+  - If `order_type == 'MEDICATION'`: trigger CDSS bilateral DDI check against patient's active inpatient medications.
+  - Insert `ipd_treatment_orders` with `status = 'ACTIVE'`.
+
+```python
+    def record_medication_administration(self, order_uuid: UUID, dto: IPDAdministerDTO, nurse_id: int) -> IPDMedicationAdministration:
+        """
+        Nurse logs medication administration or omission on Form 29 (MAR).
+        """
+```
+- **Rules:**
+  - Validate treatment order is `ACTIVE`.
+  - Record execution timestamp, status (`GIVEN`, `OMITTED`, `REFUSED`), and clinical omission reason.
+
+```python
+    def record_intake_output(self, admission_uuid: UUID, dto: IPDIntakeOutputDTO, nurse_id: int) -> IPDIntakeOutput:
+        """
+        Nurse logs shift Intake and Output chart (Form 61) with net fluid balance calculation.
+        """
+```
+- **Rules:**
+  - Compute `total_intake = oral_rt_intake_ml + iv_fluid_intake_ml + blood_products_ml`.
+  - Compute `total_output = urine_output_ml + vomitus_rt_aspirate_ml + drain_output_ml`.
+  - Compute `net_balance_ml = total_intake - total_output`.
+  - Insert `ipd_intake_output`.
 
 ```python
     def transfer_bed(self, admission_uuid: UUID, new_bed_id: int, reason: str, user_id: int) -> IPDBedAllocation:

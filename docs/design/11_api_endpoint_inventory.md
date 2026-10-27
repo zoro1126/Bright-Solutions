@@ -317,20 +317,28 @@ Base Path: `/api/v1/ipd`, `/api/v1/wards`, `/api/v1/beds`
 
 | Method | Endpoint Path | Summary | Roles Allowed | Success Code |
 |:---|:---|:---|:---|:---:|
-| `POST` | `/ipd/admissions` | Admit patient to bed with initial advance | `RECEPTIONIST`, `ADMIN` | `201 Created` |
-| `GET` | `/ipd/admissions/active` | List all currently admitted inpatients | `RECEPTIONIST`, `NURSE`, `DOCTOR`, `BILLING_CLERK`, `ADMIN` | `200 OK` |
-| `GET` | `/ipd/admissions/{admission_uuid}` | Inpatient file (stay, bed, daily notes, bill total) | `DOCTOR`, `NURSE`, `BILLING_CLERK`, `ADMIN` | `200 OK` |
+| `POST` | `/ipd/admissions` | Admit patient to bed (OPD referral or direct intake) with advance | `RECEPTIONIST`, `ADMIN` | `201 Created` |
+| `GET` | `/ipd/admissions/active` | List all currently admitted inpatients with ward/bed details | `RECEPTIONIST`, `NURSE`, `DOCTOR`, `BILLING_CLERK`, `ADMIN` | `200 OK` |
+| `GET` | `/ipd/admissions/{admission_uuid}` | Inpatient dossier (stay, bed, MAR, Intake/Output, notes, bill) | `DOCTOR`, `NURSE`, `BILLING_CLERK`, `ADMIN` | `200 OK` |
+| `GET` | `/ipd/admissions/{admission_uuid}/consent-form`| Print Admission Consent & Face Sheet (Forms 8 & 9) | `RECEPTIONIST`, `NURSE`, `ADMIN` | `200 OK` |
+| `POST` | `/ipd/admissions/{admission_uuid}/assessment` | Doctor logs Admission H&P Note (Form 10) | `DOCTOR` | `201 Created` |
+| `GET` | `/ipd/admissions/{admission_uuid}/assessment` | Fetch Doctor Admission H&P Assessment | `DOCTOR`, `NURSE`, `ADMIN` | `200 OK` |
+| `POST` | `/ipd/admissions/{admission_uuid}/treatment-orders`| Doctor prescribes Treatment Sheet orders (Form 29 / O2) | `DOCTOR` | `201 Created` |
+| `GET` | `/ipd/admissions/{admission_uuid}/treatment-orders`| List active & past treatment orders with MAR status | `DOCTOR`, `NURSE`, `PHARMACIST`, `ADMIN` | `200 OK` |
+| `PATCH`| `/ipd/treatment-orders/{order_uuid}/discontinue` | Doctor discontinues treatment order with justification | `DOCTOR` | `200 OK` |
+| `POST` | `/ipd/treatment-orders/{order_uuid}/administer` | Nurse logs medication administration or omission (MAR) | `NURSE` | `201 Created` |
+| `POST` | `/ipd/admissions/{admission_uuid}/intake-output` | Nurse logs shift Intake & Output chart (Form 61) | `NURSE` | `201 Created` |
+| `GET` | `/ipd/admissions/{admission_uuid}/intake-output` | Fetch Intake & Output shift records & fluid balance | `DOCTOR`, `NURSE`, `ADMIN` | `200 OK` |
 | `POST` | `/ipd/admissions/{admission_uuid}/transfer-bed`| Transfer patient to new bed (rate auto-adjusts) | `NURSE`, `RECEPTIONIST`, `ADMIN` | `200 OK` |
-| `POST` | `/ipd/admissions/{admission_uuid}/daily-notes` | Doctor logs daily rounds SOAP note | `DOCTOR` | `201 Created` |
-| `POST` | `/ipd/admissions/{admission_uuid}/nurse-records`| Nurse logs vitals & medication admin | `NURSE` | `201 Created` |
-| `POST` | `/ipd/admissions/{admission_uuid}/procedures` | Log surgical/clinical procedure & charge | `DOCTOR`, `ADMIN` | `201 Created` |
-| `POST` | `/ipd/admissions/{admission_uuid}/discharge-summary`| Author & sign structured discharge summary | `DOCTOR` | `201 Created` |
-| `POST` | `/ipd/admissions/{admission_uuid}/discharge` | Complete discharge (releases bed, locks stay) | `BILLING_CLERK`, `ADMIN` | `200 OK` |
+| `POST` | `/ipd/admissions/{admission_uuid}/daily-notes` | Doctor logs daily rounds clinical progress note | `DOCTOR` | `201 Created` |
+| `POST` | `/ipd/admissions/{admission_uuid}/procedures` | Log surgical/clinical procedure & tariff charge | `DOCTOR`, `ADMIN` | `201 Created` |
+| `POST` | `/ipd/admissions/{admission_uuid}/discharge-summary`| Author & digitally sign structured discharge summary | `DOCTOR` | `201 Created` |
+| `POST` | `/ipd/admissions/{admission_uuid}/discharge` | Complete discharge (releases bed, finalizes bill) | `BILLING_CLERK`, `ADMIN` | `200 OK` |
 | `GET` | `/wards` | List wards with floor and occupancy counts | `RECEPTIONIST`, `NURSE`, `DOCTOR`, `ADMIN` | `200 OK` |
 | `GET` | `/beds/matrix` | Visual bed occupancy matrix (room type, status) | `RECEPTIONIST`, `NURSE`, `DOCTOR`, `ADMIN` | `200 OK` |
 | `PATCH`| `/beds/{bed_uuid}/status` | Update bed state (`AVAILABLE`, `CLEANING`, etc.) | `NURSE`, `RECEPTIONIST`, `ADMIN` | `200 OK` |
 
-### Endpoint Details: Inpatient Admission
+### Endpoint Details: Inpatient Admission (Forms 8 & 9)
 - **Endpoint:** `POST /api/v1/ipd/admissions`
 - **Request Body:**
 ```json
@@ -338,8 +346,18 @@ Base Path: `/api/v1/ipd`, `/api/v1/wards`, `/api/v1/beds`
   "patient_uuid": "c7a8b3d2-4e5f-4a6b-9c8d-1e2f3a4b5c6d",
   "attending_doctor_uuid": "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a",
   "bed_uuid": "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
+  "admission_source": "OPD_REFERRAL",
+  "opd_appointment_uuid": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
   "admission_type": "ELECTIVE",
   "provisional_diagnosis": "Dengue with severe thrombocytopenia",
+  "is_mlc": false,
+  "mlc_details": null,
+  "guardian_name": "Rameshbhai Patel",
+  "guardian_relationship": "Father",
+  "guardian_phone": "+919876543210",
+  "payment_category": "TPA_INSURANCE",
+  "tpa_provider": "Star Health",
+  "tpa_policy_number": "SH/2026/8492039",
   "advance_amount": 5000.00,
   "payment_method": "UPI",
   "transaction_reference": "UPI/239049203940"

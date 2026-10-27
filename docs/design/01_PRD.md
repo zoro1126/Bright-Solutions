@@ -193,11 +193,11 @@ Week 4: Billing + AI Polish + Stabilization
 
 ## 6. Full Product Scope — Post-MVP Phases
 
-After the 4-week MVP (which includes core AI/CDSS), development continues in Shaped Kanban cycles:
+After the 4-week MVP (which includes deterministic CDSS and clinical heuristics), development continues in Shaped Kanban cycles:
 
 | Phase | Cycles | Scope |
 |:---|:---|:---|
-| **Phase 1: AI Upgrade** | Weeks 5–6 (1 cycle) | LLM-powered SOAP note generation, Ambient AI Scribe (audio → transcript → SOAP), advanced CDSS with LLM differential diagnosis cards |
+| **Phase 1: Advanced Clinical Safety** | Weeks 5–6 (1 cycle) | Expanded relational DDI ruleset, organ-specific dosage calculation heuristics, multi-parameter lab panic alert automations |
 | **Phase 2: ABDM Integration** | Cycle 3 | ABHA ID verification via ABDM sandbox API, Health Facility Registry enrollment, Health Information Exchange (consent-based record sharing) |
 | **Phase 3: OT & Anaesthetic** | Cycle 4 | OT scheduling, pre-operative checklist, anaesthetic notes, post-op vitals |
 | **Phase 4: Full Multi-Tenancy** | Cycle 4–5 | Tenant provisioning, per-hospital config, billing across tenants, Superadmin panel |
@@ -209,6 +209,8 @@ After the 4-week MVP (which includes core AI/CDSS), development continues in Sha
 
 The following are explicitly **not** in the 4-week MVP:
 
+- Ambient AI scribing, microphone audio streaming, and speech-to-text (STT)
+- Non-deterministic Large Language Models (LLMs) and external generative AI prompts
 - Live ABDM/ABHA API calls (data field captured, API integration deferred)
 - OT / Anaesthetic module
 - HR module (leave management, payroll)
@@ -219,7 +221,6 @@ The following are explicitly **not** in the 4-week MVP:
 - Advanced reporting / analytics dashboard
 - Multitenancy provisioning UI (architecture supports it, UI not built)
 - Data migration tooling (pending confirmation of source system)
-- LLM-powered AI Scribe / audio transcription (Phase 1 post-MVP)
 - SMART on FHIR / HL7 FHIR R4 endpoints
 
 ---
@@ -310,19 +311,29 @@ The following are explicitly **not** in the 4-week MVP:
 
 **Actors:** IPD Admissions Officer (admission), Doctor (daily rounds + discharge summary), Nurse (daily charges), Billing Officer (final bill)
 
-#### 8.6.1 Admission
+#### 8.6.1 Admission & Consent (Forms 8, 9 & 10)
 
 | ID | Requirement | Priority |
 |:--|:---|:---:|
-| IPD-01 | Create IPD admission record linked to existing patient UHID | P0 |
-| IPD-02 | Assign **IPD number** — admin-configured format, global auto-increment | P0 |
-| IPD-03 | Assign **ward**, **room type** (General / Semi-Private / Private / ICU), **bed number** | P0 |
-| IPD-04 | Room type drives daily bed rent rate (pre-configured per room type by admin) | P0 |
-| IPD-05 | Admission date/time, tentative discharge date, admission type (Emergency / Elective / Transfer) | P0 |
-| IPD-06 | Admitting doctor + admitting diagnosis (ICD-10) mandatory at admission | P0 |
-| IPD-07 | IPD patients visible in attending doctor's inpatient list (separate from OPD queue) | P1 |
+| IPD-01 | Create IPD admission record linked to existing patient UHID with dual intake pathways: (1) Doctor OPD consultation referral, or (2) Direct Emergency/Scheduled admission | P0 |
+| IPD-02 | Assign **IPD number** — globally monotonic auto-incrementing string (e.g. `IPD-000512`) | P0 |
+| IPD-03 | Assign **ward**, **room type** (General / Semi-Private / Private / ICU), and physical **bed number** with real-time occupancy locking | P0 |
+| IPD-04 | Capture **Admission Form details (AH/MRD/FORM - 9)**: Medico-Legal Case (MLC) flag, Next of Kin/Guardian contact & relation, and payment category (Cash vs TPA Insurance) | P0 |
+| IPD-05 | Generate and print **Admission Consent (AH/MRD/FORM - 8)** in English and Gujarati with guardian/patient acknowledgment | P0 |
+| IPD-06 | Record **Doctor H&P Admission Note (AH/MRD/FORM - 10)**: Chief complaints, history of present illness, past medical/surgical history, home medications, and provisional diagnosis | P0 |
+| IPD-07 | IPD patients visible in attending doctor's inpatient dashboard and nurse ward station (separate from OPD queue) | P0 |
 
-#### 8.6.2 During Stay — Charge Heads
+#### 8.6.2 Inpatient Clinical Records (6-Day IPD Book Core)
+
+| ID | Requirement | Priority |
+|:--|:---|:---:|
+| IPD-08A | **Treatment Sheet & Doctor Orders (AH/MRD/FORM - 29)**: Doctor records medication orders (drug, dose, route, frequency: Stat/OD/BD/TDS/QID/SOS) and Oxygen Therapy parameters (nasal prongs/mask, L/min) | P0 |
+| IPD-08B | **Medication Administration Record (MAR - Form 29)**: Ward nurse logs timestamped drug administrations, omissions, or patient refusals with clinical reasons | P0 |
+| IPD-08C | **Daily Intake and Output Chart (AH/MRD/FORM - 61)**: Shift-wise recording of intake (Oral/RT, IV fluids, Blood) and output (Urine, Vomitus, Stool, Surgical Drain) with running net fluid balance | P0 |
+| IPD-08D | **Daily Vitals & Pain Score**: Record Temperature, Pulse, Resp, BP, SpO2, and Pain Score (0–10) directly into inpatient stay chart | P0 |
+| IPD-08E | **Nurse Progress Notes (AH/MRD/FORM - 72)**: Shift handover and narrative clinical observations per shift | P0 |
+
+#### 8.6.3 During Stay — Charge Heads
 
 All charges accrue against the IPD admission record and are consolidated at discharge.
 
@@ -339,7 +350,7 @@ All charges accrue against the IPD admission record and are consolidated at disc
 | IPD-16 | **Oxygen / equipment charges** | Daily rate for oxygen, ventilator, or special equipment usage | P0 |
 | IPD-17 | **Consumables** | Flat daily rate per patient category or itemized (gloves, syringes, bandages) | P1 |
 
-#### 8.6.3 Discharge Procedure
+#### 8.6.4 Discharge Procedure
 
 | ID | Requirement | Priority |
 |:--|:---|:---:|

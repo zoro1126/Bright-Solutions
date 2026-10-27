@@ -268,7 +268,7 @@ AC-VIT-03: Questionnaire Storage
 | CON-F5 | E-Prescription panel inline within consultation (see Module 5) | 🔴 P0 |
 | CON-F6 | Lab order panel — order tests directly from consultation (see Module 7) | 🔴 P0 |
 | CON-F7 | Doctor signs and locks the consultation — locks SOAP note + prescription | 🔴 P0 |
-| CON-F8 | NLP summary — auto-generated plain-language paragraph from SOAP note (rule-based) | 🔴 P0 |
+| CON-F8 | Deterministic summary — auto-generated plain-language paragraph from SOAP note (rule-based template) | 🔴 P0 |
 | CON-F9 | Internal referral — refer patient to another department (creates referral record) | 🟡 P1 |
 | CON-F10 | Follow-up scheduling — set follow-up date + assign doctor | 🟡 P1 |
 | CON-F11 | Doctor can add free-text clinical notes beyond SOAP structure | 🟡 P1 |
@@ -294,10 +294,10 @@ AC-CON-01: Mandatory ICD-10 on Sign-off
   Then: Sign-off is blocked
     AND inline error appears: "Primary diagnosis (ICD-10 code) is required before signing"
 
-AC-CON-02: NLP Summary Generation
+AC-CON-02: Deterministic Summary Generation
   Given: Doctor has filled the SOAP note fields
   When: Doctor clicks "Generate Summary"
-  Then: A plain-language paragraph is generated from the SOAP fields
+  Then: A plain-language paragraph is generated from the SOAP fields via structured template
     AND shown in a preview panel for doctor review before sign-off
 
 AC-CON-03: Consultation Lock
@@ -361,34 +361,39 @@ AC-CON-03: Consultation Lock
 
 ---
 
-## 7. Module 6 — IPD Admission
+## 7. Module 6 — IPD Admission & Inpatient Care (6-Day IPD Book Core)
 
-**Actor:** IPD Admissions Officer  
-**Entry Point:** Doctor or receptionist initiates IPD admission  
-**Exit Point:** Patient assigned to ward + bed + attending doctor  
+**Actor:** IPD Admissions Officer, Attending Doctor, Ward Nurse, Billing Officer  
+**Entry Point:** Doctor consultation chamber ("Admit to IPD" referral) OR Direct Admission Desk (Emergency / Scheduled)  
+**Exit Point:** Patient admitted to bed $\rightarrow$ active daily inpatient rounds & charts $\rightarrow$ signed discharge & settled final bill  
 
 ### Features
 
 | ID | Feature | Priority |
 |:--|:---|:---:|
-| IPD-F1 | Create IPD admission linked to existing UHID | 🔴 P0 |
-| IPD-F2 | Auto-generate IPD number — admin-configured format, global auto-increment (not date-reset) | 🔴 P0 |
-| IPD-F3 | Assign ward, room type (General / Semi-Private / Private / ICU), bed number | 🔴 P0 |
-| IPD-F4 | Room type affects billing rate — pre-configured daily rate per room type | 🔴 P0 |
-| IPD-F5 | Assign admitting doctor + admitting diagnosis (ICD-10) | 🔴 P0 |
-| IPD-F6 | Admission type: Emergency / Elective / Transfer | 🔴 P0 |
-| IPD-F7 | Admission date/time + tentative discharge date | 🔴 P0 |
-| IPD-F8 | IPD patient list — shows all currently admitted patients with ward + bed + doctor | 🟡 P1 |
-| IPD-F9 | Discharge patient — records discharge date + discharge diagnosis + discharge summary | 🟡 P1 |
+| IPD-F1 | Create IPD admission linked to existing UHID via (1) OPD Referral Token or (2) Direct Walk-in / Emergency | 🔴 P0 |
+| IPD-F2 | Auto-generate IPD number (`IPD-000512`) via monotonic concurrency-safe sequence counter | 🔴 P0 |
+| IPD-F3 | Assign ward, room type (General / Semi-Private / Private / ICU), and physical bed with real-time occupancy check | 🔴 P0 |
+| IPD-F4 | Room type drives daily room rent rate (locked historically into `ipd_bed_allocations`) | 🔴 P0 |
+| IPD-F5 | Admission Form (AH/MRD/FORM - 9): Capture MLC flag, Guardian/Next of Kin contact, and TPA Insurance details | 🔴 P0 |
+| IPD-F6 | Admission Consent (AH/MRD/FORM - 8): Digital generator and print format in English and Gujarati | 🔴 P0 |
+| IPD-F7 | Doctor H&P Assessment (AH/MRD/FORM - 10): Record presenting complaints, history, systemic exam, and provisional diagnosis | 🔴 P0 |
+| IPD-F8 | Treatment Sheet Orders (AH/MRD/FORM - 29): Doctor prescribes inpatient medications (dose, route, frequency) & Oxygen Therapy | 🔴 P0 |
+| IPD-F9 | Medication Administration Record (MAR - Form 29): Ward nurse logs given/omitted doses with timestamps and reasons | 🔴 P0 |
+| IPD-F10 | Intake and Output Chart (AH/MRD/FORM - 61): Shift-wise fluid balance (Oral/RT, IV fluids, Urine, Vomitus, Drain output) | 🔴 P0 |
+| IPD-F11 | Daily Vitals & Pain Chart: Track Temperature, Pulse, Resp, BP, SpO2, and Pain Score (0–10) | 🔴 P0 |
+| IPD-F12 | Inpatient Ward Dashboard: Live bed occupancy matrix, active patients list, attending consultants | 🔴 P0 |
+| IPD-F13 | Discharge Summary & 10-Head Bill: Mandatory doctor signed summary, bed release, and consolidated invoice reconciliation | 🔴 P0 |
 
 ### Business Rules
 
 | ID | Rule |
 |:--|:---|
-| BR-IPD-01 | A bed cannot be occupied by two patients simultaneously — bed assignment validates current occupancy. |
-| BR-IPD-02 | IPD number format configured independently from UHID and OPD number prefixes. |
-| BR-IPD-03 | IPD daily room charge begins from admission date and is added to the IPD bill on discharge. |
-| BR-IPD-04 | IPD admission does not require a prior OPD visit — can be a direct admission (e.g., emergency). |
+| BR-IPD-01 | A bed cannot be occupied by two patients simultaneously — atomic row lock check prevents double-allocation. |
+| BR-IPD-02 | Dual intake supported: OPD consultation can place an IPD admission order that populates the admission desk queue, while emergency desk can admit patients directly. |
+| BR-IPD-03 | Medico-Legal Cases (MLC = TRUE) require mandatory police station name and intimation acknowledgment before discharge. |
+| BR-IPD-04 | Inpatient medication orders on Form 29 remain active until explicitly marked completed or discontinued by a doctor with justification. |
+| BR-IPD-05 | Discharge cannot be finalized until attending doctor digitally signs the discharge summary (`status = 'SIGNED'`). |
 
 ---
 
@@ -505,15 +510,15 @@ Patient Journey → Payment Points:
 | Breathlessness + Ankle swelling | Possible Cardiac Failure | WARNING |
 | Headache + Visual disturbance + High BP | Hypertensive Urgency | WARNING |
 
-### 9B — NLP Consultation Summary
+### 9B — Deterministic Consultation Summary Generator
 
 | ID | Feature | Priority |
 |:--|:---|:---:|
-| NLP-F1 | Auto-generate plain-language summary from SOAP note fields (rule-based template, not LLM) | 🔴 P0 |
-| NLP-F2 | Doctor can regenerate / edit the summary before sign-off | 🔴 P0 |
-| NLP-F3 | Summary saved as part of the signed encounter | 🔴 P0 |
+| SUMM-F1 | Auto-generate plain-language summary from SOAP note fields using deterministic string template (strictly NO LLM) | 🔴 P0 |
+| SUMM-F2 | Doctor can regenerate / edit the summary before sign-off | 🔴 P0 |
+| SUMM-F3 | Summary saved as part of the signed encounter | 🔴 P0 |
 
-**NLP Summary Template (rule-based):**
+**Deterministic Summary Template (Rule-Based):**
 ```
 Patient {name}, {age}y {gender}, presented with {chief_complaint} for {duration}.
 On examination: {objective_findings_summary}.
@@ -531,13 +536,13 @@ Follow-up in {followup_days} days.
 | DIFF-F3 | Each differential has: condition name, reasoning (which symptoms triggered it), suggested workup | 🔴 P0 |
 | DIFF-F4 | Doctor can dismiss individual differentials or mark one as confirmed (links to ICD-10 assignment) | 🟡 P1 |
 
-### Business Rules — CDSS & AI
+### Business Rules — Deterministic CDSS & Clinical Rules
 
 | ID | Rule |
 |:--|:---|
 | BR-CDSS-01 | All CDSS outputs are advisory — they cannot block the doctor from proceeding. |
 | BR-CDSS-02 | CRITICAL alerts require an override reason which is stored in the encounter audit log. |
-| BR-CDSS-03 | NLP summary is generated client-side from structured data — no external API call. |
+| BR-CDSS-03 | Consultation summary is generated client-side from structured data template — zero external API calls or LLM models. |
 | BR-CDSS-04 | Differential suggestion uses only the local symptom→diagnosis rule set — expandable post-MVP. |
 
 ---

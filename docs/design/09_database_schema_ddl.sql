@@ -595,10 +595,20 @@ CREATE TABLE IF NOT EXISTS ipd_admissions (
     patient_id BIGINT UNSIGNED NOT NULL,
     attending_doctor_id BIGINT UNSIGNED NOT NULL,
     current_bed_id BIGINT UNSIGNED NOT NULL,
+    opd_appointment_id BIGINT UNSIGNED NULL COMMENT 'Source OPD consultation token if admitted via OPD referral',
+    admission_source ENUM('OPD_REFERRAL', 'EMERGENCY_DIRECT', 'SCHEDULED_TRANSFER') NOT NULL DEFAULT 'OPD_REFERRAL',
     admission_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     discharge_date DATETIME NULL,
     admission_type ENUM('ELECTIVE', 'EMERGENCY', 'TRANSFER') NOT NULL DEFAULT 'ELECTIVE',
     provisional_diagnosis TEXT NOT NULL,
+    is_mlc BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Medico-Legal Case flag (Forms 8 & 9)',
+    mlc_details VARCHAR(255) NULL,
+    guardian_name VARCHAR(150) NULL COMMENT 'Next of Kin / Relative for Consent (Forms 8 & 9)',
+    guardian_relationship VARCHAR(50) NULL,
+    guardian_phone VARCHAR(20) NULL,
+    payment_category ENUM('SELF_PAY_CASH', 'TPA_INSURANCE', 'CORPORATE_PANEL', 'AYUSHMAN_BHARAT') NOT NULL DEFAULT 'SELF_PAY_CASH',
+    tpa_provider VARCHAR(100) NULL,
+    tpa_policy_number VARCHAR(100) NULL,
     advance_amount_paid DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
     status ENUM('ADMITTED', 'DISCHARGED', 'LAMA', 'DECEASED', 'TRANSFERRED') NOT NULL DEFAULT 'ADMITTED',
     discharge_type ENUM('NORMAL', 'AGAINST_MEDICAL_ADVICE', 'REFERRED', 'EXPIRED') NULL,
@@ -609,9 +619,11 @@ CREATE TABLE IF NOT EXISTS ipd_admissions (
     INDEX idx_ipd_doctor (attending_doctor_id),
     INDEX idx_ipd_status (status),
     INDEX idx_ipd_bed (current_bed_id),
+    INDEX idx_ipd_opd (opd_appointment_id),
     CONSTRAINT fk_ipd_patient FOREIGN KEY (patient_id) REFERENCES patients (id),
     CONSTRAINT fk_ipd_doctor FOREIGN KEY (attending_doctor_id) REFERENCES doctor_profiles (id),
     CONSTRAINT fk_ipd_bed FOREIGN KEY (current_bed_id) REFERENCES beds (id),
+    CONSTRAINT fk_ipd_opd FOREIGN KEY (opd_appointment_id) REFERENCES opd_appointments (id) ON DELETE SET NULL,
     CONSTRAINT fk_ipd_creator FOREIGN KEY (created_by) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -633,6 +645,105 @@ CREATE TABLE IF NOT EXISTS ipd_bed_allocations (
     CONSTRAINT fk_alloc_bed FOREIGN KEY (bed_id) REFERENCES beds (id),
     CONSTRAINT fk_alloc_by FOREIGN KEY (allocated_by) REFERENCES users (id),
     CONSTRAINT fk_released_by FOREIGN KEY (released_by) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Form 10: Inpatient Doctor Admission H&P Assessment
+CREATE TABLE IF NOT EXISTS ipd_admission_assessments (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    public_id CHAR(36) NOT NULL UNIQUE,
+    hospital_id INT UNSIGNED NOT NULL DEFAULT 1,
+    admission_id BIGINT UNSIGNED NOT NULL UNIQUE,
+    doctor_id BIGINT UNSIGNED NOT NULL,
+    assessment_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    chief_complaints TEXT NOT NULL,
+    history_of_present_illness TEXT NOT NULL,
+    past_medical_surgical_history TEXT NULL,
+    current_home_medications TEXT NULL,
+    physical_examination_notes TEXT NOT NULL,
+    systemic_examination_notes TEXT NULL,
+    provisional_diagnosis TEXT NOT NULL,
+    planned_interventions TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_assess_admission (admission_id),
+    CONSTRAINT fk_assess_admission FOREIGN KEY (admission_id) REFERENCES ipd_admissions (id) ON DELETE CASCADE,
+    CONSTRAINT fk_assess_doctor FOREIGN KEY (doctor_id) REFERENCES doctor_profiles (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Form 29: Inpatient Treatment Sheet / Doctor Orders (Medications, O2, Diet)
+CREATE TABLE IF NOT EXISTS ipd_treatment_orders (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    public_id CHAR(36) NOT NULL UNIQUE,
+    hospital_id INT UNSIGNED NOT NULL DEFAULT 1,
+    admission_id BIGINT UNSIGNED NOT NULL,
+    doctor_id BIGINT UNSIGNED NOT NULL,
+    order_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    order_type ENUM('MEDICATION', 'O2_THERAPY', 'DIET', 'SPECIAL_INSTRUCTION') NOT NULL DEFAULT 'MEDICATION',
+    drug_name VARCHAR(200) NULL,
+    dosage VARCHAR(100) NULL,
+    route ENUM('ORAL', 'IV', 'IM', 'SC', 'TOPICAL', 'INHALATION', 'PR', 'SL', 'OTHER') NULL,
+    frequency VARCHAR(50) NULL COMMENT 'Stat, OD, BD, TDS, QID, SOS, Q4H, Q6H',
+    o2_device ENUM('NASAL_PRONGS', 'FACE_MASK', 'NRBM', 'VENTURI', 'HFNC', 'BIPAP', 'NONE') NULL,
+    o2_flow_rate_lpm DECIMAL(4, 1) NULL COMMENT 'L/min oxygen therapy',
+    instructions TEXT NULL,
+    start_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    stop_time DATETIME NULL,
+    status ENUM('ACTIVE', 'COMPLETED', 'DISCONTINUED') NOT NULL DEFAULT 'ACTIVE',
+    discontinued_by BIGINT UNSIGNED NULL,
+    discontinued_reason VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_treat_admission (admission_id),
+    INDEX idx_treat_status (status),
+    CONSTRAINT fk_treat_admission FOREIGN KEY (admission_id) REFERENCES ipd_admissions (id) ON DELETE CASCADE,
+    CONSTRAINT fk_treat_doctor FOREIGN KEY (doctor_id) REFERENCES doctor_profiles (id),
+    CONSTRAINT fk_treat_discontinued_by FOREIGN KEY (discontinued_by) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Form 29: Medication Administration Record (MAR - Nurse administration of orders)
+CREATE TABLE IF NOT EXISTS ipd_treatment_administrations (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    hospital_id INT UNSIGNED NOT NULL DEFAULT 1,
+    treatment_order_id BIGINT UNSIGNED NOT NULL,
+    admission_id BIGINT UNSIGNED NOT NULL,
+    nurse_id BIGINT UNSIGNED NOT NULL,
+    scheduled_time DATETIME NOT NULL,
+    administered_time DATETIME NULL,
+    status ENUM('GIVEN', 'OMITTED', 'REFUSED', 'HELD_DOCTOR_ORDER') NOT NULL DEFAULT 'GIVEN',
+    omitted_reason VARCHAR(255) NULL,
+    notes VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_mar_treatment (treatment_order_id),
+    INDEX idx_mar_admission (admission_id),
+    CONSTRAINT fk_mar_treatment FOREIGN KEY (treatment_order_id) REFERENCES ipd_treatment_orders (id) ON DELETE CASCADE,
+    CONSTRAINT fk_mar_admission FOREIGN KEY (admission_id) REFERENCES ipd_admissions (id) ON DELETE CASCADE,
+    CONSTRAINT fk_mar_nurse FOREIGN KEY (nurse_id) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Form 61: Daily Intake and Output Chart (Oral/IV fluids, Urine, Drain, Stool)
+CREATE TABLE IF NOT EXISTS ipd_intake_output (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    public_id CHAR(36) NOT NULL UNIQUE,
+    hospital_id INT UNSIGNED NOT NULL DEFAULT 1,
+    admission_id BIGINT UNSIGNED NOT NULL,
+    nurse_id BIGINT UNSIGNED NOT NULL,
+    record_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    shift ENUM('MORNING', 'EVENING', 'NIGHT') NOT NULL,
+    oral_rt_intake_ml INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Oral / Ryles tube feeding in ml',
+    iv_fluid_type VARCHAR(100) NULL COMMENT 'NS, RL, DNS, D5, Albumin, etc.',
+    iv_fluid_intake_ml INT UNSIGNED NOT NULL DEFAULT 0,
+    blood_products_ml INT UNSIGNED NOT NULL DEFAULT 0,
+    urine_output_ml INT UNSIGNED NOT NULL DEFAULT 0,
+    vomitus_rt_aspirate_ml INT UNSIGNED NOT NULL DEFAULT 0,
+    stool_count INT UNSIGNED NOT NULL DEFAULT 0,
+    drain_output_ml INT UNSIGNED NOT NULL DEFAULT 0,
+    net_balance_ml INT NOT NULL DEFAULT 0 COMMENT 'Total intake ml minus total output ml',
+    remarks VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_io_admission (admission_id),
+    INDEX idx_io_datetime (record_datetime),
+    CONSTRAINT fk_io_admission FOREIGN KEY (admission_id) REFERENCES ipd_admissions (id) ON DELETE CASCADE,
+    CONSTRAINT fk_io_nurse FOREIGN KEY (nurse_id) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS ipd_daily_notes (

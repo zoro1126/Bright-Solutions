@@ -270,23 +270,36 @@ Physical inventory lot and expiry tracking.
 
 ---
 
-## 9. Data Dictionary — IPD Admission, Beds & Stay
+## 9. Data Dictionary — IPD Admission, Beds & Stay (6-Day IPD Book Integration)
 
 ### Table: `ipd_admissions`
-Inpatient hospital stay record.
+Inpatient hospital stay record supporting both OPD referral and direct admission, along with legal/consent flags (Forms 8 & 9).
 | Column | Type | Nullable | Default | Semantics & Validation Rules |
 |:---|:---|:---:|:---:|:---|
 | `id` | `BIGINT UNSIGNED` | No | AUTO_INCREMENT | PK |
 | `public_id` | `CHAR(36)` | No | — | UUID v4, Unique |
+| `hospital_id` | `INT UNSIGNED` | No | 1 | Multi-tenant hospital ID |
 | `ipd_number` | `VARCHAR(30)` | No | — | Global auto-increment string (e.g. `IPD-000512`), Unique |
 | `patient_id` | `BIGINT UNSIGNED` | No | — | FK `patients.id` |
 | `attending_doctor_id`| `BIGINT UNSIGNED` | No | — | FK `doctor_profiles.id` |
 | `current_bed_id`| `BIGINT UNSIGNED` | No | — | FK `beds.id` |
+| `opd_appointment_id`| `BIGINT UNSIGNED` | Yes | NULL | FK `opd_appointments.id` (source token if OPD referral) |
+| `admission_source`| `ENUM` | No | 'OPD_REFERRAL' | `'OPD_REFERRAL'`, `'EMERGENCY_DIRECT'`, `'SCHEDULED_TRANSFER'` |
 | `admission_date`| `DATETIME` | No | CURRENT_TIMESTAMP | Admission timestamp |
 | `discharge_date`| `DATETIME` | Yes | NULL | Final discharge completion timestamp |
 | `admission_type`| `ENUM` | No | 'ELECTIVE' | `'ELECTIVE'`, `'EMERGENCY'`, `'TRANSFER'` |
-| `status` | `ENUM` | No | 'ADMITTED' | `'ADMITTED'`, `'DISCHARGED'`, `'LAMA'`, `'DECEASED'`, `'TRANSFERRED'` |
+| `provisional_diagnosis`| `TEXT` | No | — | Initial diagnosis at admission |
+| `is_mlc` | `BOOLEAN` | No | FALSE | Medico-Legal Case flag (Forms 8 & 9) |
+| `mlc_details` | `VARCHAR(255)` | Yes | NULL | Police station / MLC report details |
+| `guardian_name` | `VARCHAR(150)` | Yes | NULL | Next of Kin / Guardian for Admission Consent (Forms 8 & 9) |
+| `guardian_relationship`| `VARCHAR(50)` | Yes | NULL | Father, Mother, Spouse, Son, Daughter, Other |
+| `guardian_phone`| `VARCHAR(20)` | Yes | NULL | Emergency contact telephone number |
+| `payment_category`| `ENUM` | No | 'SELF_PAY_CASH'| `'SELF_PAY_CASH'`, `'TPA_INSURANCE'`, `'CORPORATE_PANEL'`, `'AYUSHMAN_BHARAT'` |
+| `tpa_provider` | `VARCHAR(100)` | Yes | NULL | TPA company name (e.g. Medi Assist, Star Health) |
+| `tpa_policy_number`| `VARCHAR(100)` | Yes | NULL | Insurance card / policy reference |
 | `advance_amount_paid`| `DECIMAL(12, 2)`| No | 0.00 | Financial deposit collected at intake |
+| `status` | `ENUM` | No | 'ADMITTED' | `'ADMITTED'`, `'DISCHARGED'`, `'LAMA'`, `'DECEASED'`, `'TRANSFERRED'` |
+| `discharge_type` | `ENUM` | Yes | NULL | `'NORMAL'`, `'AGAINST_MEDICAL_ADVICE'`, `'REFERRED'`, `'EXPIRED'` |
 
 ### Table: `ipd_bed_allocations`
 Historical stay and transfer ledger (calculates split-rate bed rent accurately).
@@ -299,6 +312,81 @@ Historical stay and transfer ledger (calculates split-rate bed rent accurately).
 | `released_at` | `DATETIME` | Yes | NULL | Transfer or discharge timestamp |
 | `daily_rate` | `DECIMAL(12, 2)` | No | — | Locked daily room tariff at time of stay |
 | `transfer_reason`| `VARCHAR(255)` | Yes | NULL | Clinical justification for bed change |
+
+### Table: `ipd_admission_assessments` (Form 10)
+Inpatient Doctor H&P Assessment filled by the Medical Officer / Attending Consultant upon admission.
+| Column | Type | Nullable | Default | Semantics & Validation Rules |
+|:---|:---|:---:|:---:|:---|
+| `id` | `BIGINT UNSIGNED` | No | AUTO_INCREMENT | PK |
+| `public_id` | `CHAR(36)` | No | — | UUID v4, Unique |
+| `admission_id` | `BIGINT UNSIGNED` | No | — | FK `ipd_admissions.id`, Unique per admission |
+| `doctor_id` | `BIGINT UNSIGNED` | No | — | FK `doctor_profiles.id` |
+| `chief_complaints` | `TEXT` | No | — | Presenting symptoms and duration |
+| `history_of_present_illness` | `TEXT` | No | — | Detailed clinical narrative |
+| `past_medical_surgical_history`| `TEXT` | Yes | NULL | Known comorbidities, prior surgeries |
+| `current_home_medications` | `TEXT` | Yes | NULL | Home medications reconciled |
+| `physical_examination_notes` | `TEXT` | No | — | General physical exam findings |
+| `systemic_examination_notes` | `TEXT` | Yes | NULL | CVS, RS, PA, CNS findings |
+| `provisional_diagnosis` | `TEXT` | No | — | Working diagnostic hypothesis |
+| `planned_interventions` | `TEXT` | Yes | NULL | Medical / surgical treatment strategy |
+
+### Table: `ipd_treatment_orders` (Form 29)
+Doctor Treatment Sheet orders for medications, oxygen therapy, and dietary instructions.
+| Column | Type | Nullable | Default | Semantics & Validation Rules |
+|:---|:---|:---:|:---:|:---|
+| `id` | `BIGINT UNSIGNED` | No | AUTO_INCREMENT | PK |
+| `public_id` | `CHAR(36)` | No | — | UUID v4, Unique |
+| `admission_id` | `BIGINT UNSIGNED` | No | — | FK `ipd_admissions.id` |
+| `doctor_id` | `BIGINT UNSIGNED` | No | — | FK `doctor_profiles.id` |
+| `order_datetime` | `DATETIME` | No | CURRENT_TIMESTAMP | When doctor signed the order |
+| `order_type` | `ENUM` | No | 'MEDICATION' | `'MEDICATION'`, `'O2_THERAPY'`, `'DIET'`, `'SPECIAL_INSTRUCTION'` |
+| `drug_name` | `VARCHAR(200)` | Yes | NULL | Drug generic or brand name |
+| `dosage` | `VARCHAR(100)` | Yes | NULL | e.g. 500mg, 1gm |
+| `route` | `ENUM` | Yes | NULL | `'ORAL'`, `'IV'`, `'IM'`, `'SC'`, `'TOPICAL'`, `'INHALATION'`, `'PR'`, `'SL'`, `'OTHER'` |
+| `frequency` | `VARCHAR(50)` | Yes | NULL | `Stat`, `OD`, `BD`, `TDS`, `QID`, `SOS`, `Q4H`, `Q6H` |
+| `o2_device` | `ENUM` | Yes | NULL | `'NASAL_PRONGS'`, `'FACE_MASK'`, `'NRBM'`, `'VENTURI'`, `'HFNC'`, `'BIPAP'`, `'NONE'` |
+| `o2_flow_rate_lpm`| `DECIMAL(4, 1)` | Yes | NULL | Oxygen flow in Litres per minute (Form 29) |
+| `instructions` | `TEXT` | Yes | NULL | Administration directions or dietary rules |
+| `start_time` | `DATETIME` | No | CURRENT_TIMESTAMP | Order commencement datetime |
+| `stop_time` | `DATETIME` | Yes | NULL | Order termination datetime |
+| `status` | `ENUM` | No | 'ACTIVE' | `'ACTIVE'`, `'COMPLETED'`, `'DISCONTINUED'` |
+| `discontinued_by` | `BIGINT UNSIGNED` | Yes | NULL | FK `users.id` |
+| `discontinued_reason`| `VARCHAR(255)` | Yes | NULL | Doctor's justification for stopping order |
+
+### Table: `ipd_treatment_administrations` (Form 29 MAR)
+Nurse Medication Administration Record logging execution or omission of doctor treatment orders.
+| Column | Type | Nullable | Default | Semantics & Validation Rules |
+|:---|:---|:---:|:---:|:---|
+| `id` | `BIGINT UNSIGNED` | No | AUTO_INCREMENT | PK |
+| `treatment_order_id`| `BIGINT UNSIGNED` | No | — | FK `ipd_treatment_orders.id` |
+| `admission_id` | `BIGINT UNSIGNED` | No | — | FK `ipd_admissions.id` |
+| `nurse_id` | `BIGINT UNSIGNED` | No | — | FK `users.id` |
+| `scheduled_time` | `DATETIME` | No | — | Scheduled administration slot |
+| `administered_time`| `DATETIME` | Yes | NULL | Actual time nurse gave medication |
+| `status` | `ENUM` | No | 'GIVEN' | `'GIVEN'`, `'OMITTED'`, `'REFUSED'`, `'HELD_DOCTOR_ORDER'` |
+| `omitted_reason` | `VARCHAR(255)` | Yes | NULL | Clinical justification if omitted |
+| `notes` | `VARCHAR(255)` | Yes | NULL | Site of injection or patient tolerance |
+
+### Table: `ipd_intake_output` (Form 61)
+Shift-wise Intake and Output Chart recording fluid balance.
+| Column | Type | Nullable | Default | Semantics & Validation Rules |
+|:---|:---|:---:|:---:|:---|
+| `id` | `BIGINT UNSIGNED` | No | AUTO_INCREMENT | PK |
+| `public_id` | `CHAR(36)` | No | — | UUID v4, Unique |
+| `admission_id` | `BIGINT UNSIGNED` | No | — | FK `ipd_admissions.id` |
+| `nurse_id` | `BIGINT UNSIGNED` | No | — | FK `users.id` |
+| `record_datetime` | `DATETIME` | No | CURRENT_TIMESTAMP | Timestamp of chart entry |
+| `shift` | `ENUM` | No | — | `'MORNING'`, `'EVENING'`, `'NIGHT'` |
+| `oral_rt_intake_ml`| `INT UNSIGNED` | No | 0 | Oral or Ryles tube intake volume |
+| `iv_fluid_type` | `VARCHAR(100)` | Yes | NULL | NS, RL, DNS, D5, Albumin, etc. |
+| `iv_fluid_intake_ml`| `INT UNSIGNED` | No | 0 | Intravenous infusion volume in ml |
+| `blood_products_ml`| `INT UNSIGNED` | No | 0 | Blood / PRBC / FFP volume in ml |
+| `urine_output_ml` | `INT UNSIGNED` | No | 0 | Urinary excretion volume in ml |
+| `vomitus_rt_aspirate_ml`| `INT UNSIGNED` | No | 0 | Vomitus or RT aspiration volume in ml |
+| `stool_count` | `INT UNSIGNED` | No | 0 | Number of bowel movements |
+| `drain_output_ml` | `INT UNSIGNED` | No | 0 | Surgical drain discharge in ml |
+| `net_balance_ml` | `INT` | No | 0 | Signed fluid balance (`total_intake - total_output`) |
+| `remarks` | `VARCHAR(255)` | Yes | NULL | Nurse clinical observation |
 
 ---
 

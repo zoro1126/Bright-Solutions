@@ -49,47 +49,64 @@ Small-to-medium hospitals and polyclinics in India face severe operational and c
 
 ```mermaid
 flowchart TD
-    W1["<b>Week 1 &mdash; Platform Foundation & Setup</b><br/>Auth &amp; RBAC &bull; Patient Registration &bull; Sequence Locks &bull; Contabo Staging Setup"]
-    --> W2["<b>Week 2 &mdash; Clinical Outpatient Core</b><br/>Monotonic OPD Queue &bull; Tokens &bull; Triage Vitals &bull; Doctor SOAP Notes &bull; TV Display SSE"]
-    --> W3["<b>Week 3 &mdash; Ancillary Services &amp; Safety</b><br/>E-Prescriptions &bull; Pharmacy Dispensation &bull; Lab Results &bull; CDSS DDI Rule Engine"]
-    --> W4["<b>Week 4 &mdash; Inpatient, Billing &amp; Edge Fallback</b><br/>IPD Admissions &bull; Bed Transfers &bull; 10-Head Invoicing &bull; Docker LAN Fallback &bull; Release Gate"]
+    W1["<b>Week 1 &mdash; End-to-End OPD-to-IPD Core Flow &amp; 6-Day IPD Book</b><br/>Registration &bull; Queue &bull; OPD Chamber &bull; IPD Bed Admission &bull; Forms 8, 9, 10 &bull; Daily Treatment Form 29 &bull; Intake/Output Form 61 &bull; Discharge &bull; Bill"]
+    --> W2["<b>Week 2 &mdash; Deterministic CDSS &amp; Clinical Heuristics</b><br/>Relational DDI Rules &bull; Patient Allergy Screening &bull; Vital Sign Threshold Alerts (NEWS2) &bull; Rule-Based Discharge Summary Assembler"]
+    --> W3["<b>Week 3 &mdash; Hospital Automation &amp; Print Templates</b><br/>Nightly Bed Rent Job &bull; Token Rollover &bull; Print Engine (Rx, Form 8/9, Discharge Bill, 80mm Token) &bull; Edge Docker LAN Sentinel"]
+    --> W4["<b>Week 4 &mdash; Comprehensive Pytest, E2E Testing &amp; Hardening</b><br/>Full OPD-to-IPD Lifecycle Tests &bull; Concurrency Locks &bull; CDSS Safety Suites &bull; Financial Rupee Balance Audits &bull; Demo Sign-off"]
 ```
 
 ---
 
 ## 4. Week-by-Week Milestone Roadmap
 
-### Week 1: Core Foundation & Platform Infrastructure
-- **Objective:** Provision databases, setup Contabo LAMP staging server, and implement authentication and patient onboarding.
+### Week 1: Complete End-to-End Clinical Flow (OPD to IPD & 6-Day IPD Book Core)
+- **Objective:** Deliver the complete, functional clinical vertical slice from Outpatient arrival to Inpatient discharge within Week 1, fully aligned with the hospital's client dossier (`IPD Book 6 Days.pdf`).
 - **Key Deliverables:**
-  - MySQL 8.0 schema executed on Contabo staging (`09_database_schema_ddl.sql`).
-  - Auth module (`POST /api/v1/auth/login`, `/auth/refresh`, `/auth/me`) with Argon2id and stateful refresh tokens.
-  - RBAC enforcement middleware (`PermissionChecker`).
-  - Concurrency-safe `system_sequences` table with row locks.
-  - Patient registration (`POST /api/v1/patients`) with auto-generated `UHID` (`BS-001001`) and salted Aadhaar de-duplication hash.
+  - **Platform Foundations:** MySQL 8.0 schema on Contabo LAMP, Argon2id auth, JWT refresh token rotation, RBAC guards, and monotonic concurrency locks (`UHID`, `OPD`, `IPD`, `BILL`).
+  - **OPD Flow:** Patient registration (`POST /api/v1/patients`), daily doctor queue token assignment (`OPD-001001`), nurse triage vitals, and doctor consultation chamber with prescription creation and "Admit to IPD" referral order.
+  - **IPD Admission & Bed Assignment:** Support both Doctor OPD referral and Direct Emergency/Walk-in admission. Bed matrix allocation, MLC (Medico-Legal Case) tagging, Next-of-Kin/Guardian capture, advance deposit payment, and digital generation of **Admission Consent (AH/MRD/FORM - 8)** and **Admission Form (AH/MRD/FORM - 9)**.
+  - **Inpatient Stay Records (Client 6-Day Book Integration):**
+    - **Doctor H&P Admission Note (AH/MRD/FORM - 10):** History, physical examination, provisional diagnosis.
+    - **Treatment Sheet & Medication Administration Record (AH/MRD/FORM - 29):** Doctor drug orders (dosage, route, frequency, start/stop times), O2 therapy parameters (nasal prongs/mask, L/min), and nurse administration/omission logging.
+    - **Intake and Output Chart (AH/MRD/FORM - 61):** Shift-wise recording of intake (Oral/RT, IV fluids, Blood) and output (Urine, RT aspiration/vomitus, Stool, Surgical Drain) with running net fluid balance.
+    - **Daily Vitals Signs Chart:** Temperature, Pulse, Resp, BP, SpO2, and Pain Score (0–10).
+    - **Nurse Progress Notes (AH/MRD/FORM - 72):** Shift-by-shift nursing handover and patient observations.
+  - **Inpatient Discharge & Settlement:** Doctor signed discharge summary (`status = 'SIGNED'`), bed release, and consolidated 10-head final invoice generation with balance reconciliation.
 
-### Week 2: Outpatient (OPD) Queue & Clinical Encounters
-- **Objective:** Enable front-desk check-in, nurse vitals intake, doctor chamber SOAP notes, and real-time waiting room TV updates.
+### Week 2: Deterministic Clinical Decision Support (CDSS) & Heuristics Engine
+- **Objective:** Layer deterministic, sub-5 millisecond clinical safety screening and heuristic automation over the working Week 1 flow (100% rule-based and auditable; strictly NO ambient audio, speech-to-text, or non-deterministic LLMs in this MVP).
 - **Key Deliverables:**
-  - Monotonic OPD number generation (`OPD-001001`) and daily doctor token allocation.
-  - Nursing triage vitals intake with automatic BMI and abnormal range tagging.
-  - Doctor consultation workflow: autosave draft SOAP notes, attach ICD-10 codes, and digital signing with immutable locking (`status = 'SIGNED'`).
-  - Unbuffered Server-Sent Events (SSE) stream (`/api/v1/display/queue/stream`) for waiting room TV screens with zero PHI leakage.
+  - **Deterministic CDSS Safety Engine (Module 9):** Real-time bilateral Drug-Drug Interaction (DDI) collision detection querying relational database rules (`cdss_ddi_rules`) with severity levels (`CONTRAINDICATED`, `MAJOR`, `MODERATE`). Mandatory written doctor override justifications logged immutably to `cdss_alerts_log`.
+  - **Patient Allergy Cross-Screening:** Active ingredient cross-matching against patient known allergies (`allergies_json` on patient profile) when prescribing medications in OPD or IPD Treatment Sheets (Form 29).
+  - **Heuristic Vital Signs & Early Warning Engine:** Automated heuristic alerting for critical physiologic thresholds (severe hypoxia SpO2 < 90%, hypertensive crisis BP > 180/120, pediatric tachycardia, high fever) based on standard clinical scorecards (NEWS2 / MEWS).
+  - **Rule-Based Inpatient Discharge Summary Assembler:** Deterministic template assembler that programmatically extracts and formats the patient's multi-day stay records (synthesizing Admission H&P Form 10, Treatment MAR administration records Form 29, daily vital trends, and lab test results into structured discharge sections without hallucination or LLM dependency).
+  - **Heuristic Queue Prioritization:** Automatic tagging of high-acuity/abnormal triage vitals to flag urgent patients for earlier consultation in the OPD queue.
 
-### Week 3: Ancillary Clinical Services & Safety Engine
-- **Objective:** Deliver e-prescribing with drug safety screening, pharmacy batch inventory fulfillment, and pathology results processing.
+### Week 3: Background Automation, Print Templates & Edge LAN Fallback
+- **Objective:** Implement automated hospital operations, pixel-perfect physical print outputs, and local network failover.
 - **Key Deliverables:**
-  - Deterministic CDSS engine: real-time bilateral DDI collision detection (`cdss_ddi_rules`) with mandatory written override justifications logged to `cdss_alerts_log`.
-  - Pharmacy module: formulary lookup, stock batch receiving, pharmacist fulfillment queue, and FIFO inventory deduction.
-  - Pathology module: test ordering, specimen collection acknowledgment, multi-parameter technician entry, and panic value escalation.
+  - **Automated Hospital Background Jobs:**
+    - Nightly Bed-Rent Billing Job (midnight accrual of room tariffs per active bed allocation).
+    - Midnight OPD Queue Rollover & No-Show Auto-Closure.
+    - Automated Daily Database Backup & S3/Contabo Cold Storage Upload.
+  - **Pixel-Perfect Print Templates (D20 Integration):**
+    - OPD Prescription Slip (A4 doctor header, Rx grid, dosage schedule, follow-up).
+    - OPD 80mm Thermal Queue Token Slip with QR code.
+    - IPD Admission Face Sheet & Consent Form (Forms 8 & 9).
+    - IPD Consolidated Discharge Bill (10 standard NABH charge heads).
+    - Diagnostic Lab Report with reference ranges and abnormal flags.
+  - **Local Edge Docker Fallback:** `docker-compose.edge.yml` configuration with SQLite/MySQL edge replica, conflict-free sequence partitioning (`OFFLINE-UHID-*`), and background reconciliation sentinel when WAN internet recovers.
 
-### Week 4: Inpatient Care, Multi-Point Billing & Edge Fallback
-- **Objective:** Complete IPD stay lifecycle, consolidated 10-head invoicing, containerized local LAN fallback, and end-to-end UAT.
+### Week 4: Comprehensive Automated Testing, Hardening & Release Gate
+- **Objective:** Exhaustive automated test coverage, load testing, security audits, and client acceptance sign-off.
 - **Key Deliverables:**
-  - IPD admission, bed occupancy locking, inter-ward transfers with historical tariff splits, and mandatory signed discharge summary enforcement.
-  - Unified multi-point billing engine: OPD consultation fee receipts, pharmacy dispensing bills, lab invoices, and the **10-head consolidated IPD discharge bill** (Bed rent, doctor visits, nursing, procedures, pharmacy, lab, OT, anaesthesia, oxygen, consumables).
-  - Production `docker-compose.edge.yml` edge fallback bundle for local hospital LAN with conflict-free sequence partitioning (`OFFLINE-UHID-*`, `OFFLINE-OPD-*`).
-  - Staging compliance gate and client demonstration sign-off.
+  - **Pytest Suite:** 100% test coverage across critical clinical and financial paths:
+    - End-to-end OPD-to-IPD patient journey lifecycle tests.
+    - Concurrency tests: race condition validation on bed allocations and sequence counters under 50 simultaneous threads.
+    - CDSS safety verification: 100% interception of lethal test drug pairs (Warfarin + Aspirin, Methotrexate + NSAIDs).
+    - Financial balance audit: exact rupee matching (`subtotal - discount + tax == paid + balance`) across all invoices.
+  - **Security & NABH Audit Trail:** Comprehensive access control validation (RBAC matrix) and immutable audit log verification.
+  - **Client Demo Sign-Off:** Full-scale demonstration of the operational hospital flow with real seed data matching the client's oncology and general surgical departments.
 
 ---
 
@@ -99,21 +116,24 @@ To maximize velocity without merge conflicts, work is partitioned by technical r
 
 | Module / Component | Primary Owner | Reviewer / Collaborator | Key Responsibilities |
 |:---|:---:|:---:|:---|
-| **Database DDL & Alembic** | Backend Lead | Junior Backend Dev | Canonical schema, indexes, migrations |
-| **Auth & Security Framework** | Backend Lead | Junior Backend Dev | JWT, refresh token rotation, RBAC guards |
-| **System Sequences Engine** | Backend Lead | Junior Backend Dev | Concurrency-safe row-level locking |
-| **Patient Registration (M1)** | Junior Backend Dev | Backend Lead | DTO validation, CRUD routes, MPI search |
-| **OPD Queue Engine (M2)** | Backend Lead | Junior Backend Dev | Token rollover, doctor calling, SSE stream |
-| **Vitals & Triage (M3)** | Junior Backend Dev | Backend Lead | BMI formula, range checks, intake form |
-| **Doctor Consultation (M4)** | Backend Lead | Junior Backend Dev | Draft autosave, ICD-10 linking, sign-off lock |
-| **Pharmacy & Batches (M5)** | Junior Backend Dev | Backend Lead | Batch entry, stock deduction, queue CRUD |
-| **CDSS Safety Engine (M9)** | Backend Lead | Junior Backend Dev | DDI pair algorithm, override audit trail |
-| **Pathology & Lab (M7)** | Junior Backend Dev | Backend Lead | Test catalog, parameter results, panic alerts |
-| **IPD Stay & Beds (M6)** | Backend Lead | Junior Backend Dev | Bed allocations, ward transfer rate splits |
-| **10-Head Billing Ledger (M8)** | Backend Lead | Junior Backend Dev | Consolidated invoice calculation, payments |
-| **Admin & Doctor Sched (M11)**| Junior Backend Dev | Backend Lead | Tariff rates, doctor working hours |
-| **Edge Docker LAN Fallback** | Backend Lead | DevOps / Frontend Lead | Docker Compose, sync agent, failover |
-| **Pytest Automated Tests** | Junior Backend Dev | Backend Lead | Unit test cases, client endpoint assertions |
+| **Database DDL & Schema Updates** | Backend Lead | Junior Backend Dev | Schema update for IPD Book tables, indexes, migration scripts |
+| **Auth & Security Framework** | Backend Lead | Junior Backend Dev | Argon2id, JWT rotation, RBAC permission guards |
+| **System Sequences Engine** | Backend Lead | Junior Backend Dev | Concurrency-safe monotonic numbering (`UHID`, `OPD`, `IPD`) |
+| **Patient Registration & MPI (M1)** | Junior Backend Dev | Backend Lead | Patient CRUD, Aadhaar salted hash, emergency contacts |
+| **OPD Queue & Token Engine (M2)** | Backend Lead | Junior Backend Dev | Daily token generation, doctor calling, SSE TV stream |
+| **Vitals & Triage (M3)** | Junior Backend Dev | Backend Lead | Intake vitals, BMI formula, abnormal range flags |
+| **Doctor Consultation (M4)** | Backend Lead | Junior Backend Dev | Draft SOAP autosave, ICD-10 linking, "Admit to IPD" referral |
+| **IPD Admissions & Beds (M6)** | Backend Lead | Junior Backend Dev | Bed allocation, Form 8 & 9 consent, MLC flag, advance deposit |
+| **IPD Treatment & MAR (Form 29)** | Junior Backend Dev | Backend Lead | Doctor medication orders, O2 therapy, nurse administration log |
+| **IPD Intake & Output (Form 61)** | Junior Backend Dev | Backend Lead | Fluid intake (Oral/IV) & output (Urine/Drain) shift records |
+| **IPD Discharge & 10-Head Bill** | Backend Lead | Junior Backend Dev | Discharge summary signing, bed release, consolidated ledger |
+| **Deterministic CDSS Engine (M9)**| Backend Lead | Junior Backend Dev | Relational DDI table rules, allergy cross-check, override logging |
+| **Vital Alerting & Heuristics** | Junior Backend Dev | Backend Lead | NEWS2 / MEWS thresholds, pediatric tachycardia, hypoxia flags |
+| **Discharge Summary Assembler** | Junior Backend Dev | Backend Lead | Deterministic template assembler for Forms 10, 29, 61 records |
+| **Background Automation Jobs** | Junior Backend Dev | Backend Lead | Nightly bed rent, token rollover, database backup scripts |
+| **Print Template Engines (D20)** | Junior Backend Dev | Frontend Lead | `@media print` CSS, thermal 80mm & A4 layouts |
+| **Edge Docker LAN Fallback** | Backend Lead | DevOps / Frontend Lead | Docker Compose bundle, offline sync sentinel |
+| **Pytest Automated Test Suites** | Junior Backend Dev | Backend Lead | Integration tests, concurrency assertions, CDSS safety tests |
 
 ---
 
@@ -127,9 +147,9 @@ The following high-risk items are explicitly time-boxed to prevent schedule slip
 2. **Physical Lab Analyzer Hardware Drivers (Time-Boxed to 0 Hours):**
    - *Rabbit Hole:* Parsing proprietary RS-232 / ASTM / HL7 serial protocols for haematology analyzers requires physical laboratory machine access and custom driver development.
    - *Boundary:* **Technician manual parameter entry only.** Standard multi-parameter form with automated min/max/panic range validation.
-3. **External LLM Prompt Engineering (Time-Boxed to 0 Hours):**
-   - *Rabbit Hole:* Fine-tuning OpenAI/Claude prompts for medical advice introduces non-deterministic outputs, hallucination risks, and latency delays.
-   - *Boundary:* **Deterministic relational SQL rules only** (`cdss_ddi_rules`, `cdss_vital_rules`). Sub-5ms execution, zero hallucination, and 100% auditability.
+3. **External LLM Prompt Engineering & Ambient AI (Time-Boxed to 0 Hours):**
+   - *Rabbit Hole:* Fine-tuning OpenAI/Claude prompts or Whisper STT audio pipelines introduces latency delays, hallucination risks, dependency on cloud internet, and non-deterministic medical outputs.
+   - *Boundary:* **Deterministic relational SQL rules and heuristic scoring only** (`cdss_ddi_rules`, `cdss_vital_rules`). Sub-5ms execution, zero hallucination, 100% auditable, and zero external API costs.
 4. **Complex Supply Chain & Vendor PO Lifecycles (Time-Boxed to 0 Hours):**
    - *Rabbit Hole:* Vendor purchase orders, goods receipt notes (GRN), and multi-warehouse transfers.
    - *Boundary:* **Simple batch entry with FIFO deduction.** Pharmacist logs incoming lots (Batch#, expiry, quantity) and dispenses directly.
@@ -140,6 +160,8 @@ The following high-risk items are explicitly time-boxed to prevent schedule slip
 
 The following features are **explicitly excluded** from Cycle 1:
 
+- ❌ **Ambient AI Scribing & Audio Speech-to-Text:** No Whisper, audio streaming, microphone recording, or ambient room listening in this MVP.
+- ❌ **Non-Deterministic Large Language Models (LLMs):** Zero OpenAI, Claude, or generative AI prompt calls. All clinical safety and summaries are 100% deterministic rules and code heuristics.
 - ❌ **Telemedicine & Video Consultation:** In-person outpatient and inpatient clinical workflows only.
 - ❌ **Native Biometric Fingerprint Scanners:** Standard keyboard/mobile demographic entry only.
 - ❌ **Patient-Facing Mobile App / Web Portal:** Staff-facing clinical and administrative applications only.
