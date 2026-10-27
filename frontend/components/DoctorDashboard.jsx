@@ -923,6 +923,119 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
             </div>
           </div>
 
+          {/* VISUAL 5: Quick Doctor Voice Dictation Scratchpad with STT & Memos (Relocated to fill left column) */}
+          <div className="card anim-hover-lift doc-glass-shimmer" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
+            <div className="stat-card-accent-blob" style={{ top: -14, right: -14, width: 72, height: 72, opacity: 0.45, background: 'radial-gradient(circle, var(--doc-pill-bg, #dbeafe) 0%, rgba(219, 234, 254, 0) 70%)' }} />
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div className="stat-squircle-badge" style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--doc-brand-gradient, linear-gradient(135deg, #0f172a, #1e3a8a))', color: '#ffffff' }}>
+                  <FileText size={15} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                    Physician Shift Voice Memo & Dictation
+                  </h3>
+                  <span style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>
+                    Dictate clinical observations, handoff notes, or patient reminders
+                  </span>
+                </div>
+              </div>
+              <SpeechMicButton onTranscript={(txt) => setQuickNote(prev => prev ? `${prev} ${txt}` : txt)} />
+            </div>
+
+            <textarea
+              value={quickNote}
+              onChange={(e) => setQuickNote(e.target.value)}
+              placeholder="Dictate or type quick clinical notes, multispeciality points, or patient reminders..."
+              rows={2}
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                border: '1px solid var(--border-default)',
+                borderRadius: 8,
+                padding: '8px 10px',
+                fontSize: 11,
+                fontFamily: 'var(--font-sans)',
+                backgroundColor: 'var(--bg-surface)',
+                color: 'var(--text-primary)',
+                resize: 'none'
+              }}
+            />
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+              <button
+                onClick={() => setQuickNote('')}
+                className="m3-btn m3-btn-sm"
+                style={{ height: 26, fontSize: 10.5, padding: '0 8px', background: 'transparent' }}
+              >
+                Clear
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button
+                  onClick={() => handleTransferMemo(quickNote)}
+                  className="m3-btn m3-btn-sm"
+                  style={{ height: 26, fontSize: 10.5, padding: '0 10px', background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}
+                >
+                  Transfer to Patient
+                </button>
+                <button
+                  onClick={handleSaveMemo}
+                  className="m3-btn m3-btn-sm"
+                  style={{ height: 26, fontSize: 10.5, padding: '0 12px', background: 'linear-gradient(135deg, #1e3a8a, #2563eb)', color: '#ffffff', border: 'none' }}
+                >
+                  Save Memo
+                </button>
+              </div>
+            </div>
+
+            {/* List of Saved Memos */}
+            {savedMemos.length > 0 && (
+              <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                  Saved Shift Notes ({savedMemos.length})
+                </span>
+                {savedMemos.map(m => (
+                  <div 
+                    key={m.id}
+                    style={{
+                      padding: '5px 8px',
+                      backgroundColor: 'var(--bg-surface)',
+                      borderRadius: 6,
+                      border: '1px solid var(--border-subtle)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontSize: 10.5,
+                      gap: 6
+                    }}
+                  >
+                    <span style={{ color: 'var(--text-primary)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <strong style={{ color: 'var(--text-muted)', marginRight: 4 }}>{m.timestamp}</strong>
+                      {m.text}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                      <button 
+                        onClick={() => handleCopyMemo(m.text)}
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: 2 }}
+                        title="Copy text"
+                      >
+                        <Copy size={11} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteMemo(m.id)}
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#dc2626', padding: 2 }}
+                        title="Delete note"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* RIGHT COLUMN: Priority Sentinel Warnings & Quick Today's Patient Schedule */}
@@ -1159,110 +1272,6 @@ export default function DoctorDashboard({ onOpenWorkspace, onSwitchToReception, 
                 })
               )}
             </div>
-          </div>
-
-          {/* VISUAL 5: Quick Doctor Voice Dictation Scratchpad with STT & Memos */}
-          <div className="card anim-hover-lift" style={{ padding: '12px 14px', backgroundColor: 'var(--bg-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <FileText size={14} color="#1e3a8a" />
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
-                  Physician Shift Voice Memo & Dictation
-                </span>
-              </div>
-              <SpeechMicButton onTranscript={(txt) => setQuickNote(prev => prev ? `${prev} ${txt}` : txt)} />
-            </div>
-
-            <textarea
-              value={quickNote}
-              onChange={(e) => setQuickNote(e.target.value)}
-              placeholder="Dictate or type quick clinical notes, multispeciality points, or patient reminders..."
-              rows={2}
-              style={{
-                width: '100%',
-                boxSizing: 'border-box',
-                border: '1px solid var(--border-default)',
-                borderRadius: 8,
-                padding: '6px 8px',
-                fontSize: 11,
-                fontFamily: 'var(--font-sans)',
-                backgroundColor: 'var(--bg-surface)',
-                color: 'var(--text-primary)',
-                resize: 'none'
-              }}
-            />
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
-              <button
-                onClick={() => setQuickNote('')}
-                className="m3-btn m3-btn-sm"
-                style={{ height: 26, fontSize: 10.5, padding: '0 8px', background: 'transparent' }}
-              >
-                Clear
-              </button>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <button
-                  onClick={() => handleTransferMemo(quickNote)}
-                  className="m3-btn m3-btn-sm"
-                  style={{ height: 26, fontSize: 10.5, padding: '0 10px', background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}
-                >
-                  Transfer to Patient
-                </button>
-                <button
-                  onClick={handleSaveMemo}
-                  className="m3-btn m3-btn-sm"
-                  style={{ height: 26, fontSize: 10.5, padding: '0 12px', background: 'linear-gradient(135deg, #1e3a8a, #2563eb)', color: '#ffffff', border: 'none' }}
-                >
-                  Save Memo
-                </button>
-              </div>
-            </div>
-
-            {/* List of Saved Memos */}
-            {savedMemos.length > 0 && (
-              <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  Saved Shift Notes ({savedMemos.length})
-                </span>
-                {savedMemos.map(m => (
-                  <div 
-                    key={m.id}
-                    style={{
-                      padding: '5px 8px',
-                      backgroundColor: 'var(--bg-surface)',
-                      borderRadius: 6,
-                      border: '1px solid var(--border-subtle)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      fontSize: 10.5,
-                      gap: 6
-                    }}
-                  >
-                    <span style={{ color: 'var(--text-primary)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      <strong style={{ color: 'var(--text-muted)', marginRight: 4 }}>{m.timestamp}</strong>
-                      {m.text}
-                    </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-                      <button 
-                        onClick={() => handleCopyMemo(m.text)}
-                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: 2 }}
-                        title="Copy text"
-                      >
-                        <Copy size={11} />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteMemo(m.id)}
-                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#dc2626', padding: 2 }}
-                        title="Delete note"
-                      >
-                        <Trash2 size={11} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
         </div>
