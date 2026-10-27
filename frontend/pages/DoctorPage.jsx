@@ -494,10 +494,27 @@ export default function DoctorPage({
                 background: 'var(--doc-banner-bg, linear-gradient(135deg, #ffffff 0%, #edf8fc 100%))',
                 borderRadius: 14,
                 padding: '12px 18px',
-                marginBottom: 10
+                marginBottom: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 14,
+                flexWrap: 'wrap'
               }}
             >
-              <div className="m3-patient-banner-info" style={{ position: 'relative', zIndex: 1 }}>
+              <div 
+                className="m3-patient-banner-info" 
+                style={{ 
+                  position: 'relative', 
+                  zIndex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 14,
+                  flex: '1 1 650px',
+                  minWidth: 0,
+                  flexWrap: 'nowrap'
+                }}
+              >
                 <div 
                   className="stat-squircle-badge" 
                   style={{ 
@@ -508,13 +525,14 @@ export default function DoctorPage({
                     fontWeight: 900, 
                     background: 'linear-gradient(135deg, #0077b6, #023e8a)', 
                     color: '#ffffff', 
-                    boxShadow: '0 4px 10px rgba(0, 119, 182, 0.35)' 
+                    boxShadow: '0 4px 10px rgba(0, 119, 182, 0.35)',
+                    flexShrink: 0
                   }}
                 >
                   {patient.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </div>
 
-                <div>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <h2 style={{ fontSize: 17, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>
                       {patient.fullName}
@@ -674,7 +692,7 @@ export default function DoctorPage({
               </div>
 
               {/* Action Buttons in Banner */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', position: 'relative', zIndex: 1, flexShrink: 0, marginLeft: 'auto' }}>
                 {patient.status !== 'IN_CONSULTATION' && patient.status !== 'COMPLETED' && (
                   <button
                     type="button"
@@ -851,7 +869,7 @@ export default function DoctorPage({
                 </div>
 
                 {/* Scrollable Patient List */}
-                <div className="m3-scrollable-body" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, paddingRight: 2 }}>
+                <div className="m3-scrollable-body" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, paddingRight: 4, minHeight: 0 }}>
                   {filteredQueue.map(p => {
                     const isSelected = p.id === patient.id;
                     const isWait = p.status === 'WAITING' || p.status === 'REGISTERED' || p.status === 'INSIGHTS_READY' || p.status === 'IN_TRIAGE';
@@ -878,15 +896,19 @@ export default function DoctorPage({
                         className={`doctor-patient-card ${isSelected ? 'selected' : ''}`}
                         style={{
                           padding: '8px 10px',
-                          borderRadius: 8,
+                          borderRadius: 10,
                           border: isSelected ? '1.5px solid #0077b6' : '1px solid #e2e8f0',
-                          background: isSelected ? '#f0f9ff' : '#ffffff',
+                          background: isSelected ? 'linear-gradient(135deg, #ffffff 0%, #edf8fc 100%)' : '#ffffff',
                           cursor: 'pointer',
-                          position: 'relative'
+                          position: 'relative',
+                          flexShrink: 0,
+                          boxShadow: isSelected ? '0 2px 8px rgba(0, 119, 182, 0.15)' : 'none',
+                          boxSizing: 'border-box'
                         }}
                       >
+                        {/* Row 1: Token, Name, Follow-up badge */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
                             <span 
                               style={{ 
                                 fontSize: 9.5, 
@@ -894,29 +916,35 @@ export default function DoctorPage({
                                 padding: '1.5px 6px', 
                                 borderRadius: 4, 
                                 background: tokenBg, 
-                                color: tokenColor 
+                                color: tokenColor,
+                                flexShrink: 0
                               }}
                             >
                               T-{p.tokenNumber}
                             </span>
-                            <span style={{ fontWeight: 800, fontSize: 12, color: '#0f172a' }}>
+                            <span style={{ fontWeight: 800, fontSize: 12, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {p.fullName}
                             </span>
                           </div>
                           
                           {p.isFollowUp && (
-                            <span style={{ fontSize: 9, color: '#7e22ce', fontWeight: 800 }}>
+                            <span style={{ fontSize: 9, color: '#7e22ce', fontWeight: 800, flexShrink: 0 }}>
                               🔁 Follow-Up
                             </span>
                           )}
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 10, color: '#64748b' }}>
-                          <span>{p.uhid || p.mrn} • {p.age}y {p.gender}</span>
-                          <span>Wait: {p.waitTimeMinutes || 15}m</span>
+                        {/* Row 2: Demographics, UHID & Wait Time */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 10, color: '#64748b', lineHeight: 1.35 }}>
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {p.uhid || p.mrn} • {p.age}y {p.gender}
+                          </span>
+                          <span style={{ flexShrink: 0, marginLeft: 4, fontWeight: 600 }}>
+                            Wait: {p.waitTimeMinutes || 15}m
+                          </span>
                         </div>
 
-                        {/* Status Footnote & Quick Call */}
+                        {/* Row 3: Status Footnote & Quick Call */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4, paddingTop: 4, borderTop: '1px dashed #f1f5f9', fontSize: 9.5 }}>
                           <span style={{ fontWeight: 700, color: tokenColor }}>
                             {isInRoom ? '● With Doctor' : isDone ? '✓ Completed' : '⏳ Waiting'}
@@ -932,14 +960,15 @@ export default function DoctorPage({
                                 addToast(`Called Token #${p.tokenNumber} (${p.fullName}) into chamber!`, 'info');
                               }}
                               style={{
-                                padding: '1px 6px',
-                                fontSize: 9,
+                                padding: '2px 8px',
+                                fontSize: 9.5,
                                 fontWeight: 800,
                                 background: '#0077b6',
                                 color: '#ffffff',
                                 border: 'none',
                                 borderRadius: 4,
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
                               }}
                             >
                               Call In ↗

@@ -3145,8 +3145,8 @@ html, body {
 
 /* ======================== PATIENT QUEUE ITEM STYLING (Image 3) ======================== */
 .doctor-theme .doctor-patient-card {
-  padding: 10px 12px;
-  border-radius: 12px !important;
+  padding: 8px 10px;
+  border-radius: 10px !important;
   cursor: pointer;
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
@@ -3155,7 +3155,10 @@ html, body {
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  flex-shrink: 0 !important;
+  min-height: fit-content !important;
+  box-sizing: border-box !important;
 }
 
 .doctor-theme .doctor-patient-card:hover {
@@ -3341,8 +3344,8 @@ html, body {
 .m3-patient-banner-info {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 14px;
+  flex-wrap: nowrap;
 }
 
 /* Prescription Medication Cards - Styled like Reception Stat-Cards */
