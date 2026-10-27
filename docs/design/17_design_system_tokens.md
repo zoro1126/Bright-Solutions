@@ -2,8 +2,9 @@
 ## Bright Solutions: Clinical Hospital Operating System
 
 > **Document ID:** D17  
-> **Version:** 1.0  
+> **Version:** 1.1 (Audit-Revised)  
 > **Status:** APPROVED FRONTEND ARCHITECTURE SPECIFICATION  
+> **Revision Notes:** v1.1: DEFECT-09 fixed — added missing `--radius-squircle: 28%` to canonical `:root` CSS block
 > **Depends On:** [01_PRD.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/01_PRD.md), [02_feature_spec.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/02_feature_spec.md), [16_ui_component_inventory.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/16_ui_component_inventory.md)  
 > **Prepared By:** Bright Solutions Frontend Engineering Team  
 > **Last Updated:** October 2026  
@@ -273,6 +274,7 @@ Hospital software must feel snappy, predictable, and devoid of disorienting, slu
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 14px;
+  --radius-squircle: 28%;   /* Continuous-corner squircle for patient avatar badges */
   --radius-full: 9999px;
 
   /* ==================== SHADOWS ==================== */

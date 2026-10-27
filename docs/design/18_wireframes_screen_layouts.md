@@ -2,8 +2,9 @@
 ## Bright Solutions: Clinical Hospital Operating System
 
 > **Document ID:** D18  
-> **Version:** 1.0  
+> **Version:** 1.1 (Audit-Revised)  
 > **Status:** APPROVED FRONTEND ARCHITECTURE SPECIFICATION  
+> **Revision Notes:** v1.1: DEFECT-10 fixed — Bed Card Color State Map table added mapping each `BedOccupancyCard` status to exact D17 tokens
 > **Depends On:** [01_PRD.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/01_PRD.md), [02_feature_spec.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/02_feature_spec.md), [15_page_route_map.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/15_page_route_map.md), [16_ui_component_inventory.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/16_ui_component_inventory.md), [17_design_system_tokens.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/17_design_system_tokens.md)  
 > **Prepared By:** Bright Solutions Frontend Engineering Team  
 > **Last Updated:** October 2026  
@@ -123,6 +124,21 @@ All Bright Solutions screen layouts conform to structured ASCII and spatial coor
 |                                    | [ Open Clinical Folio (6-Day) ↗ ]  | [ Open Clinical Folio (6-Day) ↗ ]            |
 +------------------------------------------------------------------------------------------------------------------------+
 ```
+
+### 4.1 Bed Card Color State Map (D17 Token Reference)
+
+The `BedOccupancyCard` component (D16 §3.7) must apply the following background, border, and badge token combinations per bed `status` × `latestVitalsState`:
+
+| `status` | `latestVitalsState` | Card Background Token | Card Border Token | Status Badge Token | Badge Label |
+|:---|:---|:---|:---|:---|:---|
+| `OCCUPIED` | `STABLE` | `--color-triage-priority-bg` (`#eff6ff`) | `--color-triage-priority-border` (`#bfdbfe`) | `--color-triage-priority-solid` (`#2563eb`) | OCCUPIED – STABLE |
+| `OCCUPIED` | `ABNORMAL` | `--color-triage-urgent-bg` (`#fef3c7`) | `--color-triage-urgent-border` (`#fde68a`) | `--color-triage-urgent-solid` (`#d97706`) | OCCUPIED – REVIEW |
+| `OCCUPIED` | `CRITICAL` | `--color-triage-emergency-bg` (`#fee2e2`) | `--color-triage-emergency-border` (`#fca5a5`) | `--color-triage-emergency-solid` (`#dc2626`) | OCCUPIED – CRITICAL |
+| `VACANT_CLEAN` | N/A | `--color-triage-routine-bg` (`#ccfbf1`) | `--color-triage-routine-border` (`#99f6e4`) | `--color-triage-routine-solid` (`#0d9488`) | VACANT – READY |
+| `VACANT_DIRTY` | N/A | `--color-surface-subtle` (`#f1f5f9`) | `--color-border-default` (`#e2e8f0`) | `--color-text-muted` (`#64748b`) | HOUSEKEEPING |
+| `MAINTENANCE` | N/A | `--color-surface-subtle` (`#f1f5f9`) | `--color-border-default` (`#e2e8f0`) | `--color-text-secondary` (`#475569`) | MAINTENANCE |
+
+> **Note:** The `[CRITICAL]` badge shown on BED 301 (ICU) in the wireframe above uses `--color-triage-emergency-solid` background with white text. Apply `animation: radarPing 2s infinite` (D17 §5) to the status dot for live pulse effect.
 
 ---
 

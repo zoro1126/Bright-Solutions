@@ -2,8 +2,11 @@
 ## Bright Solutions: Clinical Hospital Operating System
 
 > **Document ID:** D19  
-> **Version:** 1.0  
+> **Version:** 1.1 (Audit-Revised)  
 > **Status:** APPROVED FRONTEND ARCHITECTURE SPECIFICATION  
+> **Revision Notes:**  
+> - v1.1: DEFECT-03 fixed — `passwordHash` renamed to `password`; plaintext credential transmitted over HTTPS only, Argon2id hashing is server-side  
+> - v1.1: DEFECT-06 fixed — `isOnline` now reconciled against `navigator.onLine` and `window offline/online` events with explicit precedence rule
 > **Depends On:** [01_PRD.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/01_PRD.md), [02_feature_spec.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/02_feature_spec.md), [04_data_model_spec.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/04_data_model_spec.md), [11_api_endpoint_inventory.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/11_api_endpoint_inventory.md), [15_page_route_map.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/15_page_route_map.md)  
 > **Prepared By:** Bright Solutions Frontend Engineering Team  
 > **Last Updated:** October 2026  
@@ -79,7 +82,13 @@ interface AuthState {
     logoUrl: string;
   } | null;
   isAuthenticated: boolean;
-  login: (credentials: { username: string; passwordHash: string }) => Promise<void>;
+  /**
+   * Accepts plaintext password only. NEVER hash on the client.
+   * Transmitted over HTTPS to POST /api/v1/auth/login.
+   * Backend performs Argon2id hashing with server-side random salt.
+   * Pre-hashing on the client would break the Argon2id salt scheme.
+   */
+  login: (credentials: { username: string; password: string }) => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<boolean>;
   hasPermission: (permissionCode: string) => boolean;
@@ -190,6 +199,21 @@ Tracks hospital network reachability and buffers offline mutations when broadban
 
 ```typescript
 interface EdgeSyncState {
+  /**
+   * `isOnline` is TRUE only when BOTH conditions are met:
+   *   1. `navigator.onLine === true` (browser network layer)
+   *   2. The last custom health ping to GET /api/v1/health succeeded
+   *
+   * Reconciliation rule: Subscribe to `window.addEventListener('offline')` and
+   * `window.addEventListener('online')`. A native `offline` event immediately
+   * sets `isOnline = false` WITHOUT waiting for the 10-second poll cycle.
+   * A native `online` event sets `isOnline = true` only provisionally; the
+   * next health ping must confirm cloud reachability before fully enabling
+   * cloud-dependent routes.
+   *
+   * Precedence: If `navigator.onLine` is false, `isOnline` is ALWAYS false
+   * regardless of the last ping result.
+   */
   isOnline: boolean;
   isEdgeFallbackActive: boolean;
   lastSuccessfulPing: string;
@@ -201,7 +225,17 @@ interface EdgeSyncState {
     payload: any;
     queuedTimestamp: string;
   }>;
+  /**
+   * Called every 10 seconds via setInterval.
+   * Sets isOnline = false immediately if navigator.onLine is false (skip fetch).
+   * Otherwise probes GET /api/v1/health and sets isOnline based on response.
+   */
   checkHealthPing: () => Promise<void>;
+  /**
+   * Called on mount to wire up native browser offline/online events.
+   * Must be called once in the root App component's useEffect.
+   */
+  initNetworkListeners: () => () => void; // returns cleanup function
   queueOfflineMutation: (endpoint: string, method: string, payload: any) => void;
   reconcileOfflineMutations: () => Promise<void>;
 }

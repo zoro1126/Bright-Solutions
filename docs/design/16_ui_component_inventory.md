@@ -2,8 +2,9 @@
 ## Bright Solutions: Clinical Hospital Operating System
 
 > **Document ID:** D16  
-> **Version:** 1.0  
+> **Version:** 1.1 (Audit-Revised)  
 > **Status:** APPROVED FRONTEND ARCHITECTURE SPECIFICATION  
+> **Revision Notes:** v1.1: DEFECT-05 fixed — removed invalid `duration` top-level SOAP field; replaced with `chiefComplaintDuration` with D04 column mapping
 > **Depends On:** [01_PRD.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/01_PRD.md), [02_feature_spec.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/02_feature_spec.md), [04_data_model_spec.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/04_data_model_spec.md), [13_rbac_permission_matrix.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/13_rbac_permission_matrix.md), [15_page_route_map.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/15_page_route_map.md)  
 > **Prepared By:** Bright Solutions Frontend Engineering Team  
 > **Last Updated:** October 2026  
@@ -311,24 +312,52 @@ Standardized NABH-compliant 4-part outpatient clinical consultation documentatio
 ```typescript
 export interface SoapConsultationPadProps {
   soapData: {
+    /**
+     * S — Subjective: Patient-reported history in own words.
+     * Maps to D11 consultation sign payload field: `subjective`.
+     */
     subjective: string;
+
+    /**
+     * chiefComplaintDuration: Duration string extracted from chief complaint
+     * (e.g. "3 days", "2 weeks"). Stored as a standalone UI helper field;
+     * serialized into `subjective` on save (not a separate backend column).
+     * Maps to D04 opd_consultations.history_of_present_illness contextually.
+     */
+    chiefComplaintDuration: string;
+
+    /**
+     * O — Objective: Clinical findings from physical examination.
+     * Maps to D11 consultation sign payload field: `objective`.
+     */
     objective: string;
-    duration: string;
+
+    /**
+     * A — Assessment: Narrative clinical reasoning (ICD-10 codes are managed
+     * separately via the icd10Diagnoses array below).
+     * Maps to D11 consultation sign payload field: `assessment`.
+     */
     assessmentNarrative: string;
+
+    /**
+     * P — Plan: Care plan, lifestyle advice, follow-up schedule.
+     * Maps to D11 consultation sign payload field: `plan`.
+     */
     plan: string;
   };
   icd10Diagnoses: Array<{
-    code: string;
-    title: string;
+    code: string;    // e.g. "I10"
+    title: string;   // e.g. "Essential (primary) hypertension"
     isPrimary: boolean;
   }>;
-  onUpdateSoap: (field: string, value: string) => void;
+  onUpdateSoap: (field: keyof SoapConsultationPadProps['soapData'], value: string) => void;
   onAddIcd10: (icd: { code: string; title: string; isPrimary: boolean }) => void;
   onRemoveIcd10: (code: string) => void;
   isReadOnly: boolean;
 }
 ```
 - **Clinical Rules:** Enforces mandatory inclusion of at least one Primary ICD-10 code (`BR-CON-01`) before the consultation can be digitally locked.
+- **Serialization Note:** When saving, `chiefComplaintDuration` is appended to `subjective` as a suffix (e.g. *"Severe headache for 3 days"*) before the D11 `POST /api/v1/consultations/{id}/sign` call. It is not sent as a standalone field to the backend.
 
 ### 4.3 PrescriptionPadTable
 Tabular e-prescribing grid with dynamic formulary search, dosage instructions, and integrated DDI checks.

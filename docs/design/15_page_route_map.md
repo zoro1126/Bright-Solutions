@@ -2,11 +2,16 @@
 ## Bright Solutions: Clinical Hospital Operating System
 
 > **Document ID:** D15  
-> **Version:** 1.0  
+> **Version:** 1.1 (Audit-Revised)  
 > **Status:** APPROVED FRONTEND ARCHITECTURE SPECIFICATION  
 > **Depends On:** [01_PRD.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/01_PRD.md), [02_feature_spec.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/02_feature_spec.md), [11_api_endpoint_inventory.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/11_api_endpoint_inventory.md), [13_rbac_permission_matrix.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/13_rbac_permission_matrix.md), [23_cycle_1_pitch.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/23_cycle_1_pitch.md)  
 > **Prepared By:** Bright Solutions Frontend Engineering Team  
 > **Last Updated:** October 2026  
+> **Revision Notes:**  
+> - v1.1: DEFECT-01 fixed — all permission codes now match exact D13 §3 Granular Permission Catalog strings  
+> - v1.1: DEFECT-02 fixed — all API endpoint paths now include mandatory `/api/v1` prefix; paths verified against D11  
+> - v1.1: DEFECT-04 fixed — pharmacy and lab active-work routes now specify patient-context banner requirement  
+> - v1.1: DEFECT-08 fixed — Tab-level write RBAC sub-table added for `/ipd/admissions/:id/folio`
 
 ---
 
@@ -35,6 +40,10 @@ The Bright Solutions frontend navigation architecture is designed for high-throu
 2. **Zero Information Leakage on Displays:** Public waiting room screens (`/display/*`) are 100% unauthenticated, read-only, chromeless Server-Sent Events (SSE) displays that never consume or render Protected Health Information (PHI) such as patient names, diagnoses, or phone numbers.
 3. **Deterministic State Preservation:** Clinical routes (`/doctor/consultation/:id`, `/ipd/admissions/:id/folio/*`) enforce navigation locks (`UnsavedChangesGuard`) to guarantee uncommitted doctor SOAP notes or nurse MAR logs cannot be accidentally destroyed by browser back buttons or route transitions.
 4. **Offline Edge Alignment:** All routes function identically in cloud deployment and local hospital LAN Docker containers (`docker-compose.edge.yml`), gracefully exposing local edge synchronization indicators without route breakage.
+
+> **Permission Code Convention:** All permission codes listed in this document use the **exact strings** defined in [13_rbac_permission_matrix.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/13_rbac_permission_matrix.md) §3 Granular Permission Catalog. The frontend `hasPermission(code)` in `useAuthStore` must check for these exact strings against the JWT `permissions[]` array returned by `GET /api/v1/auth/me`.
+
+> **API Path Convention:** All endpoint paths in this document include the mandatory `/api/v1` base prefix as defined in [11_api_endpoint_inventory.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/11_api_endpoint_inventory.md) §1 Global API Conventions.
 
 ---
 
@@ -72,6 +81,7 @@ Every page route in Bright Solutions inherits from one of six layout shells:
 - **Primary Use:** Front-Desk Patient Registration, OPD Token Check-in, Multi-Point Cashier POS, Pharmacy Dispensing Desk.
 - **Top Bar:** Hospital Counter Identifier (e.g. Counter 03), Current Cashier Ledger Shift ID, Quick Cash Drawer Balance, Fast Token Call Shortcut.
 - **Ergonomics:** Tabular data grids with high contrast, compact line-height (`density="compact"`), autofocus on search inputs, and hardware thermal printer trigger bindings (`Ctrl+P` / `F9`).
+- **Patient Context Strip (Active-Work Variant):** Routes that require a pharmacist or lab technician to work against a specific patient's record (e.g. `/pharmacy/dispense/:rxId`, `/lab/entry/:orderId`) **must mount a read-only `ActivePatientBanner` sub-header** above the work surface within `CounterLayout`, mirroring the patient demographics strip in `ChamberLayout`. This is mandatory for clinical safety to confirm the correct patient before dispensing or reporting.
 
 ### 2.4 TVDisplayLayout (Waiting Room Public Screens)
 - **Primary Use:** Large format waiting lounge LED TVs, hallway token annunciators.
@@ -101,7 +111,7 @@ flowchart TD
     G3 -- Form Clean --> G4
 ```
 
-1. **`AuthGuard`:** Validates JWT access token existence in memory. If missing or expired, triggers silent refresh via `/api/v1/auth/refresh`. If refresh fails, redirects to `/login` preserving target query URI. Public routes (`/login`, `/display/*`, `/health`) bypass this guard.
+1. **`AuthGuard`:** Validates JWT access token existence in memory. If missing or expired, triggers silent refresh via `POST /api/v1/auth/refresh`. If refresh fails, redirects to `/login` preserving target query URI. Public routes (`/login`, `/display/*`, `/health`) bypass this guard.
 2. **`RoleGuard`:** Compares current user's role against route's `allowedRoles` array based on [13_rbac_permission_matrix.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/13_rbac_permission_matrix.md). Unauthorized attempts render `<ForbiddenView code="403" />`.
 3. **`UnsavedChangesGuard`:** Checks `useConsultationStore.isDirty` or `useInpatientStore.isDirty`. If active form contains uncommitted changes, blocks navigation and renders modal: *"You have unsaved clinical documentation. Discard changes or continue editing?"*.
 4. **`EdgeFallbackGuard`:** In local LAN fallback mode (`OFFLINE-MODE`), disables routes requiring live cloud gateways (e.g. external ABDM gateway sync) and badges routes with offline warnings.
@@ -110,46 +120,50 @@ flowchart TD
 
 ## 4. Master Route Inventory
 
+> **Column Definitions:**
+> - **Permissions (D13):** Exact permission codes from D13 §3 Granular Permission Catalog. These are the strings checked by `useAuthStore.hasPermission()`.
+> - **Backend Endpoints (D11):** Full paths including `/api/v1` prefix, matching D11 exactly.
+
 | Route Path | Page Component | Layout Shell | Allowed Roles (D13) | Permissions (D13) | Backend Endpoints (D11) | Description |
 |:---|:---|:---|:---|:---|:---|:---|
-| `/login` | `LoginPage` | `AuthLayout` | `PUBLIC` | None | `POST /auth/login` | Staff authentication with Argon2id credentials |
+| `/login` | `LoginPage` | `AuthLayout` | `PUBLIC` | None | `POST /api/v1/auth/login` | Staff authentication — plaintext credentials transmitted over HTTPS; Argon2id hashing performed server-side |
 | `/unauthorized` | `ForbiddenPage` | `AuthLayout` | `PUBLIC` | None | None | 403 Access Denied notification screen |
-| `/` | `RootRedirector` | None | Authenticated | None | None | Redirects to default role dashboard upon login |
+| `/` | `RootRedirector` | None | Authenticated | None | `GET /api/v1/auth/me` | Redirects to default role dashboard upon login |
 | **OUTPATIENT (OPD)** | | | | | | |
-| `/reception/queue` | `ReceptionQueuePage` | `CounterLayout` | `RECEPTIONIST`, `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `queue:read`, `queue:call` | `GET /opd/queue`, `POST /opd/queue/token` | Front desk OPD token issue & patient queue tracker |
-| `/reception/register` | `PatientRegisterPage` | `CounterLayout` | `RECEPTIONIST`, `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `patient:create` | `POST /patients`, `GET /patients/search` | Master patient index onboarding & UHID generation |
-| `/reception/patients` | `PatientDirectoryPage` | `CounterLayout` | `RECEPTIONIST`, `BILLING_CLERK`, `HOSPITAL_ADMIN` | `patient:read` | `GET /patients`, `GET /patients/search` | Hospital patient archive with filter by UHID/Phone |
-| `/reception/patients/:patientId` | `PatientProfilePage` | `CounterLayout` | `RECEPTIONIST`, `BILLING_CLERK`, `HOSPITAL_ADMIN` | `patient:read`, `patient:update` | `GET /patients/{id}`, `PUT /patients/{id}` | Non-clinical demographic update & visit history |
-| `/nurse/triage` | `NurseTriageQueuePage` | `CounterLayout` | `NURSE`, `HOSPITAL_ADMIN` | `vitals:read` | `GET /opd/queue` | Queue of patients waiting for triage intake |
-| `/nurse/triage/:encounterId` | `NurseVitalsIntakePage` | `ChamberLayout` | `NURSE`, `HOSPITAL_ADMIN` | `vitals:create` | `POST /vitals`, `GET /patients/{id}` | Form for BP, HR, SpO2, Temp, RR, Height, Weight |
-| `/doctor/queue` | `DoctorQueuePage` | `ChamberLayout` | `DOCTOR`, `HOSPITAL_ADMIN` | `queue:read`, `encounter:read` | `GET /opd/queue/doctor` | Doctor's active chamber queue & calling dashboard |
-| `/doctor/consultation/:encounterId` | `DoctorConsultationPage` | `ChamberLayout` | `DOCTOR` | `encounter:write`, `cdss:read`, `rx:write` | `GET /encounters/{id}`, `POST /encounters/{id}/sign` | SOAP notes, ICD-10 linking, e-Rx, lab orders |
-| `/doctor/history/:patientId` | `DoctorPatientDossierPage` | `ChamberLayout` | `DOCTOR` | `encounter:read`, `lab:read` | `GET /patients/{id}/dossier` | Longitudinal outpatient history & prior prescriptions |
+| `/reception/queue` | `ReceptionQueuePage` | `CounterLayout` | `RECEPTIONIST`, `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `opd:read`, `opd:checkin` | `GET /api/v1/opd/visits`, `POST /api/v1/opd/visits` | Front desk OPD visit check-in & patient queue tracker |
+| `/reception/register` | `PatientRegisterPage` | `CounterLayout` | `RECEPTIONIST`, `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `patient:create` | `POST /api/v1/patients`, `GET /api/v1/patients` | Master patient index onboarding & UHID generation |
+| `/reception/patients` | `PatientDirectoryPage` | `CounterLayout` | `RECEPTIONIST`, `BILLING_CLERK`, `HOSPITAL_ADMIN` | `patient:read` | `GET /api/v1/patients` | Hospital patient archive with filter by UHID/Phone |
+| `/reception/patients/:patientId` | `PatientProfilePage` | `CounterLayout` | `RECEPTIONIST`, `BILLING_CLERK`, `HOSPITAL_ADMIN` | `patient:read`, `patient:update` | `GET /api/v1/patients/{patient_uuid}`, `PUT /api/v1/patients/{patient_uuid}` | Non-clinical demographic update & visit history |
+| `/nurse/triage` | `NurseTriageQueuePage` | `CounterLayout` | `NURSE`, `HOSPITAL_ADMIN` | `triage:vitals_read`, `opd:read` | `GET /api/v1/opd/visits` | Queue of patients waiting for triage intake |
+| `/nurse/triage/:visitId` | `NurseVitalsIntakePage` | `ChamberLayout` | `NURSE`, `HOSPITAL_ADMIN` | `triage:vitals_write` | `POST /api/v1/vitals`, `GET /api/v1/patients/{patient_uuid}` | Form for BP, HR, SpO2, Temp, RR, Height, Weight |
+| `/doctor/queue` | `DoctorQueuePage` | `ChamberLayout` | `DOCTOR`, `HOSPITAL_ADMIN` | `opd:read`, `opd:call` | `GET /api/v1/queue/doctors/{doctor_uuid}/live` | Doctor's active chamber queue & calling dashboard |
+| `/doctor/consultation/:visitId` | `DoctorConsultationPage` | `ChamberLayout` | `DOCTOR` | `consultation:write`, `consultation:sign`, `consultation:diagnose`, `cdss:evaluate`, `rx:write` | `GET /api/v1/consultations/visit/{visit_uuid}`, `POST /api/v1/consultations/{consultation_uuid}/sign`, `POST /api/v1/cdss/check-ddi` | SOAP notes, ICD-10 linking, e-Rx, lab orders |
+| `/doctor/history/:patientId` | `DoctorPatientDossierPage` | `ChamberLayout` | `DOCTOR` | `consultation:read`, `lab:order_read` | `GET /api/v1/patients/{patient_uuid}`, `GET /api/v1/consultations/visit/{visit_uuid}` | Longitudinal outpatient history & prior prescriptions |
 | **INPATIENT (IPD)** | | | | | | |
-| `/ipd/beds` | `BedMatrixPage` | `WardLayout` | `NURSE`, `DOCTOR`, `RECEPTIONIST`, `HOSPITAL_ADMIN` | `ipd:bed_read` | `GET /ipd/beds/matrix` | Visual ward bed occupancy grid with color states |
-| `/ipd/admissions` | `AdmissionRosterPage` | `WardLayout` | `NURSE`, `DOCTOR`, `RECEPTIONIST`, `HOSPITAL_ADMIN` | `ipd:admission_read` | `GET /ipd/admissions` | Active admitted patient census across all wards |
-| `/ipd/admissions/new` | `AdmissionIntakePage` | `CounterLayout` | `RECEPTIONIST`, `HOSPITAL_ADMIN` | `ipd:admission_write` | `POST /ipd/admissions`, `GET /ipd/beds/available` | Inpatient admission booking & bed reservation |
-| `/ipd/admissions/:admissionId/folio` | `InpatientFolioPage` | `WardLayout` | `NURSE`, `DOCTOR`, `HOSPITAL_ADMIN` | `ipd:clinical_read` | `GET /ipd/admissions/{id}/folio` | Primary container for Client 6-Day Book Digitization |
-| `/ipd/admissions/:admissionId/discharge`| `DischargeSummaryPage`| `ChamberLayout` | `DOCTOR` | `ipd:discharge_write` | `POST /ipd/admissions/{id}/discharge` | Mandatory doctor discharge summary & clinical lock |
+| `/ipd/beds` | `BedMatrixPage` | `WardLayout` | `NURSE`, `DOCTOR`, `RECEPTIONIST`, `HOSPITAL_ADMIN` | `ipd:read` | `GET /api/v1/beds/matrix` | Visual ward bed occupancy grid with color states |
+| `/ipd/admissions` | `AdmissionRosterPage` | `WardLayout` | `NURSE`, `DOCTOR`, `RECEPTIONIST`, `HOSPITAL_ADMIN` | `ipd:read` | `GET /api/v1/ipd/admissions/active` | Active admitted patient census across all wards |
+| `/ipd/admissions/new` | `AdmissionIntakePage` | `CounterLayout` | `RECEPTIONIST`, `HOSPITAL_ADMIN` | `ipd:admit` | `POST /api/v1/ipd/admissions`, `GET /api/v1/beds/matrix` | Inpatient admission booking & bed reservation (Forms 8 & 9) |
+| `/ipd/admissions/:admissionId/folio` | `InpatientFolioPage` | `WardLayout` | `NURSE`, `DOCTOR`, `HOSPITAL_ADMIN` | `ipd:read` | `GET /api/v1/ipd/admissions/{admission_uuid}` | Primary container for Client 6-Day Book Digitization |
+| `/ipd/admissions/:admissionId/discharge`| `DischargeSummaryPage`| `ChamberLayout` | `DOCTOR` | `ipd:discharge_summary_write`, `ipd:discharge` | `POST /api/v1/ipd/admissions/{admission_uuid}/discharge-summary` | Mandatory doctor discharge summary & clinical lock |
 | **PHARMACY & LAB** | | | | | | |
-| `/pharmacy/queue` | `PharmacistQueuePage` | `CounterLayout` | `PHARMACIST`, `HOSPITAL_ADMIN` | `rx:read`, `rx:dispense` | `GET /pharmacy/dispensary/queue` | Pending e-prescription fulfillment queue |
-| `/pharmacy/dispense/:rxId` | `DrugDispensationPage` | `CounterLayout` | `PHARMACIST` | `rx:dispense` | `POST /pharmacy/dispense` | Batch allocation, expiry check & counter bill |
-| `/pharmacy/inventory` | `PharmacyInventoryPage` | `CounterLayout` | `PHARMACIST`, `HOSPITAL_ADMIN` | `pharmacy:inventory` | `GET /pharmacy/inventory/batches` | Stock levels, reorder alerts & lot receiving |
-| `/lab/orders` | `LabOrdersQueuePage` | `CounterLayout` | `LAB_TECHNICIAN`, `HOSPITAL_ADMIN` | `lab:read` | `GET /lab/orders/pending` | Worklist of ordered tests requiring collection |
-| `/lab/specimens` | `SpecimenIntakePage` | `CounterLayout` | `LAB_TECHNICIAN` | `lab:write` | `POST /lab/specimens/collect` | Specimen barcode acknowledgment & phlebotomy |
-| `/lab/entry/:orderId` | `LabResultEntryPage` | `CounterLayout` | `LAB_TECHNICIAN` | `lab:write` | `POST /lab/results` | Multi-parameter numeric result entry & panic flags |
+| `/pharmacy/queue` | `PharmacistQueuePage` | `CounterLayout` | `PHARMACIST`, `HOSPITAL_ADMIN` | `pharmacy:queue_read` | `GET /api/v1/pharmacy/queue` | Pending e-prescription fulfillment queue |
+| `/pharmacy/dispense/:rxId` | `DrugDispensationPage` | `CounterLayout` *(with Patient Context Banner — see §2.3)* | `PHARMACIST` | `pharmacy:dispense`, `rx:read` | `POST /api/v1/pharmacy/dispensations`, `GET /api/v1/prescriptions/{rx_uuid}` | Batch allocation, expiry check & counter bill. Must show patient name/UHID banner for clinical safety. |
+| `/pharmacy/inventory` | `PharmacyInventoryPage` | `CounterLayout` | `PHARMACIST`, `HOSPITAL_ADMIN` | `pharmacy:inventory_read`, `pharmacy:inventory_write` | `GET /api/v1/pharmacy/items`, `POST /api/v1/pharmacy/items/batches` | Stock levels, reorder alerts & lot receiving |
+| `/lab/orders` | `LabOrdersQueuePage` | `CounterLayout` | `LAB_TECHNICIAN`, `HOSPITAL_ADMIN` | `lab:order_read` | `GET /api/v1/lab/orders` | Worklist of ordered tests requiring collection |
+| `/lab/specimens` | `SpecimenIntakePage` | `CounterLayout` | `LAB_TECHNICIAN` | `lab:sample_collect` | `POST /api/v1/lab/orders/{order_uuid}/collect-sample` | Specimen barcode acknowledgment & phlebotomy |
+| `/lab/entry/:orderId` | `LabResultEntryPage` | `CounterLayout` *(with Patient Context Banner — see §2.3)* | `LAB_TECHNICIAN` | `lab:result_write` | `POST /api/v1/lab/orders/{order_uuid}/results`, `GET /api/v1/lab/orders/{order_uuid}` | Multi-parameter numeric result entry & panic flags. Must show patient name/UHID banner for clinical safety. |
 | **BILLING & CASHIER** | | | | | | |
-| `/billing/pos` | `BillingCounterPage` | `CounterLayout` | `BILLING_CLERK`, `HOSPITAL_ADMIN` | `billing:create` | `POST /billing/invoices/opd` | Rapid OPD fee collection & 80mm thermal receipt |
-| `/billing/invoices` | `InvoiceLedgerPage` | `CounterLayout` | `BILLING_CLERK`, `HOSPITAL_ADMIN` | `billing:read` | `GET /billing/invoices` | Master invoice ledger with filter by payment state |
-| `/billing/ipd-settlement/:admissionId` | `IpdSettlementPage` | `CounterLayout` | `BILLING_CLERK`, `HOSPITAL_ADMIN` | `billing:settle` | `GET /billing/ipd/{id}/bill-draft`, `POST /settle` | 10-Head consolidated IPD bill & payment clearance |
+| `/billing/pos` | `BillingCounterPage` | `CounterLayout` | `BILLING_CLERK`, `HOSPITAL_ADMIN` | `billing:invoice_create`, `billing:payment_collect` | `POST /api/v1/invoices`, `POST /api/v1/invoices/{invoice_uuid}/payments` | Rapid OPD fee collection & 80mm thermal receipt |
+| `/billing/invoices` | `InvoiceLedgerPage` | `CounterLayout` | `BILLING_CLERK`, `HOSPITAL_ADMIN` | `billing:invoice_read` | `GET /api/v1/invoices` | Master invoice ledger with filter by payment state |
+| `/billing/ipd-settlement/:admissionId` | `IpdSettlementPage` | `CounterLayout` | `BILLING_CLERK`, `HOSPITAL_ADMIN` | `billing:invoice_create`, `billing:payment_collect`, `billing:discount_apply` | `GET /api/v1/billing/ipd/{admission_uuid}/accrued-charges`, `POST /api/v1/billing/ipd/{admission_uuid}/generate-final`, `POST /api/v1/invoices/{invoice_uuid}/payments` | 10-Head consolidated IPD bill & payment clearance |
 | **HOSPITAL ADMIN** | | | | | | |
-| `/admin/users` | `UserManagementPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:users` | `GET /admin/users`, `POST /admin/users` | Staff credentials, role assignment & status toggle |
-| `/admin/tariffs` | `TariffMasterPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:tariffs` | `GET /admin/tariffs`, `PUT /admin/tariffs` | Standard service price schedules & bed tariffs |
-| `/admin/beds` | `BedConfigPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:beds` | `GET /admin/wards`, `POST /admin/beds` | Ward creation, room config, and bed inventory |
-| `/admin/audit-logs` | `SecurityAuditLogPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:audit` | `GET /admin/audit-logs` | Immutable audit trail of sign-offs & DDI overrides |
+| `/admin/users` | `UserManagementPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:user_manage` | `GET /api/v1/users`, `POST /api/v1/users` | Staff credentials, role assignment & status toggle |
+| `/admin/tariffs` | `TariffMasterPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `billing:tariff_manage` | `GET /api/v1/tariffs`, `POST /api/v1/tariffs` | Standard service price schedules & bed tariffs |
+| `/admin/beds` | `BedConfigPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:config_manage` | `GET /api/v1/wards`, `PATCH /api/v1/beds/{bed_uuid}/status` | Ward creation, room config, and bed inventory |
+| `/admin/audit-logs` | `SecurityAuditLogPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:audit_read` | `GET /api/v1/audit/logs` | Immutable audit trail of sign-offs & DDI overrides |
 | **WAITING ROOM DISPLAY** | | | | | | |
-| `/display/waiting-room` | `WaitingRoomDisplayPage`| `TVDisplayLayout` | `PUBLIC` (No Auth) | None | `SSE /display/queue/stream` | Fullscreen waiting lounge token announcer |
-| `/display/ward-matrix` | `WardPublicBoardPage` | `TVDisplayLayout` | `PUBLIC` (No Auth) | None | `SSE /display/ward/stream` | Bed matrix whiteboard for nursing station TV |
+| `/display/waiting-room` | `WaitingRoomDisplayPage`| `TVDisplayLayout` | `PUBLIC` (No Auth) | None | `GET /api/v1/display/queue/stream` (SSE) | Fullscreen waiting lounge token announcer |
+| `/display/ward-matrix` | `WardPublicBoardPage` | `TVDisplayLayout` | `PUBLIC` (No Auth) | None | `GET /api/v1/display/queue` | Bed matrix whiteboard for nursing station TV |
 
 ---
 
@@ -176,6 +190,20 @@ To faithfully represent the client's physical 6-day admission binder (`docs/clie
 | `?tab=fluid-chart` | **Form 61:** 24h Intake & Output Chart | Staff Nurse | Hourly oral/IV intake vs urine/drain output, auto-calculated Net Balance | `TEMPLATE_IPD_FLUID_BALANCE` (A4 Landscape) |
 | `?tab=nurse-notes` | **Form 72:** Daily Vitals & Shift Notes | Staff Nurse | Morning, Evening, Night shift logs, NEWS2 score calculation, 0–10 Pain score | `TEMPLATE_IPD_NURSE_NOTES` (A4 Portrait) |
 
+### 5.1 Tab-Level Write RBAC (Fix: DEFECT-08)
+
+The parent route `/ipd/admissions/:admissionId/folio` is accessible to `NURSE`, `DOCTOR`, and `HOSPITAL_ADMIN` with `ipd:read`. However, **individual tab write operations** enforce additional fine-grained permissions at the API level. The frontend must disable save/submit actions and render `[Read Only]` indicators accordingly:
+
+| Tab | Write Permission (D13) | Roles with Write | Read-Only Roles |
+|:---|:---|:---|:---|
+| `?tab=consent` | `ipd:admit` (initial) + `patient:update` (amendments) | `RECEPTIONIST`, `HOSPITAL_ADMIN` | `NURSE` (read only), `DOCTOR` (read only) |
+| `?tab=admission-note` | `ipd:daily_notes_write` | `DOCTOR` only | `NURSE` (read only), `RECEPTIONIST` (hidden tab) |
+| `?tab=mar` | `ipd:nurse_record_write` (administer dose) + `ipd:daily_notes_write` (new orders) | `NURSE` (administer), `DOCTOR` (prescribe orders) | `RECEPTIONIST` (hidden tab) |
+| `?tab=fluid-chart` | `ipd:nurse_record_write` | `NURSE` only | `DOCTOR` (read only), `RECEPTIONIST` (hidden tab) |
+| `?tab=nurse-notes` | `ipd:nurse_record_write` | `NURSE` only | `DOCTOR` (read only), `RECEPTIONIST` (hidden tab) |
+
+> **Implementation Note:** Tab write access is enforced at two layers: (1) Frontend disables form inputs and hides save buttons via `hasPermission()` check; (2) Backend API calls (`POST /api/v1/ipd/admissions/{id}/assessment`, etc.) enforce server-side role guards independently.
+
 ---
 
 ## 6. Navigation State, Breadcrumbs & Deep-Linking
@@ -196,7 +224,7 @@ Clinical routes dynamically generate breadcrumb trails to enable rapid parent na
 
 ## 7. Offline Edge Fallback Routing
 
-When the hospital broadens fiber breaks and drops cloud connection, the local Edge Docker service activates. The frontend router responds through deterministic fallback mechanics:
+When the hospital broadband fiber breaks and drops cloud connection, the local Edge Docker service activates. The frontend router responds through deterministic fallback mechanics:
 
 1. **Beacon Pill:** Topbar displays persistent Amber badge: `[ LOCAL EDGE LAN ACTIVE • 4 Pending Cloud Syncs ]`.
 2. **Blocked Cloud Routes:** External gateway routes (e.g. cloud ABDM health ID validation) redirect to `/offline-advisory` with a retry beacon.

@@ -2,8 +2,11 @@
 ## Bright Solutions: Clinical Hospital Operating System
 
 > **Document ID:** D20  
-> **Version:** 1.0  
+> **Version:** 1.1 (Audit-Revised)  
 > **Status:** APPROVED FRONTEND ARCHITECTURE SPECIFICATION  
+> **Revision Notes:**  
+> - v1.1: DEFECT-07 fixed — Template 2 (Form 8 & 9) now has full HTML layout skeleton, CSS field grid spec, and NABH/IT Act footer  
+> - v1.1: DEFECT-11 fixed — `printService.ts` now uses `iframe.onload` event as primary trigger with 800ms deadline fallback
 > **Depends On:** [01_PRD.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/01_PRD.md), [02_feature_spec.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/02_feature_spec.md), [04_data_model_spec.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/04_data_model_spec.md), [11_api_endpoint_inventory.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/11_api_endpoint_inventory.md), [15_page_route_map.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/15_page_route_map.md), [18_wireframes_screen_layouts.md](file:///c:/Study%20Material%20And%20Projects/Intership-Paperbird_tech/bright_solutions/docs/design/18_wireframes_screen_layouts.md)  
 > **Prepared By:** Bright Solutions Frontend Engineering Team  
 > **Last Updated:** October 2026  
@@ -173,29 +176,374 @@ To eliminate browser layout bleed, scrollbar clipping, and cross-platform format
 - **Physical Sheet:** Standard A4 Portrait (`210mm × 297mm`)
 - **Page Margin:** `@page { size: A4 portrait; margin: 12mm 15mm; }`
 - **Client Reference:** Forms 8 & 9 from `IPD Book 6 Days.pdf`
+- **Medico-Legal Status:** This is the primary legal consent document. The HTML output must be fully self-contained and comply with EHR Standards for India (MoHFW) and IT Act 2000 §5 digital signature requirements.
 
-### Layout Specification
-1. **Hospital Banner:** Header with registration credentials and NABH IPD Accreditation seal.
-2. **Admission Demographics Table:**
-   - IPD Admission Number (`IPD-2026-00891`) & Master UHID (`BS-2026-00142`).
-   - Admission Date & Time (e.g. `26 Oct 2026, 11:30 AM`).
-   - Ward Name, Room Number & Bed Number (e.g. `Semi-Private Ward, Room 201, Bed 201`).
-   - Attending Consultant Doctor & Department.
-3. **Medico-Legal Status (MLC) Section:**
-   - MLC Checkbox: `[ ] Non-MLC` | `[x] Medico-Legal Case (MLC)`.
-   - MLC Details: Police Station, Police Constable Name/Buckle #, Incident Details (if MLC).
-4. **Next of Kin / Guardian Information:**
-   - Name of Guardian, Relationship to Patient, Permanent Address, Emergency Mobile Phone.
-5. **Billing & Insurance Category:**
-   - Scheme: `[x] Cashless TPA / Corporate Insurance` | `[ ] Direct Cash / Self-Pay`.
-   - TPA Name: Star Health Comprehensive, Claim ID: `SH-POL-992819`, Initial Pre-Auth: `₹ 25,000.00`.
-6. **Statutory Consent Clause (Forms 8 & 9):**
-   - *"I, the undersigned patient / guardian, hereby give voluntary consent to the doctors, nurses, and medical authorities of Bright Solutions Hospital to administer clinical examinations, medical treatment, diagnostic procedures, intravenous infusions, and nursing care..."*
-   - Surgical & Anaesthesia High-Risk Acknowledgment Clause.
-7. **Signature Endorsement Box:**
-   - Left: Patient / Guardian Signature with date & relationship.
-   - Center: Admitting Medical Officer Signature with registration seal.
-   - Right: Receptionist / Admission Desk Officer Signature.
+### HTML & CSS Layout Blueprint
+
+```html
+<div class="ipd-face-sheet-root">
+
+  <!-- ===== HOSPITAL LETTERHEAD (matches OPD Rx header) ===== -->
+  <header class="face-sheet-header">
+    <div class="header-brand">
+      <div class="brand-badge">BS</div>
+      <div>
+        <h1 class="hospital-title">BRIGHT SOLUTIONS HOSPITAL</h1>
+        <p class="hospital-sub">Multispeciality Clinical Hospital & Research Center</p>
+        <p class="hospital-addr">Greams Road, Thousand Lights, Chennai 600006 • Tel: +91 44 2829 0000</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="nabh-tag">NABH ACCREDITED IPD</span>
+      <p class="form-title-label">INPATIENT ADMISSION RECORD</p>
+      <p class="form-ids">Forms 8 & 9 — Face Sheet & General Consent</p>
+    </div>
+  </header>
+
+  <!-- ===== SECTION A: ADMISSION IDENTIFIERS (2-column grid) ===== -->
+  <section class="fs-section">
+    <div class="fs-section-title">A. ADMISSION IDENTIFIERS</div>
+    <div class="fs-grid-2col">
+      <div class="fs-field">
+        <span class="fs-label">IPD Admission Number</span>
+        <span class="fs-value">{{admission.ipdNumber}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Master UHID</span>
+        <span class="fs-value">{{patient.uhid}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Admission Date & Time</span>
+        <span class="fs-value">{{admission.admittedAt}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Ward / Room / Bed</span>
+        <span class="fs-value">{{admission.wardName}} / {{admission.roomNumber}} / {{admission.bedNumber}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Attending Consultant</span>
+        <span class="fs-value">{{admission.doctorName}} ({{admission.doctorReg}})</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Admitting Department</span>
+        <span class="fs-value">{{admission.department}}</span>
+      </div>
+      <div class="fs-field fs-field--full">
+        <span class="fs-label">Provisional Diagnosis</span>
+        <span class="fs-value">{{admission.provisionalDiagnosis}}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION B: PATIENT DEMOGRAPHICS (2-column grid) ===== -->
+  <section class="fs-section">
+    <div class="fs-section-title">B. PATIENT DEMOGRAPHICS</div>
+    <div class="fs-grid-2col">
+      <div class="fs-field">
+        <span class="fs-label">Full Name</span>
+        <span class="fs-value">{{patient.fullName}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Age / Gender / Blood Group</span>
+        <span class="fs-value">{{patient.age}}y / {{patient.gender}} / {{patient.bloodGroup}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Phone Number</span>
+        <span class="fs-value">{{patient.phone}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Address</span>
+        <span class="fs-value">{{patient.address}}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION C: NEXT OF KIN / GUARDIAN ===== -->
+  <section class="fs-section">
+    <div class="fs-section-title">C. NEXT OF KIN / GUARDIAN (Emergency Contact)</div>
+    <div class="fs-grid-2col">
+      <div class="fs-field">
+        <span class="fs-label">Guardian Name</span>
+        <span class="fs-value">{{guardian.name}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Relationship to Patient</span>
+        <span class="fs-value">{{guardian.relationship}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Emergency Mobile</span>
+        <span class="fs-value">{{guardian.phone}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Permanent Address</span>
+        <span class="fs-value">{{guardian.address}}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION D: MEDICO-LEGAL CASE (MLC) STATUS ===== -->
+  <section class="fs-section fs-section--mlc">
+    <div class="fs-section-title">D. MEDICO-LEGAL CASE (MLC) STATUS</div>
+    <div class="fs-mlc-row">
+      <label class="fs-checkbox-label">
+        <span class="fs-checkbox">{{admission.isMlc ? '☑' : '☐'}}</span>
+        <strong>Medico-Legal Case (MLC)</strong>
+      </label>
+      <label class="fs-checkbox-label">
+        <span class="fs-checkbox">{{!admission.isMlc ? '☑' : '☐'}}</span>
+        <strong>Non-MLC (Routine Admission)</strong>
+      </label>
+    </div>
+    {{#if admission.isMlc}}
+    <div class="fs-grid-2col fs-mlc-details">
+      <div class="fs-field">
+        <span class="fs-label">Police Station</span>
+        <span class="fs-value">{{admission.mlcPoliceStation}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Constable Name / Badge #</span>
+        <span class="fs-value">{{admission.mlcConstableName}} / {{admission.mlcBadgeNumber}}</span>
+      </div>
+      <div class="fs-field fs-field--full">
+        <span class="fs-label">MLC Incident Details</span>
+        <span class="fs-value">{{admission.mlcDetails}}</span>
+      </div>
+    </div>
+    {{/if}}
+  </section>
+
+  <!-- ===== SECTION E: BILLING & INSURANCE CATEGORY ===== -->
+  <section class="fs-section">
+    <div class="fs-section-title">E. BILLING & INSURANCE CATEGORY</div>
+    <div class="fs-grid-2col">
+      <div class="fs-field">
+        <span class="fs-label">Payment Scheme</span>
+        <span class="fs-value">{{admission.paymentCategory === 'TPA_INSURANCE' ? '☑ Cashless TPA / Insurance' : '☑ Direct Cash / Self-Pay'}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">TPA / Insurance Company</span>
+        <span class="fs-value">{{admission.tpaProvider || 'N/A'}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Policy / Claim Number</span>
+        <span class="fs-value">{{admission.tpaPolicyNumber || 'N/A'}}</span>
+      </div>
+      <div class="fs-field">
+        <span class="fs-label">Initial Advance Paid</span>
+        <span class="fs-value tabular-nums">₹ {{admission.advanceAmount}}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION F: STATUTORY CONSENT CLAUSES (Forms 8 & 9) ===== -->
+  <section class="fs-section fs-consent-block">
+    <div class="fs-section-title">F. PATIENT / GUARDIAN CONSENT DECLARATION (NABH Mandatory — IT Act 2000 §5)</div>
+    <p class="fs-consent-text">
+      I, the undersigned patient or authorized guardian, hereby voluntarily give full and informed consent
+      to the physicians, surgeons, nurses, anaesthetists, and all medical and allied health staff of
+      <strong>Bright Solutions Hospital</strong> to administer clinical examinations, medical treatment,
+      diagnostic and laboratory investigations, intravenous infusions, blood transfusions, nursing care,
+      and all medically necessary procedures during this admission. I understand that no guarantee of
+      specific outcomes has been made to me, and that treatment carries inherent medical risk.
+    </p>
+    <p class="fs-consent-text fs-consent-highisk">
+      <strong>HIGH-RISK SURGICAL / ANAESTHESIA ACKNOWLEDGMENT (Form 9):</strong>
+      I further acknowledge that if my condition requires surgical intervention, the attending surgeon and
+      anaesthetist have explained the nature of the procedure, associated anaesthetic risks, and
+      alternatives to the extent possible given my clinical condition.
+    </p>
+  </section>
+
+  <!-- ===== SECTION G: TRIPLE SIGNATURE ENDORSEMENT BOX ===== -->
+  <section class="fs-signature-strip">
+    <div class="fs-sig-box">
+      <div class="fs-sig-line">{{#if admission.consentSignedAt}}Signed Digitally at {{admission.consentSignedAt}}{{/if}}</div>
+      <div class="fs-sig-role">Patient / Guardian Signature</div>
+      <div class="fs-sig-name">{{guardian.name}} ({{guardian.relationship}})</div>
+    </div>
+    <div class="fs-sig-box">
+      <div class="fs-sig-line"></div>
+      <div class="fs-sig-role">Admitting Medical Officer</div>
+      <div class="fs-sig-name">{{admission.doctorName}}<br/>Reg: {{admission.doctorReg}}</div>
+    </div>
+    <div class="fs-sig-box">
+      <div class="fs-sig-line"></div>
+      <div class="fs-sig-role">Reception / Admission Desk</div>
+      <div class="fs-sig-name">Counter Officer: {{admission.admittedByStaff}}</div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER: LEGAL DISCLAIMER ===== -->
+  <footer class="fs-footer">
+    <p>* Digitally signed under EHR Standards for India (MoHFW Notification) & IT Act 2000 §5 (Electronic Records). Record generated by Bright Solutions Hospital Information System.</p>
+    <p>* Original to be retained in Medical Records Department. Duplicate to be provided to patient / guardian.</p>
+  </footer>
+
+</div>
+```
+
+### CSS Specification for Form 8 & 9
+
+```css
+/* Applied inside printService.ts iframe — Template: TEMPLATE_IPD_FACE_SHEET */
+.ipd-face-sheet-root {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 10.5px;
+  color: #0f172a;
+  line-height: 1.45;
+}
+
+.face-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #0077b6;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.brand-badge {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0077b6, #023e8a);
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.header-brand { display: flex; align-items: flex-start; }
+
+.hospital-title { font-size: 13px; font-weight: 800; margin: 0; color: #0077b6; }
+.hospital-sub   { font-size: 9px; margin: 2px 0 0; color: #475569; }
+.hospital-addr  { font-size: 8.5px; margin: 1px 0 0; color: #64748b; }
+
+.nabh-tag {
+  background: #0077b6; color: #fff;
+  font-size: 7.5px; font-weight: 700; letter-spacing: 0.05em;
+  padding: 2px 5px; border-radius: 4px;
+  display: block; text-align: right; margin-bottom: 4px;
+}
+.form-title-label { font-size: 11px; font-weight: 800; text-align: right; margin: 0; }
+.form-ids         { font-size: 9px; text-align: right; margin: 1px 0 0; color: #475569; }
+
+/* ===== SECTION BLOCKS ===== */
+.fs-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  page-break-inside: avoid;
+}
+
+.fs-section--mlc { border-color: #fca5a5; }
+
+.fs-section-title {
+  background: #f1f5f9;
+  padding: 3px 8px;
+  font-size: 8.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* ===== 2-COLUMN FIELD GRID ===== */
+.fs-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.fs-field {
+  padding: 4px 8px;
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.fs-field:nth-child(even) { border-right: none; }
+.fs-field:last-child       { border-bottom: none; }
+
+.fs-field--full {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+
+.fs-label {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 1px;
+}
+
+.fs-value {
+  font-size: 10px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* ===== MLC ROW ===== */
+.fs-mlc-row {
+  display: flex;
+  gap: 24px;
+  padding: 6px 8px;
+}
+.fs-checkbox-label { display: flex; align-items: center; gap: 4px; font-size: 10px; }
+.fs-checkbox       { font-size: 12px; }
+
+/* ===== CONSENT BLOCK ===== */
+.fs-consent-block { border-top: 2px solid #0f172a; }
+.fs-consent-text  { padding: 5px 8px; font-size: 9.5px; line-height: 1.55; margin: 0; }
+.fs-consent-highisk { background: #fef3c7; border-top: 1px solid #fde68a; }
+
+/* ===== SIGNATURE STRIP (3-column) ===== */
+.fs-signature-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border: 1px solid #0f172a;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  page-break-inside: avoid;
+}
+
+.fs-sig-box {
+  padding: 6px 8px;
+  border-right: 1px solid #0f172a;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.fs-sig-box:last-child { border-right: none; }
+
+.fs-sig-line {
+  border-top: 1px solid #0f172a;
+  padding-top: 3px;
+  font-size: 8px;
+  color: #64748b;
+  min-height: 22px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.fs-sig-role { font-size: 8px; font-weight: 700; margin-top: 3px; color: #0f172a; }
+.fs-sig-name { font-size: 9px; color: #475569; margin-top: 1px; }
+
+/* ===== FOOTER ===== */
+.fs-footer {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 4px;
+  font-size: 8px;
+  color: #64748b;
+  line-height: 1.4;
+}
+.fs-footer p { margin: 1px 0; }
+```
 
 ---
 
@@ -434,14 +782,33 @@ export function printDocument({ templateId, htmlContent, documentTitle }: PrintO
   `);
   frameDoc.close();
 
-  // 4. Trigger print after layout calculation
-  setTimeout(() => {
+  // 4. Trigger print using onload event (primary) with deadline fallback
+  // Rationale: setTimeout(250) was fragile on older hospital PCs with slow
+  // iframe layout for large landscape tables (Form 61, MAR sheets).
+  // onload fires after the iframe document is fully parsed and laid out.
+  let hasPrinted = false;
+
+  const doPrint = () => {
+    if (hasPrinted) return;
+    hasPrinted = true;
     try {
       printFrame?.contentWindow?.focus();
       printFrame?.contentWindow?.print();
     } catch (e) {
       console.error('Iframe print failure:', e);
     }
-  }, 250);
+  };
+
+  // Primary: fire on iframe load event
+  if (printFrame.contentWindow) {
+    printFrame.onload = () => {
+      // Small post-render stabilisation buffer (browser needs 1 paint cycle)
+      setTimeout(doPrint, 50);
+    };
+  }
+
+  // Fallback: some browsers skip onload after document.write();
+  // deadline at 800ms guarantees print is attempted regardless.
+  setTimeout(doPrint, 800);
 }
 ```
