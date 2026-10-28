@@ -88,7 +88,8 @@ def seed_foundational_tenant_and_license():
             "issuer": "Bright Solutions Central Licensing Authority"
         }
         
-        payload_bytes = json.dumps(license_payload, sort_keys=True).encode("utf-8")
+        canonical_payload_str = json.dumps(license_payload, sort_keys=True)
+        payload_bytes = canonical_payload_str.encode("utf-8")
         signature_bytes = private_key.sign(payload_bytes)
         signature_hex = signature_bytes.hex()
         
@@ -106,7 +107,7 @@ def seed_foundational_tenant_and_license():
                 :valid_from, :valid_until, 14, NOW(), 1
             );
         """), {
-            "payload": json.dumps(license_payload),
+            "payload": canonical_payload_str,
             "sig": signature_hex,
             "valid_from": valid_from,
             "valid_until": valid_until
