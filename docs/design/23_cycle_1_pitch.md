@@ -49,7 +49,7 @@ Small-to-medium hospitals and polyclinics in India face severe operational and c
 
 ```mermaid
 flowchart TD
-    W1["<b>Week 1 &mdash; End-to-End OPD-to-IPD Core Flow &amp; 6-Day IPD Book</b><br/>Registration &bull; Queue &bull; OPD Chamber &bull; IPD Bed Admission &bull; Forms 8, 9, 10 &bull; Daily Treatment Form 29 &bull; Intake/Output Form 61 &bull; Discharge &bull; Bill"]
+    W1["<b>Week 1 &mdash; Modular SaaS, Ed25519 Licensing &amp; 14-Form IPD Suite</b><br/>Multi-Tenancy &bull; Ed25519 Offline License &bull; Registration &bull; OPD Queue &bull; IPD Bed Matrix &bull; 14-Form Clinical Engine (Pydantic Registry) &bull; MAR &bull; Fluid I/O &bull; Discharge &bull; Bill"]
     --> W2["<b>Week 2 &mdash; Deterministic CDSS &amp; Clinical Heuristics</b><br/>Relational DDI Rules &bull; Patient Allergy Screening &bull; Vital Sign Threshold Alerts (NEWS2) &bull; Rule-Based Discharge Summary Assembler"]
     --> W3["<b>Week 3 &mdash; Hospital Automation &amp; Print Templates</b><br/>Nightly Bed Rent Job &bull; Token Rollover &bull; Print Engine (Rx, Form 8/9, Discharge Bill, 80mm Token) &bull; Edge Docker LAN Sentinel"]
     --> W4["<b>Week 4 &mdash; Comprehensive Pytest, E2E Testing &amp; Hardening</b><br/>Full OPD-to-IPD Lifecycle Tests &bull; Concurrency Locks &bull; CDSS Safety Suites &bull; Financial Rupee Balance Audits &bull; Demo Sign-off"]
@@ -59,18 +59,30 @@ flowchart TD
 
 ## 4. Week-by-Week Milestone Roadmap
 
-### Week 1: Complete End-to-End Clinical Flow (OPD to IPD & 6-Day IPD Book Core)
-- **Objective:** Deliver the complete, functional clinical vertical slice from Outpatient arrival to Inpatient discharge within Week 1, fully aligned with the hospital's client dossier (`IPD Book 6 Days.pdf`).
+### Week 1: Modular SaaS Core, On-Premise Licensing & Complete 14-Form Inpatient Flow
+- **Objective:** Deliver the complete, functional clinical vertical slice from Outpatient arrival to Inpatient discharge within Week 1, fully aligned with the hospital's client dossier (`IPD Book 6 Days.pdf` - 86 pages) and powered by a modular SaaS multi-tenant engine with offline air-gapped protection.
 - **Key Deliverables:**
-  - **Platform Foundations:** MySQL 8.0 schema on Contabo LAMP, Argon2id auth, JWT refresh token rotation, RBAC guards, and monotonic concurrency locks (`UHID`, `OPD`, `IPD`, `BILL`).
+  - **Modular SaaS & Security Framework:** MySQL 8.0 schema on Contabo LAMP and local Docker LAN, Argon2id auth, JWT refresh token rotation, RBAC guards, and monotonic concurrency locks (`UHID`, `OPD`, `IPD`, `BILL`).
+  - **Asymmetric Ed25519 Cryptographic Licensing (ADR-010):** Offline license validation via embedded public key; anti-clock rollback detection (`last_known_monotonic_time`); 14-day healthcare safety grace period; and `@require_module("<MODULE>")` route decorators allowing autonomous module rental (`OPD`, `IPD`, `PHARMACY`, `PATHOLOGY`, `BILLING`) without code branching.
   - **OPD Flow:** Patient registration (`POST /api/v1/patients`), daily doctor queue token assignment (`OPD-001001`), nurse triage vitals, and doctor consultation chamber with prescription creation and "Admit to IPD" referral order.
-  - **IPD Admission & Bed Assignment:** Support both Doctor OPD referral and Direct Emergency/Walk-in admission. Bed matrix allocation, MLC (Medico-Legal Case) tagging, Next-of-Kin/Guardian capture, advance deposit payment, and digital generation of **Admission Consent (AH/MRD/FORM - 8)** and **Admission Form (AH/MRD/FORM - 9)**.
-  - **Inpatient Stay Records (Client 6-Day Book Integration):**
-    - **Doctor H&P Admission Note (AH/MRD/FORM - 10):** History, physical examination, provisional diagnosis.
-    - **Treatment Sheet & Medication Administration Record (AH/MRD/FORM - 29):** Doctor drug orders (dosage, route, frequency, start/stop times), O2 therapy parameters (nasal prongs/mask, L/min), and nurse administration/omission logging.
-    - **Intake and Output Chart (AH/MRD/FORM - 61):** Shift-wise recording of intake (Oral/RT, IV fluids, Blood) and output (Urine, RT aspiration/vomitus, Stool, Surgical Drain) with running net fluid balance.
-    - **Daily Vitals Signs Chart:** Temperature, Pulse, Resp, BP, SpO2, and Pain Score (0–10).
-    - **Nurse Progress Notes (AH/MRD/FORM - 72):** Shift-by-shift nursing handover and patient observations.
+  - **IPD Admission & Bed Assignment:** Support both Doctor OPD referral and Direct Emergency/Walk-in admission (vital for standalone IPD module rental!). Real-time bed matrix allocation, MLC tagging, Next-of-Kin/Guardian capture, advance deposit payment, and digital generation of **Admission Consent (Form 8)** and **Admission Face Sheet (Form 9)**.
+  - **Full 14-Form Inpatient Clinical Suite (Pydantic Form Registry — ADR-009):**
+    - **Relational Operational Flowsheets:**
+      - **Daily Treatment Sheet Orders (AH/MRD/FORM - 29):** Doctor drug orders (dosage, route, frequency, start/stop times), O2 therapy parameters (device, flow rate L/min), and dietary rules.
+      - **Medication Administration Record (MAR - Form 29):** Shift-wise nurse dose execution logging with omitted/refused justifications.
+      - **24-Hour Fluid Intake & Output Chart (AH/MRD/FORM - 61):** Shift-wise recording of Oral/RT, IV fluids, Urine, Vomitus, Stool, Surgical Drain with signed net balance (`total_intake - total_output`).
+      - **Daily Vitals & Pain Score:** Temperature, Pulse, Resp, BP, SpO2, and Wong-Baker 0–10 Pain Score.
+    - **Dynamic Document Form Engine (`ipd_clinical_form_submissions`):**
+      - **Form 8 & 9:** Admission Consent & Inpatient Demographics Face Sheet.
+      - **Form 10:** Doctor H&P Admission Note (Chief Complaints, HPI, Past History, Systemic Review).
+      - **Form 70:** Nursing Initial Admission Assessment (15-min triage, Morse fall risk, Braden scale).
+      - **Form 71:** Nurse Care Plan & Daily Goals.
+      - **Form 72:** Nurse Progress Notes & Shift Handover.
+      - **Form 15 / 151:** Pre-Anaesthesia Assessment & Surgical Consent.
+      - **Form 54:** Preoperative Nurse Checklist & Surgeon Pre-Op Note.
+      - **Surgical Notes:** Operation Notes & Post-Op Recovery Note.
+      - **Clinical Transitions:** Doctor Handover/Takeover Form & Department Transfer Form.
+      - **Patient Feedback:** Inpatient Experience & Feedback Form (Bilingual English/Gujarati).
   - **Inpatient Discharge & Settlement:** Doctor signed discharge summary (`status = 'SIGNED'`), bed release, and consolidated 10-head final invoice generation with balance reconciliation.
 
 ### Week 2: Deterministic Clinical Decision Support (CDSS) & Heuristics Engine
@@ -116,14 +128,16 @@ To maximize velocity without merge conflicts, work is partitioned by technical r
 
 | Module / Component | Primary Owner | Reviewer / Collaborator | Key Responsibilities |
 |:---|:---:|:---:|:---|
-| **Database DDL & Schema Updates** | Backend Lead | Junior Backend Dev | Schema update for IPD Book tables, indexes, migration scripts |
-| **Auth & Security Framework** | Backend Lead | Junior Backend Dev | Argon2id, JWT rotation, RBAC permission guards |
-| **System Sequences Engine** | Backend Lead | Junior Backend Dev | Concurrency-safe monotonic numbering (`UHID`, `OPD`, `IPD`) |
+| **Database DDL & Schema Updates** | Backend Lead | Junior Backend Dev | Schema update for 56 tables, JSON generated columns, migration scripts |
+| **Modular SaaS & Ed25519 Licensing (ADR-010)** | Backend Lead | Junior Backend Dev | Ed25519 public key validator, anti-clock rollback check, `@require_module` guards |
+| **Auth & Security Framework** | Backend Lead | Junior Backend Dev | Argon2id, JWT rotation, RBAC permission guards, tenant context |
+| **System Sequences Engine** | Backend Lead | Junior Backend Dev | Concurrency-safe monotonic numbering scoped by `(hospital_id, sequence_key)` |
 | **Patient Registration & MPI (M1)** | Junior Backend Dev | Backend Lead | Patient CRUD, Aadhaar salted hash, emergency contacts |
 | **OPD Queue & Token Engine (M2)** | Backend Lead | Junior Backend Dev | Daily token generation, doctor calling, SSE TV stream |
 | **Vitals & Triage (M3)** | Junior Backend Dev | Backend Lead | Intake vitals, BMI formula, abnormal range flags |
 | **Doctor Consultation (M4)** | Backend Lead | Junior Backend Dev | Draft SOAP autosave, ICD-10 linking, "Admit to IPD" referral |
 | **IPD Admissions & Beds (M6)** | Backend Lead | Junior Backend Dev | Bed allocation, Form 8 & 9 consent, MLC flag, advance deposit |
+| **14-Form Clinical Engine (ADR-009)** | Backend Lead | Junior Backend Dev | Universal `ipd_clinical_form_submissions` engine & Pydantic v2 registry |
 | **IPD Treatment & MAR (Form 29)** | Junior Backend Dev | Backend Lead | Doctor medication orders, O2 therapy, nurse administration log |
 | **IPD Intake & Output (Form 61)** | Junior Backend Dev | Backend Lead | Fluid intake (Oral/IV) & output (Urine/Drain) shift records |
 | **IPD Discharge & 10-Head Bill** | Backend Lead | Junior Backend Dev | Discharge summary signing, bed release, consolidated ledger |

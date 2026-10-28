@@ -81,6 +81,34 @@ Stores hospital tenant profiles.
 | `is_active` | `TINYINT(1)` | No | 1 | Boolean operational flag |
 | `deleted_at` | `DATETIME` | Yes | NULL | Soft delete timestamp |
 
+### Table: `tenant_modules`
+Modular SaaS entitlement engine ("Rent-a-Module") allowing clients to subscribe to individual verticals without code changes.
+| Column | Type | Nullable | Default | Constraints / Semantics |
+|:---|:---|:---:|:---:|:---|
+| `id` | `INT UNSIGNED` | No | AUTO_INCREMENT | PK |
+| `hospital_id` | `INT UNSIGNED` | No | 1 | FK `hospitals.id` |
+| `module_code` | `VARCHAR(30)` | No | — | `'OPD'`, `'IPD'`, `'PHARMACY'`, `'PATHOLOGY'`, `'BILLING'` |
+| `is_active` | `TINYINT(1)` | No | 1 | 1 = Module enabled for tenant |
+| `valid_until` | `DATETIME` | No | — | Module subscription expiration timestamp |
+| `max_units` | `INT UNSIGNED` | Yes | NULL | Capacity quota (e.g. max 50 beds for IPD, max 10 doctors for OPD) |
+| **Index** | `UNIQUE KEY (hospital_id, module_code)` | | | One entitlement row per module per tenant |
+
+### Table: `license_records`
+Asymmetric cryptographic license ledger (ADR-010) storing Ed25519-signed offline licenses and anti-clock rollback markers.
+| Column | Type | Nullable | Default | Constraints / Semantics |
+|:---|:---|:---:|:---:|:---|
+| `id` | `INT UNSIGNED` | No | AUTO_INCREMENT | PK |
+| `hospital_id` | `INT UNSIGNED` | No | 1 | FK `hospitals.id` |
+| `license_id` | `VARCHAR(100)` | No | — | Unique license string identifier (e.g. `LIC-2026-SHUBHAM-0042`) |
+| `tier` | `VARCHAR(50)` | No | 'STANDARD' | Subscription tier (`STARTER`, `PROFESSIONAL`, `ENTERPRISE`) |
+| `raw_payload` | `JSON` | No | — | Decoded JSON payload containing modules, capacity limits, and issuer info |
+| `signature` | `TEXT` | No | — | Cryptographic Ed25519 digital signature string |
+| `valid_from` | `DATETIME` | No | — | Commencement timestamp |
+| `valid_until` | `DATETIME` | No | — | Expiration timestamp |
+| `grace_period_days`| `INT UNSIGNED` | No | 14 | Emergency clinical grace period days before hard read-only lock |
+| `last_known_monotonic_time`| `DATETIME` | No | CURRENT_TIMESTAMP | Highest recorded database event timestamp (clock tampering barrier) |
+| `is_active` | `TINYINT(1)` | No | 1 | Active license toggle |
+
 ### Table: `system_sequences`
 Stores monotonic sequence counters with concurrency-safe locking (`SELECT ... FOR UPDATE`).
 | Column | Type | Nullable | Default | Constraints / Semantics |
@@ -312,6 +340,33 @@ Historical stay and transfer ledger (calculates split-rate bed rent accurately).
 | `released_at` | `DATETIME` | Yes | NULL | Transfer or discharge timestamp |
 | `daily_rate` | `DECIMAL(12, 2)` | No | — | Locked daily room tariff at time of stay |
 | `transfer_reason`| `VARCHAR(255)` | Yes | NULL | Clinical justification for bed change |
+
+### Table: `ipd_clinical_form_submissions` (Universal 14-Form Engine — ADR-009)
+Dynamic, versioned clinical document repository powering all 14 clinical forms from `IPD Book 6 Days.pdf`:
+- Forms 8 & 9: Admission Consent & Demographics Face Sheet
+- Form 10: Doctor H&P Admission Assessment
+- Form 70: Nursing Initial Admission Assessment (15-min triage, Morse fall risk, Braden scale)
+- Form 71: Nurse Care Plan & Daily Goals
+- Form 72: Nurse Progress Notes & Shift Handover
+- Form 15 / 151: Pre-Anaesthesia Assessment & Surgical Consent
+- Form 54: Preoperative Surgical Checklist & Surgeon Pre/Post-Op Notes
+- Transfer & Handover forms, Discharge Summary narrative, and Inpatient Patient Feedback.
+| Column | Type | Nullable | Default | Semantics & Validation Rules |
+|:---|:---|:---:|:---:|:---|
+| `id` | `BIGINT UNSIGNED` | No | AUTO_INCREMENT | PK |
+| `public_id` | `CHAR(36)` | No | — | UUID v4, Unique |
+| `hospital_id` | `INT UNSIGNED` | No | 1 | Multi-tenant tenant identifier |
+| `admission_id` | `BIGINT UNSIGNED` | No | — | FK `ipd_admissions.id` |
+| `form_code` | `VARCHAR(50)` | No | — | Unique form type identifier (`FORM_08`, `FORM_09`, `FORM_10`, `FORM_70`, `FORM_71`, `FORM_72`, `FORM_15`, `FORM_54`, `FORM_HANDOVER`, `FORM_TRANSFER`, `FORM_FEEDBACK`) |
+| `form_version` | `INT UNSIGNED` | No | 1 | Schema version number matching Pydantic contract |
+| `day_number` | `SMALLINT UNSIGNED`| Yes | NULL | Optional stay day index (1 to 6) for recurring daily forms |
+| `recorded_by` | `BIGINT UNSIGNED` | No | — | FK `users.id` (Doctor or Nurse signing record) |
+| `recorded_at` | `DATETIME` | No | CURRENT_TIMESTAMP | Clinical submission timestamp |
+| `status` | `ENUM` | No | 'SUBMITTED' | `'DRAFT'`, `'SUBMITTED'`, `'LOCKED'`, `'SUPERSEDED'` |
+| `payload` | `JSON` | No | — | Complete structured form data validated via Pydantic v2 registry |
+| `is_mlc` | `BOOLEAN` | Yes | VIRTUAL | Generated stored column extracted from `payload->>'$.is_mlc'` |
+| `triage_score`| `VARCHAR(20)` | Yes | VIRTUAL | Generated virtual column extracted from `payload->>'$.triage_score'` |
+| **Indexes** | `(hospital_id, admission_id, form_code)`, `(form_code, recorded_at)`, `(is_mlc)` | | | Sub-millisecond form retrieval per inpatient stay |
 
 ### Table: `ipd_admission_assessments` (Form 10)
 Inpatient Doctor H&P Assessment filled by the Medical Officer / Attending Consultant upon admission.

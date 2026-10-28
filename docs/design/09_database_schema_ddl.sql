@@ -49,6 +49,39 @@ CREATE TABLE IF NOT EXISTS hospitals (
     INDEX idx_hospitals_code (hospital_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tenant Modules Entitlements (Modular SaaS "Rent-a-Module")
+CREATE TABLE IF NOT EXISTS tenant_modules (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    hospital_id INT UNSIGNED NOT NULL DEFAULT 1,
+    module_code VARCHAR(30) NOT NULL COMMENT 'OPD, IPD, PHARMACY, PATHOLOGY, BILLING',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    valid_until DATETIME NOT NULL,
+    max_units INT UNSIGNED NULL COMMENT 'e.g. max_beds for IPD, max_doctors for OPD',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_hospital_module (hospital_id, module_code),
+    CONSTRAINT fk_tm_hospital FOREIGN KEY (hospital_id) REFERENCES hospitals (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Cryptographic Offline License Ledger & Monotonic High-Water Mark (ADR-010)
+CREATE TABLE IF NOT EXISTS license_records (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    hospital_id INT UNSIGNED NOT NULL DEFAULT 1,
+    license_id VARCHAR(100) NOT NULL UNIQUE,
+    tier VARCHAR(50) NOT NULL DEFAULT 'STANDARD',
+    raw_payload JSON NOT NULL COMMENT 'Decoded JSON payload of signed license token',
+    signature TEXT NOT NULL COMMENT 'Asymmetric Ed25519 digital signature',
+    valid_from DATETIME NOT NULL,
+    valid_until DATETIME NOT NULL,
+    grace_period_days INT UNSIGNED NOT NULL DEFAULT 14,
+    last_known_monotonic_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Anti-clock rollback defense',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    installed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_lic_hospital (hospital_id),
+    CONSTRAINT fk_lic_hospital FOREIGN KEY (hospital_id) REFERENCES hospitals (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS system_sequences (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     hospital_id INT UNSIGNED NOT NULL DEFAULT 1,
@@ -647,7 +680,47 @@ CREATE TABLE IF NOT EXISTS ipd_bed_allocations (
     CONSTRAINT fk_released_by FOREIGN KEY (released_by) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Form 10: Inpatient Doctor Admission H&P Assessment
+-- ----------------------------------------------------------------------------
+-- Universal Clinical Form Submissions Engine (ADR-009)
+-- Powers all 14 forms from IPD Book 6 Days.pdf:
+-- Forms 8 & 9 (Admission Consent & Demographics), Form 10 (Doctor H&P),
+-- Form 70 (Nursing Triage), Form 71 (Care Plan), Form 72 (Shift Notes),
+-- Form 15/151 (Pre-Anaesthesia), Form 54 (OT Checklist), Surgeon Notes,
+-- Handover, Department Transfer, and Patient Feedback.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ipd_clinical_form_submissions (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    public_id CHAR(36) NOT NULL UNIQUE,
+    hospital_id INT UNSIGNED NOT NULL DEFAULT 1,
+    admission_id BIGINT UNSIGNED NOT NULL,
+    form_code VARCHAR(50) NOT NULL COMMENT 'FORM_08, FORM_09, FORM_10, FORM_70, FORM_71, FORM_72, FORM_15, FORM_54, FORM_HANDOVER, FORM_TRANSFER, FORM_FEEDBACK',
+    form_version INT UNSIGNED NOT NULL DEFAULT 1,
+    day_number SMALLINT UNSIGNED DEFAULT NULL COMMENT 'Optional day index (1-6) for multi-day forms',
+    recorded_by BIGINT UNSIGNED NOT NULL COMMENT 'FK users.id',
+    recorded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('DRAFT', 'SUBMITTED', 'LOCKED', 'SUPERSEDED') NOT NULL DEFAULT 'SUBMITTED',
+    payload JSON NOT NULL COMMENT 'Structured payload validated by Pydantic v2 form registry',
+    
+    -- Virtual / Stored Generated Columns for Sub-Millisecond Search & Regulatory Flagging
+    is_mlc BOOLEAN GENERATED ALWAYS AS (
+        JSON_UNQUOTE(JSON_EXTRACT(payload, '$.is_mlc')) = 'true'
+    ) STORED,
+    triage_score VARCHAR(20) GENERATED ALWAYS AS (
+        JSON_UNQUOTE(JSON_EXTRACT(payload, '$.triage_score'))
+    ) VIRTUAL,
+    
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_cfs_hospital_admission (hospital_id, admission_id, form_code),
+    INDEX idx_cfs_code_recorded (form_code, recorded_at),
+    INDEX idx_cfs_is_mlc (is_mlc),
+    CONSTRAINT fk_cfs_hospital FOREIGN KEY (hospital_id) REFERENCES hospitals (id) ON DELETE CASCADE,
+    CONSTRAINT fk_cfs_admission FOREIGN KEY (admission_id) REFERENCES ipd_admissions (id) ON DELETE CASCADE,
+    CONSTRAINT fk_cfs_recorded_by FOREIGN KEY (recorded_by) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Form 10: Inpatient Doctor Admission H&P Assessment (Preserved as typed view / legacy compatibility)
 CREATE TABLE IF NOT EXISTS ipd_admission_assessments (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     public_id CHAR(36) NOT NULL UNIQUE,

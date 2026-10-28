@@ -163,15 +163,21 @@ interface ConsultationState {
 }
 ```
 
-### 2.4 useInpatientStore (6-Day Book Folio & Bed Matrix)
-Powers the digitized Inpatient Binder (`IPD Book 6 Days.pdf`):
+### 2.4 useInpatientStore (14-Form 6-Day Book Folio & Bed Matrix)
+Powers the digitized Inpatient Binder (`IPD Book 6 Days.pdf` — ADR-009):
 
 ```typescript
 interface InpatientState {
   selectedAdmissionId: string | null;
-  activeFolioTab: 'consent' | 'admission-note' | 'mar' | 'fluid-chart' | 'nurse-notes';
+  activeFolioTab: 'intake' | 'mar' | 'fluid-chart' | 'care-plans' | 'surgical-ot' | 'transitions' | 'discharge';
+  activeSubTab: string; // 'consent' | 'face-sheet' | 'doctor-hp' | 'nurse-triage' | 'pre-anaesth' | 'checklist' | etc.
   activeMarDayIndex: 1 | 2 | 3 | 4 | 5 | 6;
   activeFluidChartDayIndex: 1 | 2 | 3 | 4 | 5 | 6;
+  
+  // Dynamic Clinical Form Engine State
+  activeFormCode: string | null;
+  formSubmissionsCache: Record<string, any>; // formCode -> payload
+  isFormSubmitting: boolean;
   
   // MAR Execution State
   pendingMarVerification: {
@@ -185,16 +191,38 @@ interface InpatientState {
   hourlyFluidEntries: Record<string, any>; // hour -> entry
   cumulativeNetBalanceMl: number;
   
-  setFolioTab: (tab: any) => void;
+  setFolioTab: (tab: 'intake' | 'mar' | 'fluid-chart' | 'care-plans' | 'surgical-ot' | 'transitions' | 'discharge', subTab?: string) => void;
   setMarDay: (day: 1 | 2 | 3 | 4 | 5 | 6) => void;
   openMarPopover: (orderId: string, drugName: string, day: number, slot: string) => void;
   closeMarPopover: () => void;
   recordMarDose: (status: 'GIVEN' | 'OMITTED', reason?: string) => Promise<void>;
   updateFluidEntry: (hour: string, field: string, amountMl: number) => void;
+  saveFormSubmission: (formCode: string, payload: Record<string, any>) => Promise<void>;
+  lockFormSubmission: (formCode: string) => Promise<void>;
 }
 ```
 
-### 2.5 useEdgeSyncStore (LAN Fallback & Offline Queue)
+### 2.5 useLicenseStore (Modular SaaS Entitlements & Offline License — ADR-010)
+Governs modular rentals, air-gapped license validity, and hospital grace periods:
+
+```typescript
+interface LicenseState {
+  tenantId: string | null;
+  tier: 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
+  licenseStatus: 'ACTIVE' | 'GRACE_PERIOD' | 'EXPIRED';
+  enabledModules: Array<'OPD' | 'IPD' | 'PHARMACY' | 'PATHOLOGY' | 'BILLING'>;
+  validUntil: string;
+  daysRemaining: number;
+  gracePeriodDaysRemaining: number;
+  isClockTampered: boolean;
+  
+  isModuleEnabled: (moduleCode: 'OPD' | 'IPD' | 'PHARMACY' | 'PATHOLOGY' | 'BILLING') => boolean;
+  uploadLicenseFile: (fileOrKey: File | string) => Promise<{ success: boolean; message: string }>;
+  refreshLicenseStatus: () => Promise<void>;
+}
+```
+
+### 2.6 useEdgeSyncStore (LAN Fallback & Offline Queue)
 Tracks hospital network reachability and buffers offline mutations when broadband cuts occur:
 
 ```typescript

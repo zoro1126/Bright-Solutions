@@ -142,21 +142,24 @@ The `BedOccupancyCard` component (D16 §3.7) must apply the following background
 
 ---
 
-## 5. Inpatient Clinical Folio Wireframe (6-Day Book Digitization)
+## 5. Inpatient Clinical Folio Wireframe (14-Form 6-Day Book Digitization)
 
-Mounted at `/ipd/admissions/:admissionId/folio`. Digitize the client's physical 6-Day Inpatient Book:
+Mounted at `/ipd/admissions/:admissionId/folio`. Digitizes all 14 clinical and administrative paper forms from the client's 86-page dossier (`IPD Book 6 Days.pdf`):
 
 ```
 +------------------------------------------------------------------------------------------------------------------------+
 | [AS]  ANANYA SHARMA  Master UHID: BS-2026-00142 | IPD Adm: IPD-2026-00891 | Bed: Semi-Private 201 | Day 2 of 6 Days    |
 |       52y Female • Admitted: 26 Oct 2026, 11:30 AM • Consultant: Dr. Kiran Patel, MD | [MLC Case: No]                  |
 +------------------------------------------------------------------------------------------------------------------------+
-| [Tab 1: Face Sheet (F8/9)] [Tab 2: H&P Note (F10)] [Tab 3: MAR Sheet (F29)] [Tab 4: Fluid I/O (F61)] [Tab 5: Notes (F72)]|
+| [Tab 1: Intake & Consents] [Tab 2: MAR Sheet (F29)] [Tab 3: Fluid I/O (F61)] [Tab 4: Care Plans]                      |
+| [Tab 5: Surgical OT Suite] [Tab 6: Clinical Transitions] [Tab 7: Discharge & Feedback]                                |
 +------------------------------------------------------------------------------------------------------------------------+
 ```
 
-### 5.1 Tab 1: Face Sheet & Consent (Forms 8 & 9)
+### 5.1 Tab 1: Intake, Consents & Admission Triage (Forms 8, 9, 10 & 70)
 ```
++------------------------------------------------------------------------------------------------------------------------+
+| SUB-TABS: [ (x) Form 8: Consent ] [ Form 9: Face Sheet ] [ Form 10: Doctor H&P ] [ Form 70: Nurse Triage Assessment ]  |
 +------------------------------------------------------------------------------------------------------------------------+
 | FORM 8 & 9: PATIENT ADMISSION FACE SHEET & GENERAL / SURGICAL CONSENT RECORD                                           |
 +------------------------------------------------------------------------------------------------------------------------+

@@ -21,6 +21,8 @@
 7. [ADR-006: Unified Polymorphic Billing Ledger over Segmented Counter Tables](#7-adr-006-unified-polymorphic-billing-ledger-over-segmented-counter-tables)
 8. [ADR-007: Server-Sent Events (SSE) over WebSockets for Waiting Room TV Display](#8-adr-007-server-sent-events-sse-over-websockets-for-waiting-room-tv-display)
 9. [ADR-008: Irreversible HMAC-SHA-256 Aadhaar Hashing over Plaintext Storage](#9-adr-008-irreversible-hmac-sha-256-aadhaar-hashing-over-plaintext-storage)
+10. [ADR-009: Hybrid Relational Core + Pydantic JSON Registry for Clinical Forms](#10-adr-009-hybrid-relational-core--pydantic-json-registry-for-clinical-forms)
+11. [ADR-010: Asymmetric Ed25519 Cryptographic Licensing for On-Premise Modular SaaS](#11-adr-010-asymmetric-ed25519-cryptographic-licensing-for-on-premise-modular-saas)
 
 ---
 
@@ -38,6 +40,8 @@ Architecture Decision Records (ADRs) capture the architectural context, evaluate
 | **ADR-006** | Unified Polymorphic Billing Ledger Engine | `APPROVED` | Oct 2026 | Billing, Financial Accounting |
 | **ADR-007** | Server-Sent Events (SSE) for Waiting Room Display | `APPROVED` | Oct 2026 | Real-Time Messaging, Display |
 | **ADR-008** | Irreversible HMAC-SHA-256 Aadhaar Hashing | `APPROVED` | Oct 2026 | DPDP Compliance, Identity Security |
+| **ADR-009** | Hybrid Relational Core + Pydantic JSON Form Engine | `APPROVED` | Oct 2026 | Clinical Records, Schema Scalability, IPD Book |
+| **ADR-010** | Asymmetric Ed25519 Modular SaaS Licensing | `APPROVED` | Oct 2026 | SaaS Multi-Tenancy, On-Premise Protection |
 
 ---
 
@@ -219,3 +223,49 @@ Under the **DPDP Act, 2023** and **UIDAI Regulations**, storing raw 12-digit Aad
 
 ### Decision Outcome
 **Chosen: Store an irreversible salted HMAC-SHA-256 hash (`aadhaar_hash`) in `patients.aadhaar_hash`. Raw 12-digit Aadhaar numbers are immediately discarded from memory after hash computation and are never written to disk, database, or logs.**
+
+---
+
+## 10. ADR-009: Hybrid Relational Core + Pydantic JSON Registry for Clinical Forms
+
+### Context & Problem Statement
+The hospital client's inpatient admission binder (`IPD Book 6 Days.pdf`) spans 86 pages containing 14+ distinct clinical forms (Consent Form 8, Face Sheet Form 9, Doctor H&P Form 10, Nursing Triage Form 70, Care Plan Form 71, Pre-Anaesthesia Form 15, Surgical Checklist Form 54, etc.).
+We evaluated whether to:
+1. Normalize every form into 40+ rigid SQL tables with 400+ sparse columns.
+2. Store raw, unindexed JSON blobs in a MySQL table.
+3. Introduce MongoDB as a secondary database (polyglot architecture).
+4. Implement a **Hybrid Relational Core + Code-First Pydantic v2 JSON Registry** in MySQL 8.0.
+
+### Decision Drivers
+1. **Single-Database Simplicity on Contabo & On-Premise:** Avoiding the operational complexity, memory bloat, and distributed cross-database transaction failures of running both MySQL and MongoDB on local hospital hardware.
+2. **ACID Transaction Consistency:** Admissions, bed allocations, financial advance deposits, and clinical intake forms must commit or abort atomically in a single SQL transaction.
+3. **Infinite Form Flexibility without DDL Migrations:** Clinical forms vary between hospital clients and accreditation standards (e.g. NABH vs non-NABH). Adding fields or supporting a new hospital's custom checklist must not require running destructive `ALTER TABLE` migrations on live production databases.
+4. **Data Integrity & Queryability:** Application-level validation prevents schema rot, while MySQL 8.0 virtual generated columns provide B-Tree indexing on key clinical indicators (e.g. `is_mlc`, `triage_score`).
+
+### Decision Outcome
+**Chosen: Hybrid Architecture:**
+- **Normalized Relational SQL** for high-frequency operational/financial entities: `ipd_treatment_orders`, `ipd_treatment_administrations` (Form 29 MAR), `ipd_intake_output` (Form 61), and `vital_signs`.
+- **Unified Document Table (`ipd_clinical_form_submissions`)** for all 14 assessment, consent, checklist, and handover forms, storing validated JSON payloads governed by a **Code-First Pydantic v2 Registry** in FastAPI. Key query fields are indexed via MySQL 8.0 stored/virtual generated columns.
+
+---
+
+## 11. ADR-010: Asymmetric Ed25519 Cryptographic Licensing for On-Premise Modular SaaS
+
+### Context & Problem Statement
+The business requires a SaaS subscription model where independent modules (`OPD`, `IPD`, `PHARMACY`, `PATHOLOGY`, `BILLING`) can be rented to distinct hospital clients. However, hospital clients in tier-1/tier-2 Indian cities frequently suffer from internet/ISP cutoffs and demand **on-premise LAN installations** so network outages never interrupt surgeries, emergency admissions, or pharmacy point-of-sale.
+We evaluated how to enforce subscription periods, module entitlements, and capacity limits without requiring constant internet connectivity while preventing license tampering.
+
+### Decision Drivers
+1. **Air-Gapped Offline Resilience:** Local hospital servers must operate 100% autonomously without active internet or phone-home dependency.
+2. **Cryptographic Tamper-Proofing:** Local IT administrators with physical/root access to on-premise hardware must not be able to alter expiration dates, enable unpurchased modules, or forge licenses.
+3. **Dual-Mode Renewal:** When internet is available, renewal is automatic via daily background heartbeat; when air-gapped, renewal is accomplished via uploading a signed `.lic` file in the Admin UI.
+4. **Anti-Clock Tampering Defense:** Prevent server BIOS/system clock rollbacks via monotonic high-water mark tracking in the database.
+5. **Healthcare Safety First:** Medical software must never abruptly crash during emergencies; a 14-day grace period ensures uninterrupted clinical care before shifting to read-only mode upon subscription lapse.
+
+### Decision Outcome
+**Chosen: Asymmetric Public-Key Cryptography (Ed25519) License Engine:**
+- Central Cloud Licensing server signs license JSON payloads (tenant ID, enabled modules, expiry timestamp, limits) using a private key.
+- The on-premise server verifies licenses using an embedded public key (which cannot forge signatures).
+- Declarative route decorators (`@require_module("IPD")`) enforce module entitlements in FastAPI.
+- Internal monotonic timestamp comparison (`current_time >= last_recorded_activity`) detects system clock rollbacks.
+

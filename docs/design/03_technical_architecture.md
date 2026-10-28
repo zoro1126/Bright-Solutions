@@ -204,6 +204,47 @@ graph LR
    - Defines SQLAlchemy 2.0 table mappings.
    - Executes optimized SQL queries with eager loading (`joinedload` / `selectinload`) to prevent N+1 query performance degradations.
 
+### 4.3 Modular SaaS Entitlement & Licensing Engine ("Rent-a-Module")
+
+To allow Bright Solutions to rent individual modules (`OPD`, `IPD`, `PHARMACY`, `PATHOLOGY`, `BILLING`) to external hospital clients without branching or modifying codebase logic:
+
+```mermaid
+graph TD
+    REQ["HTTP Request"] --> TM["Tenant & License Context Middleware"]
+    TM --> SEC["Security & RBAC Enforcement"]
+    SEC --> MOD{"@require_module('IPD')"}
+    MOD -->|Module Licensed| SVC["Execute Module Service"]
+    MOD -->|Module Not Licensed| ERR["403 Forbidden: MODULE_NOT_LICENSED"]
+```
+
+1. **Declarative Route Guard:** Every domain router is guarded with `@require_module("<MODULE_CODE>")`:
+   ```python
+   @router.post("/ipd/admissions", dependencies=[Depends(require_module("IPD"))])
+   async def admit_patient(...):
+       ...
+   ```
+2. **Autonomous Execution on Core Kernel:**
+   - The Core Kernel (`auth`, `users`, `roles`, `patients`) is active across all tenants.
+   - If a hospital rents **IPD only**, they can register walk-in patients and admit them directly to beds with zero OPD dependency.
+   - If a hospital rents **Pharmacy only**, they can sell over-the-counter medicines and manage stock without internal doctor appointments.
+   - When multiple modules are subscribed, cross-module links (e.g. OPD doctor referring to IPD bed) activate automatically.
+
+### 4.4 Code-First Pydantic v2 Clinical Form Registry (ADR-009)
+
+The 86-page hospital dossier (`IPD Book 6 Days.pdf`) contains 14+ distinct forms. Rather than creating rigid SQL tables with hundreds of sparse columns, forms are governed by a dynamic registry:
+- Form models are strictly defined in `app/modules/ipd/schemas/forms/`:
+  - `Form08AdmissionConsent`
+  - `Form09FaceSheet`
+  - `Form10DoctorHP`
+  - `Form70NursingAssessment`
+  - `Form71NurseCarePlan`
+  - `Form72NurseProgressNote`
+  - `Form15PreAnaesthesia`
+  - `Form54PreOpChecklist`
+  - `FormFeedback`
+- Submissions are stored in `ipd_clinical_form_submissions` as JSON payloads.
+- Adding a new form or updating a form version requires writing only a Pydantic schema—**zero SQL DDL migrations are required**.
+
 ---
 
 ## 5. Database & Persistence Architecture
@@ -288,6 +329,34 @@ def get_next_sequence(db: Session, hospital_id: int, sequence_key: str) -> str:
 1. **Aadhaar Protection:** Raw 12-digit Aadhaar numbers are never stored in the database. Only an irreversible SHA-256 hash (`aadhaar_hash`) is retained for duplicate patient detection.
 2. **Audit Trails:** All access to patient clinical encounters, diagnosis records, and prescriptions generates a synchronous record in `audit_logs` capturing `user_id`, `action`, `entity_name`, `entity_id`, `ip_address`, and timestamp.
 3. **Data at Rest:** Transparent Data Encryption (TDE) on MySQL data directories; file uploads (lab PDFs) stored in restricted filesystem directories with non-guessable UUID filenames.
+
+### 6.3 Asymmetric Ed25519 Offline Licensing Engine (ADR-010)
+
+To support hospital clients on local LANs with frequent internet cutoffs while strictly protecting SaaS subscription boundaries:
+
+```mermaid
+graph TD
+    CP["Central Cloud Licensing Portal"] -->|Signs with Private Key| LIC["Signed license.lic Token"]
+    LIC -->|Online Heartbeat or Manual Upload| LS["Local Server License Validator"]
+    PUB["Embedded Ed25519 Public Key"] --> LS
+    LS --> MON{"Current Time >= Last Monotonic Time?"}
+    MON -->|Clock OK| EXP{"Current Time <= Expiry + Grace Period?"}
+    MON -->|Clock Rollback Detected| CLK_ERR["Security Alert: Clock Tampered (Read-Only Mode)"]
+    EXP -->|Valid / Grace Period| OK["Active License: Cache Entitlements in Memory"]
+    EXP -->|Expired| EXP_ERR["Hard Read-Only Mode: Disallow New Admissions / Bills"]
+```
+
+1. **Tamper-Proof Verification:**
+   - The license payload contains `tenant_id`, `enabled_modules`, `valid_until`, `max_beds`, and `signature`.
+   - The on-premise application embeds only the **Ed25519 Public Key**. Modifying dates or module lists immediately breaks cryptographic signature verification.
+2. **Dual-Mode Renewal:**
+   - **Online:** Periodic daily ping from the on-prem server quietly updates the license token when ISP connectivity is available.
+   - **Offline:** If the hospital is air-gapped, the administrator uploads a renewed `.lic` file or pastes a 1-KB key string in the Superadmin panel. Verification is instantaneous with zero server reboots.
+3. **Anti-Clock Rollback Defense:**
+   - The database records the monotonic high-water mark timestamp on every write event in `license_records.last_known_monotonic_time`.
+   - If an administrator resets system time backwards by >1 hour, the system immediately flags a clock rollback tampering violation and disables new writes.
+4. **Healthcare Safety Grace Period:**
+   - On expiry, a 14-day emergency grace period preserves all clinical and billing operations with administrative renewal banners. Only after the grace period ends does the system restrict writes to emergency read-only.
 
 ---
 

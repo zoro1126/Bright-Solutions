@@ -490,6 +490,36 @@ export interface WaitingRoomDisplayBoardProps {
 }
 ```
 
+### 4.9 DynamicClinicalFormPad (14-Form Engine — ADR-009)
+Generic, schema-driven clinical form viewer and editor that renders and validates any of the 14 forms from `IPD Book 6 Days.pdf` (Forms 8, 9, 10, 70, 71, 15, 54, Handover, Transfer, Feedback).
+
+```typescript
+export interface DynamicClinicalFormPadProps {
+  admissionId: string;
+  formCode: 'FORM_08' | 'FORM_09' | 'FORM_10' | 'FORM_70' | 'FORM_71' | 'FORM_15' | 'FORM_54' | 'FORM_HANDOVER' | 'FORM_TRANSFER' | 'FORM_FEEDBACK';
+  schemaVersion: number;
+  initialData?: Record<string, any>;
+  isLocked: boolean;
+  onSave: (payload: Record<string, any>) => Promise<void>;
+  onLockSignOff?: () => Promise<void>;
+  printTemplateCode?: string;
+}
+```
+
+### 4.10 LicenseStatusBanner & OfflineUploader (ADR-010)
+Displays on-premise SaaS license health pill (`[ ACTIVE ]`, `[ GRACE PERIOD - 12 Days Left ]`, `[ READ ONLY ]`), with drag-and-drop `.lic` file uploader and manual key string input for air-gapped on-premise deployments.
+
+```typescript
+export interface LicenseStatusBannerProps {
+  tier: string;
+  status: 'ACTIVE' | 'GRACE_PERIOD' | 'EXPIRED';
+  daysRemaining: number;
+  enabledModules: Array<'OPD' | 'IPD' | 'PHARMACY' | 'PATHOLOGY' | 'BILLING'>;
+  isClockTampered: boolean;
+  onRenewClick: () => void;
+}
+```
+
 ---
 
 ## 5. State, Loading Skeletons & Error Boundaries

@@ -160,6 +160,7 @@ flowchart TD
 | `/admin/users` | `UserManagementPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:user_manage` | `GET /api/v1/users`, `POST /api/v1/users` | Staff credentials, role assignment & status toggle |
 | `/admin/tariffs` | `TariffMasterPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `billing:tariff_manage` | `GET /api/v1/tariffs`, `POST /api/v1/tariffs` | Standard service price schedules & bed tariffs |
 | `/admin/beds` | `BedConfigPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:config_manage` | `GET /api/v1/wards`, `PATCH /api/v1/beds/{bed_uuid}/status` | Ward creation, room config, and bed inventory |
+| `/admin/licensing` | `LicenseManagementPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:license_manage` | `GET /api/v1/admin/license`, `POST /api/v1/admin/license/upload` | Asymmetric Ed25519 offline license upload, module status & quota tracker |
 | `/admin/audit-logs` | `SecurityAuditLogPage` | `AdminLayout` | `HOSPITAL_ADMIN`, `SUPER_ADMIN` | `admin:audit_read` | `GET /api/v1/audit/logs` | Immutable audit trail of sign-offs & DDI overrides |
 | **WAITING ROOM DISPLAY** | | | | | | |
 | `/display/waiting-room` | `WaitingRoomDisplayPage`| `TVDisplayLayout` | `PUBLIC` (No Auth) | None | `GET /api/v1/display/queue/stream` (SSE) | Fullscreen waiting lounge token announcer |
@@ -167,42 +168,58 @@ flowchart TD
 
 ---
 
-## 5. Inpatient (IPD) 6-Day Book Digitized Route Hierarchy
+## 5. Inpatient (IPD) 14-Form 6-Day Book Digitized Route Hierarchy
 
-To faithfully represent the client's physical 6-day admission binder (`docs/client_docs/IPD Book 6 Days.pdf`), the `/ipd/admissions/:admissionId/folio` route is structured as an integrated clinical hub with synchronized tab navigation:
+To faithfully represent the client's physical 6-day admission binder (`docs/client_docs/IPD Book 6 Days.pdf` - 86 pages), the `/ipd/admissions/:admissionId/folio` route is structured as an integrated clinical hub with synchronized tab and sub-tab navigation supporting all 14 clinical forms:
 
 ```
 /ipd/admissions/:admissionId/folio
-  ├── ?tab=consent          --> Form 8 & 9: Face Sheet, Medico-Legal Status (MLC) & Consents
-  ├── ?tab=admission-note   --> Form 10: Doctor Comprehensive H&P Admission Note
-  ├── ?tab=mar              --> Form 29: Inpatient Treatment Sheet & 6-Day Medication Grid
-  ├── ?tab=fluid-chart      --> Form 61: Daily 24h Intake & Output Balance Ledger
-  └── ?tab=nurse-notes      --> Form 72: Nurse 3-Shift Observations & Vitals Record
+  ├── ?tab=intake            --> Forms 8, 9, 10 & 70 (Consent, Face Sheet, Doctor H&P, Nursing Triage)
+  │     ├── ?sub=consent     --> Form 8: Admission Consent & Authorization
+  │     ├── ?sub=face-sheet  --> Form 9: Inpatient Admission Face Sheet & MLC
+  │     ├── ?sub=doctor-hp   --> Form 10: Doctor Comprehensive H&P Note
+  │     └── ?sub=nurse-triage--> Form 70: Nursing Initial Admission Assessment (15-min)
+  ├── ?tab=mar               --> Form 29: Inpatient Treatment Orders & 6-Day Nurse MAR Grid
+  ├── ?tab=fluid-chart       --> Form 61: Daily 24h Intake & Output Balance Ledger
+  ├── ?tab=care-plans        --> Forms 71 & 72 (Nurse Care Plan & Shift Handover Notes)
+  │     ├── ?sub=care-plan   --> Form 71: Nurse Care Plan & Daily Goals
+  │     └── ?sub=notes       --> Form 72: Nurse 3-Shift Observations & Vitals Record
+  ├── ?tab=surgical-ot       --> Forms 15, 54 & Operation Notes
+  │     ├── ?sub=pre-anaesth --> Form 15/151: Pre-Anaesthesia Assessment & Consent
+  │     ├── ?sub=checklist   --> Form 54: Preoperative Nurse/OT Checklist
+  │     └── ?sub=op-notes    --> Surgeon Pre-Op, Operation & Post-Op Recovery Notes
+  ├── ?tab=transitions       --> Doctor Handover & Internal Department Transfer Forms
+  │     ├── ?sub=handover    --> Doctor Handover & Takeover Form
+  │     └── ?sub=transfer    --> Department Transfer Form (Ward-to-ICU/OT)
+  └── ?tab=discharge         --> Discharge Summary & Inpatient Experience Feedback
+        ├── ?sub=summary     --> Doctor Structured Discharge Summary (ICD-10, Locked Sign-off)
+        └── ?sub=feedback    --> Inpatient Experience & Feedback Form (Bilingual Gujarati/English)
 ```
 
-### Route & Form Parity Table
+### Route & Form Parity Table (Full 14 Forms)
 
-| Tab Parameter | Client PDF Document Form | Primary Clinical Actor | Key Interactions | Print Template Binding (D20) |
-|:---|:---|:---|:---|:---|
-| `?tab=consent` | **Forms 8 & 9:** Face Sheet & General / High-Risk Consent | Receptionist / Admitting Nurse | MLC checkbox, Next of Kin contact, Cash/TPA scheme, Signature capture | `TEMPLATE_IPD_FACE_SHEET` (A4 Portrait) |
-| `?tab=admission-note` | **Form 10:** Doctor H&P Note | Attending Consultant | Chief complaints, Past medical history, Systemic review, Provisional ICD-10 | `TEMPLATE_IPD_ADMISSION_NOTE` (A4 Portrait) |
-| `?tab=mar` | **Form 29:** Treatment Sheet & MAR | Staff Nurse & Doctor | 6-Day time-slot grid (06:00, 12:00, 18:00, 22:00), O2 flow rate, IV pump mL/hr | `TEMPLATE_IPD_MAR_SHEET` (A4 Landscape) |
-| `?tab=fluid-chart` | **Form 61:** 24h Intake & Output Chart | Staff Nurse | Hourly oral/IV intake vs urine/drain output, auto-calculated Net Balance | `TEMPLATE_IPD_FLUID_BALANCE` (A4 Landscape) |
-| `?tab=nurse-notes` | **Form 72:** Daily Vitals & Shift Notes | Staff Nurse | Morning, Evening, Night shift logs, NEWS2 score calculation, 0–10 Pain score | `TEMPLATE_IPD_NURSE_NOTES` (A4 Portrait) |
+| Master Tab | Sub-Tab Parameter | Client Form Reference | Primary Clinical Actor | Storage Layer | Key Interactions | Print Template Binding (D20) |
+|:---|:---|:---|:---|:---|:---|:---|
+| `?tab=intake` | `?sub=consent` | **Form 8:** Admission Consent | Receptionist / Admitting Nurse | `ipd_clinical_form_submissions` | High-risk authorization, Gujarati/English translations | `TEMPLATE_IPD_FACE_SHEET` (p. 2) |
+| `?tab=intake` | `?sub=face-sheet` | **Form 9:** Admission Form | Receptionist / Admitting Nurse | `ipd_admissions` + Form Submissions | MLC checkbox, Next of Kin contact, Cash/TPA scheme | `TEMPLATE_IPD_FACE_SHEET` (p. 1) |
+| `?tab=intake` | `?sub=doctor-hp` | **Form 10:** Doctor H&P Note | Attending Consultant | `ipd_clinical_form_submissions` | Chief complaints, Past medical history, Systemic exam | `TEMPLATE_IPD_ADMISSION_NOTE` |
+| `?tab=intake` | `?sub=nurse-triage`| **Form 70:** Nursing Assessment | Staff Nurse | `ipd_clinical_form_submissions` | 15-min triage, Morse Fall Risk, Braden Pressure score | `TEMPLATE_IPD_NURSE_ASSESSMENT` |
+| `?tab=mar` | — | **Form 29:** Treatment Sheet & MAR | Staff Nurse & Doctor | `ipd_treatment_orders` & `administrations` | 6-Day slot grid (06:00, 12:00, 18:00, 22:00), O2 flow, IV rate | `TEMPLATE_IPD_MAR_SHEET` (Landscape) |
+| `?tab=fluid-chart` | — | **Form 61:** 24h Fluid Chart | Staff Nurse | `ipd_intake_output` (Relational) | Hourly oral/IV intake vs urine/drain output, Net Balance | `TEMPLATE_IPD_FLUID_BALANCE` (Landscape) |
+| `?tab=care-plans` | `?sub=care-plan` | **Form 71:** Nurse Care Plan | Staff Nurse | `ipd_clinical_form_submissions` | Airway patency, IV site care, hygiene, daily goals | `TEMPLATE_IPD_CARE_PLAN` |
+| `?tab=care-plans` | `?sub=notes` | **Form 72:** Vitals & Shift Notes | Staff Nurse | `ipd_clinical_form_submissions` | Morning, Evening, Night shift logs, NEWS2 score, Pain | `TEMPLATE_IPD_NURSE_NOTES` |
+| `?tab=surgical-ot`| `?sub=pre-anaesth`| **Form 15/151:** Pre-Anaesthesia | Anaesthetist | `ipd_clinical_form_submissions` | Mallampati score, ASA grade, fasting status, tooth check | `TEMPLATE_IPD_ANAESTHESIA` |
+| `?tab=surgical-ot`| `?sub=checklist` | **Form 54:** Pre-Op Checklist | OT & Ward Nurse | `ipd_clinical_form_submissions` | Site marking, NPO confirmation, blood arrangement | `TEMPLATE_IPD_PREOP_CHECK` |
+| `?tab=surgical-ot`| `?sub=op-notes` | **Op Notes:** Surgical Notes | Operating Surgeon | `ipd_clinical_form_submissions` | Pre-op diagnosis, incision, surgical technique, swab count | `TEMPLATE_IPD_OP_NOTES` |
+| `?tab=transitions`| `?sub=handover` | **Handover:** Doctor Shift Handoff | Medical Officer | `ipd_clinical_form_submissions` | Pending tests, critical flags, night coverage notes | `TEMPLATE_IPD_HANDOVER` |
+| `?tab=transitions`| `?sub=transfer` | **Transfer:** Ward/ICU Transfer | Transferring Nurse | `ipd_clinical_form_submissions` | Transport vitals, active infusions handoff, receiving sign | `TEMPLATE_IPD_TRANSFER` |
+| `?tab=discharge` | `?sub=summary` | **Discharge Summary** | Attending Doctor | Relational + Form Submissions | Final ICD-10 diagnosis, hospital course, discharge Rx | `TEMPLATE_IPD_DISCHARGE_SUMMARY` |
+| `?tab=discharge` | `?sub=feedback` | **Feedback:** Patient Review | Ward Coordinator | `ipd_clinical_form_submissions` | Bilingual patient satisfaction score & comments | `TEMPLATE_IPD_FEEDBACK` |
 
-### 5.1 Tab-Level Write RBAC (Fix: DEFECT-08)
+### 5.1 Tab-Level Write RBAC & Dynamic Module Guard
 
-The parent route `/ipd/admissions/:admissionId/folio` is accessible to `NURSE`, `DOCTOR`, and `HOSPITAL_ADMIN` with `ipd:read`. However, **individual tab write operations** enforce additional fine-grained permissions at the API level. The frontend must disable save/submit actions and render `[Read Only]` indicators accordingly:
-
-| Tab | Write Permission (D13) | Roles with Write | Read-Only Roles |
-|:---|:---|:---|:---|
-| `?tab=consent` | `ipd:admit` (initial) + `patient:update` (amendments) | `RECEPTIONIST`, `HOSPITAL_ADMIN` | `NURSE` (read only), `DOCTOR` (read only) |
-| `?tab=admission-note` | `ipd:daily_notes_write` | `DOCTOR` only | `NURSE` (read only), `RECEPTIONIST` (hidden tab) |
-| `?tab=mar` | `ipd:nurse_record_write` (administer dose) + `ipd:daily_notes_write` (new orders) | `NURSE` (administer), `DOCTOR` (prescribe orders) | `RECEPTIONIST` (hidden tab) |
-| `?tab=fluid-chart` | `ipd:nurse_record_write` | `NURSE` only | `DOCTOR` (read only), `RECEPTIONIST` (hidden tab) |
-| `?tab=nurse-notes` | `ipd:nurse_record_write` | `NURSE` only | `DOCTOR` (read only), `RECEPTIONIST` (hidden tab) |
-
-> **Implementation Note:** Tab write access is enforced at two layers: (1) Frontend disables form inputs and hides save buttons via `hasPermission()` check; (2) Backend API calls (`POST /api/v1/ipd/admissions/{id}/assessment`, etc.) enforce server-side role guards independently.
+1. **Role-Based Tab Permissions:** The parent route `/ipd/admissions/:admissionId/folio` enforces `ipd:read`. Individual tab save/submit actions are guarded both in the UI and at API endpoints (`ipd:admit`, `ipd:daily_notes_write`, `ipd:nurse_record_write`, `ipd:discharge_summary_write`).
+2. **Modular SaaS Navigation Guard:** When a user logs in, the UI loads `user.tenant.enabled_modules`. If `IPD` is not licensed, the `/ipd/*` routes redirect to `/unlicensed?module=IPD` and sidebar links are hidden. If the on-premise license enters **Emergency Grace Period**, an amber warning banner is displayed across all pages. If the license is expired, write controls become disabled (`[Read Only Mode]`).
 
 ---
 
