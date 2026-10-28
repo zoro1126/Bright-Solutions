@@ -136,3 +136,42 @@ def require_permission(permission_code: str):
     """Convenience factory returning a PermissionChecker dependency."""
     return PermissionChecker(permission_code)
 
+# -----------------------------------------------------------------------------
+# Modular SaaS License Guard Dependency (@require_module)
+# -----------------------------------------------------------------------------
+class ModuleGuard:
+    """
+    FastAPI dependency guarding domain routes based on tenant SaaS subscription entitlements.
+    Checks tenant active modules and cryptographic Ed25519 license validity.
+    Returns 403 Forbidden: {"error": "MODULE_NOT_LICENSED", "module": "..."} if unpurchased or expired.
+    """
+    def __init__(self, module_code: str):
+        self.module_code = module_code.strip().upper()
+
+    def __call__(self, current_user: Dict[str, Any] = Depends(get_current_active_user)) -> Dict[str, Any]:
+        hospital_id = int(current_user.get("hospital_id", 1))
+
+        # Check cached enabled_modules from JWT claim first
+        enabled_modules = [m.upper() for m in current_user.get("enabled_modules", [])]
+        if self.module_code in enabled_modules:
+            return current_user
+
+        # Authoritative fallback check via LicenseService
+        from app.core.licensing import LicenseService
+        if LicenseService.is_module_licensed(self.module_code, hospital_id):
+            return current_user
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "MODULE_NOT_LICENSED",
+                "module": self.module_code,
+                "message": f"Module '{self.module_code}' is not licensed or subscription has expired for this hospital tenant."
+            }
+        )
+
+def require_module(module_code: str):
+    """Convenience factory returning a ModuleGuard dependency."""
+    return ModuleGuard(module_code)
+
+
