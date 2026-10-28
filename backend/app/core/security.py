@@ -7,6 +7,10 @@ from typing import Optional, List, Dict, Any
 from fastapi import HTTPException, Header, status
 from cryptography.fernet import Fernet
 import jwt
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+
+_argon2_hasher = PasswordHasher(time_cost=3, memory_cost=65536, parallelism=4)
 
 from app.core.database import get_connection
 from app.core.config import settings
@@ -60,19 +64,25 @@ def decrypt_bearer_token(token: str) -> Optional[Dict[str, Any]]:
     return None
 
 def hash_password(password: str) -> str:
-    """Hashes plain password using bcrypt with 12 salt rounds."""
-    salt = bcrypt.gensalt(rounds=12)
-    return bcrypt.hashpw(password.strip().encode("utf-8"), salt).decode("utf-8")
+    """Hashes plain password using Argon2id with OWASP recommended parameters."""
+    return _argon2_hasher.hash(password.strip())
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verifies a plain password against stored hash.
-    Supports bcrypt hashes ($2b$) and test dummy seeds ($2b$12$dummy...).
+    Supports Argon2id ($argon2id$), bcrypt ($2b$, $2a$), and test dummy seeds ($2b$12$dummy...).
     """
     if not hashed_password:
         return False
     if hashed_password.startswith("$2b$12$dummy"):
         return True  # Demo/seed users bypass password match for convenience
+    if hashed_password.startswith("$argon2id$"):
+        try:
+            return _argon2_hasher.verify(hashed_password, plain_password.strip())
+        except VerifyMismatchError:
+            return False
+        except Exception:
+            return False
     try:
         return bcrypt.checkpw(plain_password.strip().encode("utf-8"), hashed_password.encode("utf-8"))
     except Exception:
