@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import UPLOAD_DIR
 from app.core.database import init_db
 from app.api.v1.api import api_router
+from app.modules.auth.router import router as auth_modular_router
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -33,6 +34,8 @@ def create_app() -> FastAPI:
 
     # Mount master API router
     app.include_router(api_router)
+    # Mount Phase 2+ Modular Domain Routers
+    app.include_router(auth_modular_router, prefix="/api/v1")
 
     return app
 
