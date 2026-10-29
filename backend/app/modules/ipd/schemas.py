@@ -188,3 +188,106 @@ class AdmissionResponse(BaseModel):
     status: str
 
 
+class HospitalLetterhead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    name: str
+    address: str
+    city: str
+    state: str
+    postal_code: str
+    phone: str
+    email: Optional[str] = None
+    registration_number: Optional[str] = None
+
+
+class PatientFaceSheetDemographics(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    patient_uuid: str
+    uhid: str
+    ipd_number: str
+    full_name: str
+    dob: Optional[str] = None
+    age_years: Optional[int] = None
+    gender: str
+    blood_group: Optional[str] = None
+    phone: str
+    address: str
+    admission_date: datetime
+    admission_source: str
+    admission_type: str
+
+
+class AdmissionLocationDetails(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    ward_name: str
+    ward_code: str
+    floor_number: str
+    room_number: str
+    room_type: str
+    bed_number: str
+    daily_tariff: Decimal
+
+
+class ClinicalTeamDetails(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    attending_doctor_name: str
+    specialization: Optional[str] = None
+    medical_council_reg_no: Optional[str] = None
+    provisional_diagnosis: str
+
+
+class LegalAndInsuranceDetails(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    is_mlc: bool
+    mlc_details: Optional[str] = None
+    guardian_name: Optional[str] = None
+    guardian_relationship: Optional[str] = None
+    guardian_phone: Optional[str] = None
+    payment_category: str
+    tpa_provider: Optional[str] = None
+    tpa_policy_number: Optional[str] = None
+    advance_amount_paid: Decimal
+
+
+class BilingualConsentClause(BaseModel):
+    clause_number: int
+    title_en: str
+    title_gu: str
+    text_en: str
+    text_gu: str
+
+
+class AdmissionConsentPayload(BaseModel):
+    form_number: str = "AH/MRD/FORM - 8"
+    form_title: str = "Admission Consent & Authorization / દાખલ સંમતિ અને અધિકૃતતા"
+    clauses: List[BilingualConsentClause]
+    patient_or_guardian_name: str
+    relation_to_patient: str
+    declaration_en: str
+    declaration_gu: str
+
+
+class AdmissionFaceSheetPayload(BaseModel):
+    form_number: str = "AH/MRD/FORM - 9"
+    form_title: str = "Inpatient Admission Face Sheet / ઇનપેશન્ટ એડમિશન ફેસ શીટ"
+    demographics: PatientFaceSheetDemographics
+    location: AdmissionLocationDetails
+    clinical: ClinicalTeamDetails
+    legal_and_financial: LegalAndInsuranceDetails
+
+
+class AdmissionPrintDossierResponse(BaseModel):
+    hospital: HospitalLetterhead
+    admission_uuid: str
+    ipd_number: str
+    generated_at: datetime
+    face_sheet: AdmissionFaceSheetPayload
+    consent_form: AdmissionConsentPayload
+
+
+

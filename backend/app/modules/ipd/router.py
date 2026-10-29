@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.dependencies import require_module, require_permission
 from app.modules.ipd.schemas import (
+    AdmissionPrintDossierResponse,
     AdmissionResponse,
     BedDetailResponse,
     BedMatrixResponse,
@@ -148,4 +149,24 @@ def list_ipd_admissions(
         limit=limit,
         offset=offset,
     )
+
+
+@router.get(
+    "/ipd/admissions/{admission_uuid}/consent-form",
+    response_model=AdmissionPrintDossierResponse,
+    dependencies=[Depends(require_module("IPD"))],
+)
+def get_admission_consent_and_face_sheet(
+    admission_uuid: str,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Returns structured print payload for:
+    - Inpatient Admission Face Sheet (AH/MRD/FORM - 9)
+    - Bilingual English & Gujarati Admission Consent & Treatment Authorization (AH/MRD/FORM - 8)
+    Guarded by @require_module('IPD') and 'ipd:read' permission.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    return IPDService.get_admission_consent_and_face_sheet(hospital_id, admission_uuid)
+
 

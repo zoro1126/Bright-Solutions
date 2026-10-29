@@ -4,6 +4,7 @@ Domain business logic for ward and bed queries, matrix rollups, and bed state ma
 """
 
 import uuid
+from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy import text
@@ -660,4 +661,241 @@ class IPDService:
             rows = conn.execute(text(query_sql), params).mappings().fetchall()
 
         return [dict(r) for r in rows]
+
+    @staticmethod
+    def get_admission_consent_and_face_sheet(
+        hospital_id: int,
+        admission_uuid: str,
+    ) -> Dict[str, Any]:
+        """
+        Compiles structured, bilingual (English & Gujarati) print payload for:
+        - Admission Consent & Treatment Authorization (AH/MRD/FORM - 8)
+        - Inpatient Admission Face Sheet (AH/MRD/FORM - 9)
+        """
+        query = text(
+            """
+            SELECT 
+                adm.id,
+                adm.public_id AS admission_uuid,
+                adm.ipd_number,
+                adm.admission_source,
+                adm.admission_type,
+                adm.admission_date,
+                adm.provisional_diagnosis,
+                adm.is_mlc,
+                adm.mlc_details,
+                adm.guardian_name,
+                adm.guardian_relationship,
+                adm.guardian_phone,
+                adm.payment_category,
+                adm.tpa_provider,
+                adm.tpa_policy_number,
+                adm.advance_amount_paid,
+                p.public_id AS patient_uuid,
+                p.uhid,
+                p.first_name,
+                p.last_name,
+                p.dob,
+                p.gender,
+                p.blood_group,
+                p.phone AS patient_phone,
+                p.address_line1,
+                p.city AS patient_city,
+                p.state AS patient_state,
+                p.postal_code AS patient_postal_code,
+                b.bed_number,
+                r.room_number,
+                r.room_type,
+                r.daily_tariff,
+                w.ward_name,
+                w.ward_code,
+                w.floor_number,
+                dp.specialization,
+                dp.medical_council_reg_no,
+                u.full_name AS doctor_name,
+                h.name AS hospital_name,
+                h.address_line1 AS hospital_address,
+                h.city AS hospital_city,
+                h.state AS hospital_state,
+                h.postal_code AS hospital_postal_code,
+                h.phone AS hospital_phone,
+                h.email AS hospital_email,
+                h.registration_number AS hospital_registration_number
+            FROM ipd_admissions adm
+            JOIN patients p ON adm.patient_id = p.id
+            JOIN beds b ON adm.current_bed_id = b.id
+            JOIN rooms r ON b.room_id = r.id
+            JOIN wards w ON r.ward_id = w.id
+            JOIN doctor_profiles dp ON adm.attending_doctor_id = dp.id
+            JOIN users u ON dp.user_id = u.id
+            JOIN hospitals h ON adm.hospital_id = h.id
+            WHERE adm.public_id = :admission_uuid AND adm.hospital_id = :hospital_id
+            """
+        )
+
+        with engine.connect() as conn:
+            row = conn.execute(
+                query, {"admission_uuid": admission_uuid, "hospital_id": hospital_id}
+            ).mappings().first()
+
+        if not row:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Inpatient admission '{admission_uuid}' not found.",
+            )
+
+        # Calculate patient age
+        age_years = None
+        if row["dob"]:
+            age_years = (date.today() - row["dob"]).days // 365
+
+        patient_full_name = f"{row['first_name']} {row['last_name']}".strip()
+        patient_address_parts = [
+            row["address_line1"],
+            row["patient_city"],
+            f"{row['patient_state']} - {row['patient_postal_code']}",
+        ]
+        patient_address = ", ".join([p for p in patient_address_parts if p])
+
+        # Bilingual Form 8 Clauses
+        clauses = [
+            {
+                "clause_number": 1,
+                "title_en": "General Consent for Medical Treatment",
+                "title_gu": "તબીબી સારવાર માટે સામાન્ય સંમતિ",
+                "text_en": (
+                    "I hereby voluntarily authorize the medical, nursing, and clinical staff of the "
+                    "hospital to administer diagnostic examinations, routine laboratory investigations, "
+                    "imaging studies, and standard inpatient medical treatments deemed necessary for my care."
+                ),
+                "text_gu": (
+                    "હું આથી હોસ્પિટલના તબીબી, નર્સિંગ અને ક્લિનિકલ સ્ટાફને મારી સંભાળ માટે જરૂરી ગણાતી "
+                    "ડાયગ્નોસ્ટિક પરીક્ષાઓ, નિયમિત લેબોરેટરી તપાસ, ઇમેજિંગ અભ્યાસ અને પ્રમાણભૂત ઇનપેશન્ટ "
+                    "તબીબી સારવાર આપવા માટે સ્વેચ્છાએ અધિકૃત કરું છું."
+                ),
+            },
+            {
+                "clause_number": 2,
+                "title_en": "Emergency Resuscitation & High-Risk Interventions",
+                "title_gu": "ઇમરજન્સી પુનર્જીવન અને ઉચ્ચ જોખમી સારવાર સંમતિ",
+                "text_en": (
+                    "In the event of unforeseen clinical deterioration or emergency situations during "
+                    "hospital stay, I authorize the attending physicians and ICU critical care team to perform "
+                    "life-saving interventions, CPR, and urgent transfusions."
+                ),
+                "text_gu": (
+                    "હોસ્પિટલ રોકાણ દરમિયાન અણધારી ક્લિનિકલ કટોકટીના કિસ્સામાં, હું હાજર તબીબો અને "
+                    "આઈસીયુ ક્રિટિકલ કેર ટીમને જીવનરક્ષક દરમિયાનગીરી, CPR અને તાત્કાલિક રક્ત ચઢાવવાની "
+                    "પ્રક્રિયા કરવા માટે અધિકૃત કરું છું."
+                ),
+            },
+            {
+                "clause_number": 3,
+                "title_en": "Financial Tariff & Billing Liability",
+                "title_gu": "નાણાકીય ટેરિફ અને બિલિંગ જવાબદારી",
+                "text_en": (
+                    "I have received explanation of room tariffs, doctor visit charges, and estimated "
+                    "procedural expenses. I undertake full financial responsibility to clear all hospital dues "
+                    "prior to or at the time of discharge."
+                ),
+                "text_gu": (
+                    "મને રૂમ ટેરિફ, ડૉક્ટર મુલાકાત ફી અને અંદાજિત પ્રક્રિયા ખર્ચની સંપૂર્ણ સમજૂતી મળી છે. "
+                    "હું ડિસ્ચાર્જ સમયે અથવા તે પહેલાં તમામ હોસ્પિટલ લેણાં ચૂકવવાની સંપૂર્ણ નાણાકીય "
+                    "જવાબદારી સ્વીકારું છું."
+                ),
+            },
+            {
+                "clause_number": 4,
+                "title_en": "Valuables & Personal Belongings Disclaimer",
+                "title_gu": "કિંમતી સામાન અને અંગત વસ્તુઓ અંગેની સૂચના",
+                "text_en": (
+                    "The hospital shall not be liable for the loss, theft, or damage of any cash, "
+                    "mobile phones, gold jewellery, or personal belongings retained in the patient rooms."
+                ),
+                "text_gu": (
+                    "દર્દીના રૂમમાં રાખવામાં આવેલ રોકડ, મોબાઈલ ફોન, સોનાના ઘરેણાં કે અંગત સામાનની ચોરી કે "
+                    "નુકસાન માટે હોસ્પિટલ પ્રશાસન કોઈપણ રીતે જવાબદાર રહેશે નહીં."
+                ),
+            },
+        ]
+
+        signee_name = row["guardian_name"] or patient_full_name
+        relation = row["guardian_relationship"] or "Self"
+
+        return {
+            "hospital": {
+                "name": row["hospital_name"],
+                "address": row["hospital_address"],
+                "city": row["hospital_city"],
+                "state": row["hospital_state"],
+                "postal_code": row["hospital_postal_code"],
+                "phone": row["hospital_phone"],
+                "email": row["hospital_email"],
+                "registration_number": row["hospital_registration_number"],
+            },
+            "admission_uuid": row["admission_uuid"],
+            "ipd_number": row["ipd_number"],
+            "generated_at": datetime.now(),
+            "face_sheet": {
+                "form_number": "AH/MRD/FORM - 9",
+                "form_title": "Inpatient Admission Face Sheet / ઇનપેશન્ટ એડમિશન ફેસ શીટ",
+                "demographics": {
+                    "patient_uuid": row["patient_uuid"],
+                    "uhid": row["uhid"],
+                    "ipd_number": row["ipd_number"],
+                    "full_name": patient_full_name,
+                    "dob": str(row["dob"]) if row["dob"] else None,
+                    "age_years": age_years,
+                    "gender": row["gender"],
+                    "blood_group": row["blood_group"],
+                    "phone": row["patient_phone"],
+                    "address": patient_address,
+                    "admission_date": row["admission_date"],
+                    "admission_source": row["admission_source"],
+                    "admission_type": row["admission_type"],
+                },
+                "location": {
+                    "ward_name": row["ward_name"],
+                    "ward_code": row["ward_code"],
+                    "floor_number": str(row["floor_number"]),
+                    "room_number": row["room_number"],
+                    "room_type": row["room_type"],
+                    "bed_number": row["bed_number"],
+                    "daily_tariff": row["daily_tariff"],
+                },
+                "clinical": {
+                    "attending_doctor_name": row["doctor_name"],
+                    "specialization": row["specialization"],
+                    "medical_council_reg_no": row["medical_council_reg_no"],
+                    "provisional_diagnosis": row["provisional_diagnosis"],
+                },
+                "legal_and_financial": {
+                    "is_mlc": bool(row["is_mlc"]),
+                    "mlc_details": row["mlc_details"],
+                    "guardian_name": row["guardian_name"],
+                    "guardian_relationship": row["guardian_relationship"],
+                    "guardian_phone": row["guardian_phone"],
+                    "payment_category": row["payment_category"],
+                    "tpa_provider": row["tpa_provider"],
+                    "tpa_policy_number": row["tpa_policy_number"],
+                    "advance_amount_paid": row["advance_amount_paid"],
+                },
+            },
+            "consent_form": {
+                "form_number": "AH/MRD/FORM - 8",
+                "form_title": "Admission Consent & Authorization / દાખલ સંમતિ અને અધિકૃતતા",
+                "clauses": clauses,
+                "patient_or_guardian_name": signee_name,
+                "relation_to_patient": relation,
+                "declaration_en": (
+                    "I confirm that the above terms have been read and explained to me in a language "
+                    "I understand, and I sign this consent voluntarily."
+                ),
+                "declaration_gu": (
+                    "હું પુષ્ટિ કરું છું કે ઉપરોક્ત શરતો મને મારી સમજાતી ભાષામાં વાંચી અને સમજાવવામાં આવી છે, "
+                    "અને હું સ્વેચ્છાએ આ સંમતિ પત્રક પર સહી કરું છું."
+                ),
+            },
+        }
+
 

@@ -18,11 +18,11 @@
 | **Phase BE-1: Database Provisioning & Master Seeds (SaaS Ready)** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-2: Auth, Ed25519 Licensing & Sequences** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 6 | 0 | 0 | 🟢 Completed |
-| **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 4 | 0 | 1 | 🟡 In Progress |
+| **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 5 | 0 | 0 | 🟢 Completed |
 | **Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine)** | 8 | 0 | 0 | 8 | ⚪ Not Started |
 | **Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing** | 4 | 0 | 0 | 4 | ⚪ Not Started |
 | **Phase BE-7: End-to-End API Integration & Concurrency Hardening** | 3 | 0 | 0 | 3 | ⚪ Not Started |
-| **TOTAL** | **38** | **22** | **0** | **16** | **57.9% Completed** |
+| **TOTAL** | **38** | **23** | **0** | **15** | **60.5% Completed** |
 
 ---
 
@@ -115,7 +115,7 @@
   - Next of Kin / Guardian details (name, relationship, emergency phone).
   - Payment category: Self-Pay Cash vs TPA Insurance (provider name, policy number).
   - Record initial financial advance deposit (`advance_amount_paid`).
-- [ ] **TASK-BE-4.5:** Admission Consent & Face Sheet Print Payload (`GET /api/v1/ipd/admissions/{id}/consent-form`):
+- [x] **TASK-BE-4.5:** Admission Consent & Face Sheet Print Payload (`GET /api/v1/ipd/admissions/{id}/consent-form`):
   - Structured data response formatted for printing **Admission Consent (AH/MRD/FORM - 8)** in English & Gujarati and **Admission Face Sheet (AH/MRD/FORM - 9)**.
 
 ---
@@ -208,4 +208,5 @@
 - **2026-10-29 15:36 IST**: Completed TASK-BE-3.6. Implemented Digital Consultation Sign-Off (`POST /api/v1/consultations/{id}/sign`). Immutably locks consultation and SOAP clinical documentation (`status = 'SIGNED'`), sets `signed_at = NOW()`, transitions associated OPD visit and daily queue token to `COMPLETED`, writes clinical audit log record, and verifies queued status of IPD admissions handoff. Passed automated pytest suite `backend/tests/test_consultation_signoff.py`. Phase BE-3 is 100% completed.
 - **2026-10-29 15:52 IST**: Completed TASK-BE-4.1. Implemented Bed Occupancy Matrix & Status API module `app/modules/ipd/` (`router.py`, `service.py`, `schemas.py`). Provides real-time hierarchical ward/room/bed occupancy tree (`GET /api/v1/beds/matrix`) with occupant profile linkages, ward capacity summaries (`GET /api/v1/wards`), and bed state transition manager (`PATCH /api/v1/beds/{bed_uuid}/status`), guarded by `@require_module("IPD")` and `ipd:read` permission with clinical integrity constraints protecting active inpatient beds. Passed automated pytest suite `backend/tests/test_bed_matrix.py`.
 - **2026-10-29 16:03 IST**: Completed TASK-BE-4.2, TASK-BE-4.3, and TASK-BE-4.4. Implemented Dual-Path IPD Admission Engine (`POST /api/v1/ipd/admissions`, `GET /api/v1/ipd/admissions/{uuid}`, `GET /api/v1/ipd/admissions`) supporting Path A (OPD Referral handoff with auto-population of diagnosis, doctor, and opd appointment) and Path B (Direct / Emergency Walk-In). Implemented concurrency-safe bed allocation via `SELECT ... FOR UPDATE`, monotonic sequence generation `IPD-000501` via `SequenceService`, historical tariff locking (`ipd_bed_allocations.daily_rate`), double-booking prevention (`409 Conflict`), and Forms 8 & 9 legal and financial data capture (MLC flags, Next of Kin, TPA insurance, advance deposits). Passed automated pytest suite `backend/tests/test_ipd_admission.py`.
+- **2026-10-29 16:13 IST**: Completed TASK-BE-4.5. Implemented Admission Consent & Face Sheet Print Payload endpoint (`GET /api/v1/ipd/admissions/{id}/consent-form`). Generates comprehensive structured print dossier consolidating Hospital Letterhead, Inpatient Admission Face Sheet (AH/MRD/FORM - 9 with patient demographics, bed location, clinical team, MLC details, TPA insurance), and bilingual English & Gujarati Admission Consent & Treatment Authorization (AH/MRD/FORM - 8 with 4 clinical and financial clauses, emergency resuscitation authorization, personal belongings disclaimer, and signature declarations). Passed automated pytest suite `backend/tests/test_ipd_consent_form.py`. Phase BE-4 is 100% completed.
 
