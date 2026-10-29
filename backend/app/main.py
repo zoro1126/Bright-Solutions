@@ -10,6 +10,7 @@ from app.modules.opd.router import router as opd_router
 from app.modules.triage.router import router as triage_router
 from app.modules.consultation.router import router as consultation_router
 from app.modules.prescription.router import router as prescription_router
+from app.modules.ipd.router import router as ipd_router
 
 health_router = APIRouter(tags=["Health"])
 

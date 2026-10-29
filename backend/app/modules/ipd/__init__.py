@@ -1,0 +1,3 @@
+"""
+Inpatient (IPD) Domain Module
+"""
