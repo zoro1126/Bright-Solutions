@@ -114,3 +114,4 @@ class BedDetailResponse(BaseModel):
     ward_name: str
     ward_code: str
     daily_tariff: Decimal
+
