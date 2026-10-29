@@ -260,3 +260,132 @@ class ConsultationService:
                 "chapter": r["chapter"]
             } for r in rows]
 
+    @classmethod
+    def sign_consultation(
+        cls,
+        consultation_uuid: str,
+        hospital_id: int = 1,
+        user_id: int = 1,
+        user_role: str = "DOCTOR"
+    ) -> Dict[str, Any]:
+        """
+        Finalizes and digitally locks consultation notes:
+        - Immutably sets status = 'SIGNED' and signed_at = NOW()
+        - Transitions linked OPD visit to 'COMPLETED'
+        - Completes queue token encounter
+        - Confirms IPD admission referral routing if flagged
+        - Writes an immutable security audit entry
+        """
+        import json
+
+        with engine.begin() as conn:
+            # 1. Resolve Consultation
+            c = conn.execute(text("""
+                SELECT c.*, v.id as visit_id, v.public_id as visit_uuid, v.opd_number,
+                       p.uhid, p.first_name, p.middle_name, p.last_name,
+                       u.full_name as doctor_name
+                FROM consultations c
+                JOIN opd_visits v ON c.opd_visit_id = v.id
+                JOIN patients p ON c.patient_id = p.id
+                JOIN doctor_profiles dp ON c.doctor_id = dp.id
+                JOIN users u ON dp.user_id = u.id
+                WHERE c.public_id = :cid AND c.hospital_id = :hid
+                LIMIT 1
+            """), {"cid": consultation_uuid, "hid": hospital_id}).mappings().first()
+
+            if not c:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Consultation note not found.")
+
+            if c["status"] == "SIGNED":
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Consultation is already signed and locked.")
+
+            # 2. Check Clinical Completeness (Assessment or Diagnosis)
+            diag_count = conn.execute(text("""
+                SELECT COUNT(*) FROM consultation_diagnoses WHERE consultation_id = :cid
+            """), {"cid": c["id"]}).scalar() or 0
+
+            if not c["assessment"] and diag_count == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Cannot digitally sign consultation without an assessment narrative or at least one linked diagnosis."
+                )
+
+            now = datetime.now()
+
+            # 3. Immutably Lock Consultation
+            conn.execute(text("""
+                UPDATE consultations
+                SET status = 'SIGNED', signed_at = :now, signed_by = :uid, updated_at = :now
+                WHERE id = :cid
+            """), {"cid": c["id"], "now": now, "uid": user_id})
+
+            # 4. Finalize OPD Visit & Queue Token
+            conn.execute(text("""
+                UPDATE opd_visits SET status = 'COMPLETED', updated_at = :now WHERE id = :vid
+            """), {"vid": c["visit_id"], "now": now})
+
+            conn.execute(text("""
+                UPDATE queue_tokens
+                SET status = 'COMPLETED', completed_at = :now, updated_at = :now
+                WHERE opd_visit_id = :vid
+            """), {"vid": c["visit_id"], "now": now})
+
+            # 5. Check IPD Referral Status
+            ref_row = conn.execute(text("""
+                SELECT public_id, provisional_diagnosis, preferred_bed_category, clinical_urgency, status
+                FROM opd_ipd_referrals
+                WHERE consultation_id = :cid AND hospital_id = :hid
+                LIMIT 1
+            """), {"cid": c["id"], "hid": hospital_id}).mappings().first()
+
+            is_referred = bool(ref_row is not None)
+            referral_data = None
+            if ref_row:
+                referral_data = {
+                    "referral_uuid": ref_row["public_id"],
+                    "provisional_diagnosis": ref_row["provisional_diagnosis"],
+                    "preferred_bed_category": ref_row["preferred_bed_category"],
+                    "clinical_urgency": ref_row["clinical_urgency"],
+                    "status": ref_row["status"]
+                }
+
+            # 6. Record Immutable Security Audit Entry
+            audit_details = json.dumps({
+                "opd_number": c["opd_number"],
+                "uhid": c["uhid"],
+                "diagnoses_count": diag_count,
+                "is_referred_to_ipd": is_referred
+            })
+            conn.execute(text("""
+                INSERT INTO audit_logs (
+                    hospital_id, user_id, action, entity_name, entity_id, entity_public_id, details_json
+                ) VALUES (
+                    :hid, :uid, 'CONSULTATION_SIGNED', 'consultations', :cid, :pid, :details
+                )
+            """), {
+                "hid": hospital_id,
+                "uid": user_id,
+                "cid": c["id"],
+                "pid": consultation_uuid,
+                "details": audit_details
+            })
+
+            fname = c["first_name"]
+            mname = c["middle_name"]
+            lname = c["last_name"]
+            patient_name = f"{fname} {mname} {lname}".replace("  ", " ").strip() if mname else f"{fname} {lname}".strip()
+
+            return {
+                "consultation_uuid": consultation_uuid,
+                "opd_number": c["opd_number"],
+                "uhid": c["uhid"],
+                "patient_name": patient_name,
+                "status": "SIGNED",
+                "signed_at": now.isoformat(),
+                "signed_by_doctor": c["doctor_name"],
+                "is_referred_to_ipd": is_referred,
+                "referral": referral_data,
+                "message": "Consultation finalized, digitally signed, and encounter locked."
+            }
+
+

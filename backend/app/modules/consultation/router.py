@@ -79,3 +79,36 @@ def get_consultation_by_visit(
         "data": consultation
     }
 
+@router.post(
+    "/{consultation_uuid}/sign",
+    summary="Digitally sign and finalize clinical consultation notes"
+)
+def sign_consultation(
+    consultation_uuid: str,
+    current_user: dict = Depends(require_permission("consultation:sign"))
+):
+    """
+    Digitally signs and immutably locks an OPD consultation:
+    - Sets consultation status = 'SIGNED'
+    - Transitions linked OPD visit & queue token to 'COMPLETED'
+    - Confirms routing of patient to IPD Admission Desk if admitted
+    - Writes immutable entry to audit log
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    user_id = int(current_user.get("user_id", 1))
+    user_role = str(current_user.get("role", "DOCTOR"))
+
+    result = ConsultationService.sign_consultation(
+        consultation_uuid=consultation_uuid,
+        hospital_id=hospital_id,
+        user_id=user_id,
+        user_role=user_role
+    )
+
+    return {
+        "success": True,
+        "data": result,
+        "message": "Consultation finalized, signed, and encounter locked."
+    }
+
+
