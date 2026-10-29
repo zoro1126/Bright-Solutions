@@ -17,12 +17,12 @@
 |:---|:---:|:---:|:---:|:---:|:---:|
 | **Phase BE-1: Database Provisioning & Master Seeds (SaaS Ready)** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-2: Auth, Ed25519 Licensing & Sequences** | 6 | 6 | 0 | 0 | 🟢 Completed |
-| **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 0 | 1 | 5 | 🟡 In Progress |
+| **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 1 | 1 | 4 | 🟡 In Progress |
 | **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 0 | 0 | 5 | ⚪ Not Started |
 | **Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine)** | 8 | 0 | 0 | 8 | ⚪ Not Started |
 | **Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing** | 4 | 0 | 0 | 4 | ⚪ Not Started |
 | **Phase BE-7: End-to-End API Integration & Concurrency Hardening** | 3 | 0 | 0 | 3 | ⚪ Not Started |
-| **TOTAL** | **38** | **12** | **1** | **25** | **31.6% Completed** |
+| **TOTAL** | **38** | **13** | **1** | **24** | **34.2% Completed** |
 
 ---
 
@@ -73,7 +73,7 @@
 ### Phase BE-3: Outpatient (OPD) Flow & Module Guard
 *Objective: Full front-to-chamber flow from patient arrival to OPD consultation and IPD referral.*
 
-- [ ] **TASK-BE-3.1:** Patient Registration & Master Patient Index (`POST /api/v1/patients`, `GET /api/v1/patients/search`):
+- [x] **TASK-BE-3.1:** Patient Registration & Master Patient Index (`POST /api/v1/patients`, `GET /api/v1/patients/search`):
   - Auto-generate gapless `UHID` via `SequenceService`.
   - Store demographic fields, contact phone, and irreversible HMAC-SHA-256 `aadhaar_hash` for duplicate checking (DPDP Act).
   - Support MPI search by name, phone, or UHID.
@@ -200,4 +200,5 @@
 - **2026-10-28 19:01 IST**: Completed TASK-BE-2.4. Implemented `ModuleGuard` and `require_module("<MODULE_CODE>")` dependency in `app/core/dependencies.py` to protect unpurchased SaaS modules with standard `403 Forbidden` (`MODULE_NOT_LICENSED`), supporting autonomous execution on standalone module subscriptions. Tested and verified.
 - **2026-10-28 19:04 IST**: Completed TASK-BE-2.5 and TASK-BE-2.6. Implemented `SequenceService` in `app/core/sequences.py` with `SELECT ... FOR UPDATE` row locks scoped per `(hospital_id, sequence_key)` to guarantee gapless numbers under multi-user concurrency. Initialized monotonic counters: `UHID` (`BS-001001`), `OPD` (`OPD-001001`), `IPD` (`IPD-000501`), `BILL` (`INV-000101`). Concurrency stress test passed with zero collisions. Phase BE-2 is 100% completed.
 - **2026-10-29 12:54 IST**: [Architecture Cleanup] Moved all legacy prototype code (`app/api`, `app/services`, `app/repositories`, `app/schemas`, legacy core engines, and tests) into git-ignored `legacy_backend/`. Cleaned `backend/app/main.py` and `backend/app/core/database.py` to match the canonical modular architecture in D03 §4.1 with zero dead code or clutter. Verified `/api/v1/health`, `/api/v1/auth/login`, and `/api/v1/admin/license`.
+- **2026-10-29 13:00 IST**: Completed TASK-BE-3.1. Implemented Patient Registration and Master Patient Index (MPI) module `app/modules/patient/` (`router.py`, `service.py`, `schemas.py`). Features gapless UHID sequence generation via `SequenceService`, zero-knowledge duplicate checking using irreversible HMAC-SHA-256 Aadhaar hashing (`aadhaar_hash`), and high-performance MPI search (`/api/v1/patients/search` by name, phone, Aadhaar, UHID) guarded by `patient:create` and `patient:read` RBAC permissions. Passed automated pytest suite `backend/tests/test_patient_registration.py`.
 
