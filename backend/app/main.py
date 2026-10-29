@@ -8,6 +8,7 @@ from app.core.licensing import router as licensing_router
 from app.modules.patient.router import router as patient_router
 from app.modules.opd.router import router as opd_router
 from app.modules.triage.router import router as triage_router
+from app.modules.consultation.router import router as consultation_router
 
 health_router = APIRouter(tags=["Health"])
 
@@ -49,6 +50,7 @@ def create_app() -> FastAPI:
     app.include_router(patient_router, prefix="/api/v1")
     app.include_router(opd_router, prefix="/api/v1")
     app.include_router(triage_router, prefix="/api/v1")
+    app.include_router(consultation_router, prefix="/api/v1")
 
     return app
 

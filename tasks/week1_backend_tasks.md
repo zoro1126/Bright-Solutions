@@ -17,12 +17,12 @@
 |:---|:---:|:---:|:---:|:---:|:---:|
 | **Phase BE-1: Database Provisioning & Master Seeds (SaaS Ready)** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-2: Auth, Ed25519 Licensing & Sequences** | 6 | 6 | 0 | 0 | 🟢 Completed |
-| **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 3 | 1 | 2 | 🟡 In Progress |
+| **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 4 | 1 | 1 | 🟡 In Progress |
 | **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 0 | 0 | 5 | ⚪ Not Started |
 | **Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine)** | 8 | 0 | 0 | 8 | ⚪ Not Started |
 | **Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing** | 4 | 0 | 0 | 4 | ⚪ Not Started |
 | **Phase BE-7: End-to-End API Integration & Concurrency Hardening** | 3 | 0 | 0 | 3 | ⚪ Not Started |
-| **TOTAL** | **38** | **15** | **1** | **22** | **39.5% Completed** |
+| **TOTAL** | **38** | **16** | **1** | **21** | **42.1% Completed** |
 
 ---
 
@@ -85,7 +85,7 @@
   - Capture BP, Pulse Rate, Resp Rate, Temperature (°F), SpO2 (%), Height, Weight.
   - Auto-calculate BMI and BMI classification.
   - Evaluate CDSS vital alerts (Hypoxia SpO2 < 92%, Stage 2 Hypertension, Fever).
-- [ ] **TASK-BE-3.4:** Doctor Consultation Chamber (`POST /api/v1/consultations`):
+- [x] **TASK-BE-3.4:** Doctor Consultation Chamber (`POST /api/v1/consultations`):
   - Autosave drafts for SOAP notes (Subjective, Objective, Assessment, Plan).
   - Search and link primary/secondary diagnoses from bundled ICD-10 India dataset (`icd10_codes`).
 - [ ] **TASK-BE-3.5:** E-Prescription Creation & Inpatient Referral Flag:
@@ -203,4 +203,5 @@
 - **2026-10-29 13:00 IST**: Completed TASK-BE-3.1. Implemented Patient Registration and Master Patient Index (MPI) module `app/modules/patient/` (`router.py`, `service.py`, `schemas.py`). Features gapless UHID sequence generation via `SequenceService`, zero-knowledge duplicate checking using irreversible HMAC-SHA-256 Aadhaar hashing (`aadhaar_hash`), and high-performance MPI search (`/api/v1/patients/search` by name, phone, Aadhaar, UHID) guarded by `patient:create` and `patient:read` RBAC permissions. Passed automated pytest suite `backend/tests/test_patient_registration.py`.
 - **2026-10-29 15:00 IST**: Completed TASK-BE-3.2. Implemented OPD Queue Check-In and Token Issuance module `app/modules/opd/` (`router.py`, `service.py`, `schemas.py`). Enforces SaaS entitlement via `@require_module("OPD")`, generates global monotonic OPD numbers (`OPD-001001`), allocates doctor-specific daily monotonic queue tokens with row locks (`queue_tokens.token_number`), computes dynamic estimated wait times, and supports visit types (`NEW`, `FOLLOW_UP`, `EMERGENCY`). Passed automated pytest suite `backend/tests/test_opd_checkin.py`.
 - **2026-10-29 15:15 IST**: Completed TASK-BE-3.3. Implemented Nurse Triage Vitals Intake module `app/modules/triage/` (`router.py`, `service.py`, `schemas.py`). Captures full physiological panels (temperature, pulse, BP, resp rate, SpO2, height, weight, pain scale), auto-calculates BMI & WHO categories, evaluates deterministic CDSS safety rules (Hypoxia SpO2 < 92%, Hypertensive Crisis, Hyperpyrexia, Tachycardia, Tachypnea), and exposes endpoints `/api/v1/vitals` and `/api/v1/triage/vitals` guarded by `triage:vitals_write`. Passed automated pytest suite `backend/tests/test_triage_vitals.py`.
+- **2026-10-29 15:20 IST**: Completed TASK-BE-3.4. Implemented Doctor Consultation Chamber module `app/modules/consultation/` (`router.py`, `service.py`, `schemas.py`). Supports autosaving draft SOAP notes (Subjective, Objective, Assessment, Plan), transitions OPD visit tokens to `IN_CONSULTATION`, seeded 46 canonical ICD-10 India diagnostic codes, and provides typeahead diagnosis search and primary/secondary diagnostic linking via `consultation_diagnoses`. Passed automated pytest suite `backend/tests/test_consultation_chamber.py`.
 
