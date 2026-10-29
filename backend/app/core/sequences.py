@@ -8,7 +8,6 @@ KEY_ALIASES = {
     "IPD_NUMBER": "IPD",
     "INVOICE": "BILL",
     "INVOICE_OPD": "BILL",
-    "INVOICE_IPD": "BILL"
 }
 
 class SequenceService:

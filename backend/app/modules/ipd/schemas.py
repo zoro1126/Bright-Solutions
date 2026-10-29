@@ -6,7 +6,7 @@ Canonical Pydantic v2 domain schemas for ward hierarchy, bed matrix, and bed sta
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Literal, Dict, Any
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -288,6 +288,105 @@ class AdmissionPrintDossierResponse(BaseModel):
     generated_at: datetime
     face_sheet: AdmissionFaceSheetPayload
     consent_form: AdmissionConsentPayload
+
+
+class SubmitClinicalFormRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    day_number: Optional[int] = Field(None, ge=1, le=30)
+    as_draft: bool = False
+    payload: Dict[str, Any] = Field(..., description="Structured form payload validated against registered schema")
+
+
+class CreateTreatmentOrderRequest(BaseModel):
+    order_type: Literal["MEDICATION", "O2_THERAPY", "DIET", "SPECIAL_INSTRUCTION"] = "MEDICATION"
+    drug_name: Optional[str] = Field(None, max_length=200)
+    dosage: Optional[str] = Field(None, max_length=100)
+    route: Optional[str] = Field(None, max_length=20)
+    frequency: Optional[str] = Field(None, max_length=50)
+    o2_device: Optional[str] = Field(None, max_length=30)
+    o2_flow_rate_lpm: Optional[Decimal] = Field(None, ge=0, le=60)
+    instructions: Optional[str] = Field(None, max_length=500)
+    start_time: Optional[datetime] = None
+
+
+class DiscontinueTreatmentOrderRequest(BaseModel):
+    reason: str = Field(..., min_length=3, max_length=255)
+
+
+class RecordMarRequest(BaseModel):
+    scheduled_time: datetime = Field(default_factory=datetime.now)
+    status: Literal["GIVEN", "OMITTED", "REFUSED", "HELD_DOCTOR_ORDER"] = "GIVEN"
+    omitted_reason: Optional[str] = Field(None, max_length=255)
+    notes: Optional[str] = Field(None, max_length=255)
+
+
+class RecordIntakeOutputRequest(BaseModel):
+    shift: Literal["MORNING", "EVENING", "NIGHT"] = "MORNING"
+    oral_rt_intake_ml: int = Field(0, ge=0)
+    iv_fluid_type: Optional[str] = Field(None, max_length=100)
+    iv_fluid_intake_ml: int = Field(0, ge=0)
+    blood_products_ml: int = Field(0, ge=0)
+    urine_output_ml: int = Field(0, ge=0)
+    vomitus_rt_aspirate_ml: int = Field(0, ge=0)
+    stool_count: int = Field(0, ge=0)
+    drain_output_ml: int = Field(0, ge=0)
+    remarks: Optional[str] = Field(None, max_length=255)
+
+
+class DischargeSummaryCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    final_diagnosis: str = Field(..., min_length=3, description="Final clinical diagnosis (ICD-10 aligned)")
+    hospital_course: str = Field(..., min_length=5, description="Summary of clinical course and therapeutic progress during admission")
+    condition_at_discharge: Literal["STABLE", "IMPROVED", "LAMA", "EXPIRED", "TRANSFERRED"] = "STABLE"
+    procedures_performed: Optional[str] = Field(None, description="Clinical or surgical procedures performed during stay")
+    discharge_vitals: Optional[Dict[str, Any]] = Field(None, description="Vitals at time of discharge (BP, Pulse, Temp, SpO2)")
+    discharge_medications: Optional[List[Dict[str, Any]]] = Field(None, description="Discharge prescription medications, dose, frequency, days")
+    follow_up_instructions: Optional[str] = Field(None, description="Follow-up advice, clinic date, and dietary advice")
+    emergency_warning_signs: Optional[str] = Field(None, description="Red flag signs requiring immediate emergency room return")
+
+
+class DischargeSummaryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    public_id: str
+    admission_uuid: str
+    ipd_number: str
+    patient_name: str
+    doctor_name: str
+    final_diagnosis: str
+    hospital_course: str
+    condition_at_discharge: str
+    procedures_performed: Optional[str] = None
+    discharge_vitals: Optional[Dict[str, Any]] = None
+    discharge_medications: Optional[List[Dict[str, Any]]] = None
+    follow_up_instructions: Optional[str] = None
+    emergency_warning_signs: Optional[str] = None
+    signed_at: datetime
+    created_at: datetime
+
+
+class FormalDischargeRequest(BaseModel):
+    discharge_type: Literal["NORMAL", "AGAINST_MEDICAL_ADVICE", "REFERRED", "EXPIRED"] = "NORMAL"
+    waiver_reason: Optional[str] = Field(None, max_length=255, description="Authorized financial waiver reason if balance remains")
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class FormalDischargeResponse(BaseModel):
+    admission_uuid: str
+    ipd_number: str
+    patient_id: int
+    status: str
+    discharge_type: str
+    discharge_date: datetime
+    bed_released: bool
+    bed_status: str
+    invoice_number: Optional[str] = None
+    balance_amount: Decimal
+    message: str
+
+
 
 
 
