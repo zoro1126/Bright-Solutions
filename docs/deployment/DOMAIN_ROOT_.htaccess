@@ -1,0 +1,30 @@
+# ==============================================================================
+# Bright Solutions Clinical Hospital Operating System (COS)
+# Root Apache Configuration for: clinicalservices.paperbirdtech.com
+# Target Path on Server: ~/public_html/clinicalservices.paperbirdtech.com/.htaccess
+# ==============================================================================
+
+Options -Indexes
+ServerSignature Off
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # 1. Force HTTPS
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # 2. Crucial: Bypass /api traffic so it is handled by api/.htaccess
+    RewriteRule ^api(/.*)?$ - [L]
+
+    # 3. Block sensitive files (.git, .env, etc.)
+    RewriteRule ^\.(git|env) - [F,L]
+
+    # 4. Frontend Single Page Application (SPA) Fallback for React / Vue
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+</IfModule>
+

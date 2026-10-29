@@ -50,6 +50,7 @@ ENV/
 .env
 .env.*
 !.env.example
+!*.example
 backend/.env
 
 # Antigravity IDE & AI Workspace Artifacts
@@ -58,7 +59,11 @@ artifacts/
 scratch/
 *.log
 
-# Operating System & IDE Artifacts
+# Deploy VCS & Staging Push Tool
+pbpush_tool/
+.pbpush/
+.pbpushignore
+
 .DS_Store
 Thumbs.db
 docs/trash/

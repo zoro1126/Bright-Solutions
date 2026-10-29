@@ -27,7 +27,10 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="Bright Solutions API — Modular Hospital Operating System (COS)",
         version="2.0.0",
-        description="FastAPI Modular Monolith backend powering Bright Solutions Clinical Hospital Operating System."
+        description="FastAPI Modular Monolith backend powering Bright Solutions Clinical Hospital Operating System.",
+        docs_url="/api/docs",
+        redoc_url="/api/redoc",
+        openapi_url="/api/openapi.json"
     )
 
     # Enable CORS for frontend
@@ -42,9 +45,11 @@ def create_app() -> FastAPI:
     # Mount static uploads directory for external diagnostic media
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+    app.mount("/api/uploads", StaticFiles(directory=UPLOAD_DIR), name="api_uploads")
 
-    # Mount Core Health router
+    # Mount Core Health router under /api/v1, /api, and root
     app.include_router(health_router, prefix="/api/v1")
+    app.include_router(health_router, prefix="/api")
     app.include_router(health_router)
 
     # Mount Phase 2+ Modular Domain Routers under /api/v1
