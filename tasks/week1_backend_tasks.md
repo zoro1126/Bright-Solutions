@@ -21,8 +21,8 @@
 | **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 5 | 0 | 0 | 🟢 Completed |
 | **Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine)** | 8 | 8 | 0 | 0 | 🟢 Completed |
 | **Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing** | 4 | 4 | 0 | 0 | 🟢 Completed |
-| **Phase BE-7: End-to-End API Integration & Concurrency Hardening** | 3 | 0 | 0 | 3 | ⚪ Not Started |
-| **TOTAL** | **38** | **35** | **0** | **3** | **92.1% Completed** |
+| **Phase BE-7: End-to-End API Integration & Concurrency Hardening** | 3 | 3 | 0 | 0 | 🟢 Completed |
+| **TOTAL** | **38** | **38** | **0** | **0** | **100.0% Completed** |
 
 ---
 
@@ -177,12 +177,12 @@
 ### Phase BE-7: End-to-End API Integration & Concurrency Hardening
 *Objective: Verify the complete vertical slice from registration to discharge in automated pytest suites.*
 
-- [ ] **TASK-BE-7.1:** Automated End-to-End Pytest (`tests/test_opd_to_ipd_lifecycle.py`):
+- [x] **TASK-BE-7.1:** Automated End-to-End Pytest (`tests/test_opd_to_ipd_lifecycle.py`):
   - Walk patient through: Register $\to$ OPD Token $\to$ Triage Vitals $\to$ Doctor Chamber $\to$ IPD Referral $\to$ Bed Allocation (Form 8 & 9) $\to$ H&P Assessment (Form 10) $\to$ Treatment Order & MAR (Form 29) $\to$ Intake/Output (Form 61) $\to$ OT Checklist (Form 54) $\to$ Signed Discharge $\to$ Final Bill Payment.
-- [ ] **TASK-BE-7.2:** Concurrency & License Protection Test:
+- [x] **TASK-BE-7.2:** Concurrency & License Protection Test (`tests/test_concurrency_and_licensing.py`):
   - Verify that simultaneous admission attempts for the same bed result in clean `409 Conflict` with zero double-bookings.
   - Test simulated clock rollback: verify system flags clock tampering and restricts new writes.
-- [ ] **TASK-BE-7.3:** Exact Rupee Financial Balance Audit:
+- [x] **TASK-BE-7.3:** Exact Rupee Financial Balance Audit (`tests/test_rupee_financial_audit.py`):
   - Verify advance payment credit deduction and ledger accuracy across all 10 charge heads.
 
 ---
@@ -211,6 +211,8 @@
 - **2026-10-29 16:13 IST**: Completed TASK-BE-4.5. Implemented Admission Consent & Face Sheet Print Payload endpoint (`GET /api/v1/ipd/admissions/{id}/consent-form`). Generates comprehensive structured print dossier consolidating Hospital Letterhead, Inpatient Admission Face Sheet (AH/MRD/FORM - 9 with patient demographics, bed location, clinical team, MLC details, TPA insurance), and bilingual English & Gujarati Admission Consent & Treatment Authorization (AH/MRD/FORM - 8 with 4 clinical and financial clauses, emergency resuscitation authorization, personal belongings disclaimer, and signature declarations). Passed automated pytest suite `backend/tests/test_ipd_consent_form.py`. Phase BE-4 is 100% completed.
 - **2026-10-29 16:38 IST**: Completed Phase BE-5 (TASK-BE-5.1 to TASK-BE-5.8). Implemented Universal Clinical Form Engine (`app/modules/ipd/form_service.py`), Pydantic schema registry for 12 canonical inpatient clinical forms (`app/modules/ipd/forms/`), Operational Flowsheets & MAR service (`app/modules/ipd/flowsheet_service.py`), and form locking endpoint for immutable legal sign-offs (`POST /api/v1/ipd/admissions/{id}/forms/{code}/lock`). Covers Forms 08, 09, 10, 70, 71, 72, 15, 54, OP_NOTES, HANDOVER, TRANSFER, and bilingual Gujarati/English FEEDBACK, Doctor Treatment Orders (meds, O2, diet), MAR logs, and 24h intake/output fluid balance calculations. Passed automated pytest suite `backend/tests/test_ipd_forms_and_flowsheets.py`. Phase BE-5 is 100% completed.
 - **2026-10-29 17:03 IST**: Completed Phase BE-6 (TASK-BE-6.1 to TASK-BE-6.4). Implemented structured discharge summary with digital doctor sign-off immutability (`app/modules/ipd/discharge_service.py`), 10-head inpatient billing ledger service (`app/modules/billing/service.py`) complying with IRDAI/NABH cost heads (Bed rent, Doctor visits, Nursing, Procedures, Pharmacy, Lab, OT, Anaesthesia, Oxygen, Consumables), monotonic sequential final IPD invoicing (`INV-IPD-XXXXXX`) with advance deposit credit and exact rupee reconciliation, and formal discharge workflow releasing occupied bed allocations and transitioning beds to `'CLEANING'`. Passed automated pytest suite `backend/tests/test_ipd_discharge_and_billing.py` and verified all 11 test suites passing. Phase BE-6 is 100% completed.
+- **2026-10-29 17:16 IST**: Completed Phase BE-7 (TASK-BE-7.1 to TASK-BE-7.3). Implemented comprehensive end-to-end integration and concurrency test suites: full vertical slice (`backend/tests/test_opd_to_ipd_lifecycle.py`), multi-threaded bed allocation row-lock concurrency stress and Ed25519 clock rollback detection (`backend/tests/test_concurrency_and_licensing.py`), and exact rupee decimal financial audit across 10-head inpatient billing and waiver discharge (`backend/tests/test_rupee_financial_audit.py`). All 16 automated test suites passing with 100% success rate. Phase BE-7 and Workstream A are 100% completed.
+
 
 
 

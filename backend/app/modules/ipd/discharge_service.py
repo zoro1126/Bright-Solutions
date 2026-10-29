@@ -106,7 +106,9 @@ class DischargeService:
             summary_uuid = str(uuid.uuid4())
             now = datetime.now()
             vitals_json = json.dumps(payload.discharge_vitals) if payload.discharge_vitals else None
-            meds_json = json.dumps(payload.discharge_medications) if payload.discharge_medications else None
+            meds_json = json.dumps(payload.discharge_medications if payload.discharge_medications is not None else [])
+            followup = payload.follow_up_instructions or "Review in OPD as advised."
+            warn = payload.emergency_warning_signs or "Report to emergency if warning signs appear."
 
             if existing:
                 conn.execute(
@@ -134,8 +136,8 @@ class DischargeService:
                         "cond": payload.condition_at_discharge,
                         "vitals": vitals_json,
                         "meds": meds_json,
-                        "followup": payload.follow_up_instructions,
-                        "warn": payload.emergency_warning_signs,
+                        "followup": followup,
+                        "warn": warn,
                         "signed_at": now,
                         "now": now,
                     },
@@ -169,8 +171,8 @@ class DischargeService:
                         "cond": payload.condition_at_discharge,
                         "vitals": vitals_json,
                         "meds": meds_json,
-                        "followup": payload.follow_up_instructions,
-                        "warn": payload.emergency_warning_signs,
+                        "followup": followup,
+                        "warn": warn,
                         "signed_at": now,
                         "now": now,
                     },

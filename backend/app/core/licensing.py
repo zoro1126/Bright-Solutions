@@ -204,6 +204,7 @@ class LicenseService:
 # Admin License Endpoints
 # -----------------------------------------------------------------------------
 @router.get("", response_model=LicenseStatusResponse)
+@router.get("/status", response_model=LicenseStatusResponse)
 def get_current_license(hospital_id: int = 1):
     """GET /api/v1/admin/license - Returns current license status and quotas."""
     return LicenseService.get_license_status(hospital_id)
