@@ -1,3 +1,4 @@
+import time
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
@@ -14,13 +15,14 @@ def test_patient_registration_and_mpi():
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    # 2. Register unique patient
-    unique_phone = "9825198251"
-    unique_aadhaar = "665544332211"
+    # 2. Register unique patient with dynamic suffix
+    ts = str(int(time.time() * 1000))[-6:]
+    unique_phone = f"9825{ts}"
+    unique_aadhaar = f"66{ts}1234"
     payload = {
         "first_name": "Meera",
         "middle_name": "B",
-        "last_name": "Dave",
+        "last_name": f"Dave{ts}",
         "dob": "1995-11-20",
         "gender": "FEMALE",
         "blood_group": "A+",

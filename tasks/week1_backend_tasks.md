@@ -17,12 +17,12 @@
 |:---|:---:|:---:|:---:|:---:|:---:|
 | **Phase BE-1: Database Provisioning & Master Seeds (SaaS Ready)** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-2: Auth, Ed25519 Licensing & Sequences** | 6 | 6 | 0 | 0 | 🟢 Completed |
-| **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 1 | 1 | 4 | 🟡 In Progress |
+| **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 2 | 1 | 3 | 🟡 In Progress |
 | **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 0 | 0 | 5 | ⚪ Not Started |
 | **Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine)** | 8 | 0 | 0 | 8 | ⚪ Not Started |
 | **Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing** | 4 | 0 | 0 | 4 | ⚪ Not Started |
 | **Phase BE-7: End-to-End API Integration & Concurrency Hardening** | 3 | 0 | 0 | 3 | ⚪ Not Started |
-| **TOTAL** | **38** | **13** | **1** | **24** | **34.2% Completed** |
+| **TOTAL** | **38** | **14** | **1** | **23** | **36.8% Completed** |
 
 ---
 
@@ -77,7 +77,7 @@
   - Auto-generate gapless `UHID` via `SequenceService`.
   - Store demographic fields, contact phone, and irreversible HMAC-SHA-256 `aadhaar_hash` for duplicate checking (DPDP Act).
   - Support MPI search by name, phone, or UHID.
-- [ ] **TASK-BE-3.2:** OPD Queue Check-In & Daily Token Issuance (`POST /api/v1/opd/tokens` — guarded by `@require_module("OPD")`):
+- [x] **TASK-BE-3.2:** OPD Queue Check-In & Daily Token Issuance (`POST /api/v1/opd/tokens` — guarded by `@require_module("OPD")`):
   - Assign daily monotonic token (e.g. Token #12 for Dr. Sharma).
   - Record visit type (`NEW_VISIT`, `FOLLOW_UP`, `EMERGENCY`).
   - Calculate estimated wait time based on active queue length.
@@ -201,4 +201,5 @@
 - **2026-10-28 19:04 IST**: Completed TASK-BE-2.5 and TASK-BE-2.6. Implemented `SequenceService` in `app/core/sequences.py` with `SELECT ... FOR UPDATE` row locks scoped per `(hospital_id, sequence_key)` to guarantee gapless numbers under multi-user concurrency. Initialized monotonic counters: `UHID` (`BS-001001`), `OPD` (`OPD-001001`), `IPD` (`IPD-000501`), `BILL` (`INV-000101`). Concurrency stress test passed with zero collisions. Phase BE-2 is 100% completed.
 - **2026-10-29 12:54 IST**: [Architecture Cleanup] Moved all legacy prototype code (`app/api`, `app/services`, `app/repositories`, `app/schemas`, legacy core engines, and tests) into git-ignored `legacy_backend/`. Cleaned `backend/app/main.py` and `backend/app/core/database.py` to match the canonical modular architecture in D03 §4.1 with zero dead code or clutter. Verified `/api/v1/health`, `/api/v1/auth/login`, and `/api/v1/admin/license`.
 - **2026-10-29 13:00 IST**: Completed TASK-BE-3.1. Implemented Patient Registration and Master Patient Index (MPI) module `app/modules/patient/` (`router.py`, `service.py`, `schemas.py`). Features gapless UHID sequence generation via `SequenceService`, zero-knowledge duplicate checking using irreversible HMAC-SHA-256 Aadhaar hashing (`aadhaar_hash`), and high-performance MPI search (`/api/v1/patients/search` by name, phone, Aadhaar, UHID) guarded by `patient:create` and `patient:read` RBAC permissions. Passed automated pytest suite `backend/tests/test_patient_registration.py`.
+- **2026-10-29 15:00 IST**: Completed TASK-BE-3.2. Implemented OPD Queue Check-In and Token Issuance module `app/modules/opd/` (`router.py`, `service.py`, `schemas.py`). Enforces SaaS entitlement via `@require_module("OPD")`, generates global monotonic OPD numbers (`OPD-001001`), allocates doctor-specific daily monotonic queue tokens with row locks (`queue_tokens.token_number`), computes dynamic estimated wait times, and supports visit types (`NEW`, `FOLLOW_UP`, `EMERGENCY`). Passed automated pytest suite `backend/tests/test_opd_checkin.py`.
 

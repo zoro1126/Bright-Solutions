@@ -6,6 +6,7 @@ from app.core.config import UPLOAD_DIR
 from app.modules.auth.router import router as auth_modular_router
 from app.core.licensing import router as licensing_router
 from app.modules.patient.router import router as patient_router
+from app.modules.opd.router import router as opd_router
 
 health_router = APIRouter(tags=["Health"])
 
@@ -45,6 +46,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_modular_router, prefix="/api/v1")
     app.include_router(licensing_router, prefix="/api/v1")
     app.include_router(patient_router, prefix="/api/v1")
+    app.include_router(opd_router, prefix="/api/v1")
 
     return app
 
