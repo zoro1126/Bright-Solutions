@@ -27,3 +27,4 @@ ServerSignature Off
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule . /index.html [L]
 </IfModule>
+

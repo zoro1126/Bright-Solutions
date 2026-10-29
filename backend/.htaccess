@@ -35,3 +35,4 @@ ServerSignature Off
     # Inform backend if original client request was over SSL/TLS
     RequestHeader set X-Forwarded-Proto "https" env=HTTPS
 </IfModule>
+
