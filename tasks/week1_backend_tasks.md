@@ -17,12 +17,12 @@
 |:---|:---:|:---:|:---:|:---:|:---:|
 | **Phase BE-1: Database Provisioning & Master Seeds (SaaS Ready)** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-2: Auth, Ed25519 Licensing & Sequences** | 6 | 6 | 0 | 0 | 🟢 Completed |
-| **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 0 | 1 | 5 | 🟡 In Progress |
-| **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 0 | 0 | 5 | ⚪ Not Started |
+| **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 6 | 0 | 0 | 🟢 Completed |
+| **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 5 | 0 | 0 | 🟢 Completed |
 | **Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine)** | 8 | 0 | 0 | 8 | ⚪ Not Started |
 | **Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing** | 4 | 0 | 0 | 4 | ⚪ Not Started |
 | **Phase BE-7: End-to-End API Integration & Concurrency Hardening** | 3 | 0 | 0 | 3 | ⚪ Not Started |
-| **TOTAL** | **38** | **12** | **1** | **25** | **31.6% Completed** |
+| **TOTAL** | **38** | **23** | **0** | **15** | **60.5% Completed** |
 
 ---
 
@@ -73,26 +73,26 @@
 ### Phase BE-3: Outpatient (OPD) Flow & Module Guard
 *Objective: Full front-to-chamber flow from patient arrival to OPD consultation and IPD referral.*
 
-- [ ] **TASK-BE-3.1:** Patient Registration & Master Patient Index (`POST /api/v1/patients`, `GET /api/v1/patients/search`):
+- [x] **TASK-BE-3.1:** Patient Registration & Master Patient Index (`POST /api/v1/patients`, `GET /api/v1/patients/search`):
   - Auto-generate gapless `UHID` via `SequenceService`.
   - Store demographic fields, contact phone, and irreversible HMAC-SHA-256 `aadhaar_hash` for duplicate checking (DPDP Act).
   - Support MPI search by name, phone, or UHID.
-- [ ] **TASK-BE-3.2:** OPD Queue Check-In & Daily Token Issuance (`POST /api/v1/opd/tokens` — guarded by `@require_module("OPD")`):
+- [x] **TASK-BE-3.2:** OPD Queue Check-In & Daily Token Issuance (`POST /api/v1/opd/tokens` — guarded by `@require_module("OPD")`):
   - Assign daily monotonic token (e.g. Token #12 for Dr. Sharma).
   - Record visit type (`NEW_VISIT`, `FOLLOW_UP`, `EMERGENCY`).
   - Calculate estimated wait time based on active queue length.
-- [ ] **TASK-BE-3.3:** Nurse Triage Vitals Intake (`POST /api/v1/triage/vitals`):
+- [x] **TASK-BE-3.3:** Nurse Triage Vitals Intake (`POST /api/v1/triage/vitals`):
   - Capture BP, Pulse Rate, Resp Rate, Temperature (°F), SpO2 (%), Height, Weight.
   - Auto-calculate BMI and BMI classification.
   - Evaluate CDSS vital alerts (Hypoxia SpO2 < 92%, Stage 2 Hypertension, Fever).
-- [ ] **TASK-BE-3.4:** Doctor Consultation Chamber (`POST /api/v1/consultations`):
+- [x] **TASK-BE-3.4:** Doctor Consultation Chamber (`POST /api/v1/consultations`):
   - Autosave drafts for SOAP notes (Subjective, Objective, Assessment, Plan).
   - Search and link primary/secondary diagnoses from bundled ICD-10 India dataset (`icd10_codes`).
-- [ ] **TASK-BE-3.5:** E-Prescription Creation & Inpatient Referral Flag:
+- [x] **TASK-BE-3.5:** E-Prescription Creation & Inpatient Referral Flag:
   - Formulate medication prescriptions (drug name, dose, route, frequency: Stat/OD/BD/TDS, duration).
   - Run CDSS Drug-Drug Interaction (`check_ddi`) rule engine across active formulary.
   - **"Admit to IPD" Referral Order:** Flag patient for admission with provisional diagnosis, bed category preference, and clinical urgency.
-- [ ] **TASK-BE-3.6:** Digital Consultation Sign-Off (`POST /api/v1/consultations/{id}/sign`):
+- [x] **TASK-BE-3.6:** Digital Consultation Sign-Off (`POST /api/v1/consultations/{id}/sign`):
   - Immutably lock SOAP notes (`status = 'SIGNED'`).
   - Automatically route admitted patients to the IPD Admission Desk queue.
 
@@ -101,21 +101,21 @@
 ### Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents
 *Objective: Support dual intake paths, bed matrix assignment, advance collection, and Forms 8 & 9.*
 
-- [ ] **TASK-BE-4.1:** Bed Occupancy Matrix & Status API (`GET /api/v1/beds/matrix` — guarded by `@require_module("IPD")`):
+- [x] **TASK-BE-4.1:** Bed Occupancy Matrix & Status API (`GET /api/v1/beds/matrix` — guarded by `@require_module("IPD")`):
   - Visual matrix of wards, rooms, and beds with real-time states (`AVAILABLE`, `OCCUPIED`, `CLEANING`, `MAINTENANCE`).
-- [ ] **TASK-BE-4.2:** Dual-Path IPD Admission Endpoint (`POST /api/v1/ipd/admissions`):
+- [x] **TASK-BE-4.2:** Dual-Path IPD Admission Endpoint (`POST /api/v1/ipd/admissions`):
   - **Path A (OPD Referral):** Handoff patient from active consultation, pre-populating provisional diagnosis and referring doctor.
   - **Path B (Direct / Emergency Walk-In):** Front-desk / Casualty direct admission without prior OPD visit (supports standalone IPD module rental).
-- [ ] **TASK-BE-4.3:** Concurrency-Safe Bed Allocation (`ipd_bed_allocations`):
+- [x] **TASK-BE-4.3:** Concurrency-Safe Bed Allocation (`ipd_bed_allocations`):
   - Lock chosen bed with `SELECT ... FOR UPDATE`, verify status is `AVAILABLE`, set bed to `OCCUPIED`.
   - Auto-generate monotonic `IPD_NUMBER` via `SequenceService` (e.g. `IPD-000501`).
   - Lock historical daily room rate into `ipd_bed_allocations.daily_rate`.
-- [ ] **TASK-BE-4.4:** Inpatient Admission Form & Legal Flags (Forms 8 & 9 Data Capture):
+- [x] **TASK-BE-4.4:** Inpatient Admission Form & Legal Flags (Forms 8 & 9 Data Capture):
   - Medico-Legal Case (`is_mlc`, police station details).
   - Next of Kin / Guardian details (name, relationship, emergency phone).
   - Payment category: Self-Pay Cash vs TPA Insurance (provider name, policy number).
   - Record initial financial advance deposit (`advance_amount_paid`).
-- [ ] **TASK-BE-4.5:** Admission Consent & Face Sheet Print Payload (`GET /api/v1/ipd/admissions/{id}/consent-form`):
+- [x] **TASK-BE-4.5:** Admission Consent & Face Sheet Print Payload (`GET /api/v1/ipd/admissions/{id}/consent-form`):
   - Structured data response formatted for printing **Admission Consent (AH/MRD/FORM - 8)** in English & Gujarati and **Admission Face Sheet (AH/MRD/FORM - 9)**.
 
 ---
@@ -199,4 +199,14 @@
 - **2026-10-28 18:58 IST**: Completed TASK-BE-2.3. Implemented `app/core/licensing.py` with `LicenseService` for asymmetric Ed25519 offline license verification, monotonic clock rollback detection, 14-day emergency grace period, and endpoint `POST /api/v1/admin/license/upload` enabling instant offline license renewal without server reboots. Mounted under `/api/v1` and verified via automated test client.
 - **2026-10-28 19:01 IST**: Completed TASK-BE-2.4. Implemented `ModuleGuard` and `require_module("<MODULE_CODE>")` dependency in `app/core/dependencies.py` to protect unpurchased SaaS modules with standard `403 Forbidden` (`MODULE_NOT_LICENSED`), supporting autonomous execution on standalone module subscriptions. Tested and verified.
 - **2026-10-28 19:04 IST**: Completed TASK-BE-2.5 and TASK-BE-2.6. Implemented `SequenceService` in `app/core/sequences.py` with `SELECT ... FOR UPDATE` row locks scoped per `(hospital_id, sequence_key)` to guarantee gapless numbers under multi-user concurrency. Initialized monotonic counters: `UHID` (`BS-001001`), `OPD` (`OPD-001001`), `IPD` (`IPD-000501`), `BILL` (`INV-000101`). Concurrency stress test passed with zero collisions. Phase BE-2 is 100% completed.
+- **2026-10-29 12:54 IST**: [Architecture Cleanup] Moved all legacy prototype code (`app/api`, `app/services`, `app/repositories`, `app/schemas`, legacy core engines, and tests) into git-ignored `legacy_backend/`. Cleaned `backend/app/main.py` and `backend/app/core/database.py` to match the canonical modular architecture in D03 §4.1 with zero dead code or clutter. Verified `/api/v1/health`, `/api/v1/auth/login`, and `/api/v1/admin/license`.
+- **2026-10-29 13:00 IST**: Completed TASK-BE-3.1. Implemented Patient Registration and Master Patient Index (MPI) module `app/modules/patient/` (`router.py`, `service.py`, `schemas.py`). Features gapless UHID sequence generation via `SequenceService`, zero-knowledge duplicate checking using irreversible HMAC-SHA-256 Aadhaar hashing (`aadhaar_hash`), and high-performance MPI search (`/api/v1/patients/search` by name, phone, Aadhaar, UHID) guarded by `patient:create` and `patient:read` RBAC permissions. Passed automated pytest suite `backend/tests/test_patient_registration.py`.
+- **2026-10-29 15:00 IST**: Completed TASK-BE-3.2. Implemented OPD Queue Check-In and Token Issuance module `app/modules/opd/` (`router.py`, `service.py`, `schemas.py`). Enforces SaaS entitlement via `@require_module("OPD")`, generates global monotonic OPD numbers (`OPD-001001`), allocates doctor-specific daily monotonic queue tokens with row locks (`queue_tokens.token_number`), computes dynamic estimated wait times, and supports visit types (`NEW`, `FOLLOW_UP`, `EMERGENCY`). Passed automated pytest suite `backend/tests/test_opd_checkin.py`.
+- **2026-10-29 15:15 IST**: Completed TASK-BE-3.3. Implemented Nurse Triage Vitals Intake module `app/modules/triage/` (`router.py`, `service.py`, `schemas.py`). Captures full physiological panels (temperature, pulse, BP, resp rate, SpO2, height, weight, pain scale), auto-calculates BMI & WHO categories, evaluates deterministic CDSS safety rules (Hypoxia SpO2 < 92%, Hypertensive Crisis, Hyperpyrexia, Tachycardia, Tachypnea), and exposes endpoints `/api/v1/vitals` and `/api/v1/triage/vitals` guarded by `triage:vitals_write`. Passed automated pytest suite `backend/tests/test_triage_vitals.py`.
+- **2026-10-29 15:20 IST**: Completed TASK-BE-3.4. Implemented Doctor Consultation Chamber module `app/modules/consultation/` (`router.py`, `service.py`, `schemas.py`). Supports autosaving draft SOAP notes (Subjective, Objective, Assessment, Plan), transitions OPD visit tokens to `IN_CONSULTATION`, seeded 46 canonical ICD-10 India diagnostic codes, and provides typeahead diagnosis search and primary/secondary diagnostic linking via `consultation_diagnoses`. Passed automated pytest suite `backend/tests/test_consultation_chamber.py`.
+- **2026-10-29 15:32 IST**: Completed TASK-BE-3.5. Implemented E-Prescription Creation, CDSS DDI Rule Engine, and Inpatient Referral Order module `app/modules/prescription/` (`router.py`, `service.py`, `schemas.py`). Supports formulating multi-item e-prescriptions with monotonic numbers (`RX-001001`), seeded 8 clinical DDI safety rules in `cdss_ddi_rules` with real-time pair checking (`/api/v1/cdss/check-ddi`), provisioned `opd_ipd_referrals` table, and created 'Admit to IPD' referral endpoints enqueuing patients for bed intake (`/api/v1/opd/referrals/ipd`). Passed automated pytest suite `backend/tests/test_prescription_and_ddi.py`.
+- **2026-10-29 15:36 IST**: Completed TASK-BE-3.6. Implemented Digital Consultation Sign-Off (`POST /api/v1/consultations/{id}/sign`). Immutably locks consultation and SOAP clinical documentation (`status = 'SIGNED'`), sets `signed_at = NOW()`, transitions associated OPD visit and daily queue token to `COMPLETED`, writes clinical audit log record, and verifies queued status of IPD admissions handoff. Passed automated pytest suite `backend/tests/test_consultation_signoff.py`. Phase BE-3 is 100% completed.
+- **2026-10-29 15:52 IST**: Completed TASK-BE-4.1. Implemented Bed Occupancy Matrix & Status API module `app/modules/ipd/` (`router.py`, `service.py`, `schemas.py`). Provides real-time hierarchical ward/room/bed occupancy tree (`GET /api/v1/beds/matrix`) with occupant profile linkages, ward capacity summaries (`GET /api/v1/wards`), and bed state transition manager (`PATCH /api/v1/beds/{bed_uuid}/status`), guarded by `@require_module("IPD")` and `ipd:read` permission with clinical integrity constraints protecting active inpatient beds. Passed automated pytest suite `backend/tests/test_bed_matrix.py`.
+- **2026-10-29 16:03 IST**: Completed TASK-BE-4.2, TASK-BE-4.3, and TASK-BE-4.4. Implemented Dual-Path IPD Admission Engine (`POST /api/v1/ipd/admissions`, `GET /api/v1/ipd/admissions/{uuid}`, `GET /api/v1/ipd/admissions`) supporting Path A (OPD Referral handoff with auto-population of diagnosis, doctor, and opd appointment) and Path B (Direct / Emergency Walk-In). Implemented concurrency-safe bed allocation via `SELECT ... FOR UPDATE`, monotonic sequence generation `IPD-000501` via `SequenceService`, historical tariff locking (`ipd_bed_allocations.daily_rate`), double-booking prevention (`409 Conflict`), and Forms 8 & 9 legal and financial data capture (MLC flags, Next of Kin, TPA insurance, advance deposits). Passed automated pytest suite `backend/tests/test_ipd_admission.py`.
+- **2026-10-29 16:13 IST**: Completed TASK-BE-4.5. Implemented Admission Consent & Face Sheet Print Payload endpoint (`GET /api/v1/ipd/admissions/{id}/consent-form`). Generates comprehensive structured print dossier consolidating Hospital Letterhead, Inpatient Admission Face Sheet (AH/MRD/FORM - 9 with patient demographics, bed location, clinical team, MLC details, TPA insurance), and bilingual English & Gujarati Admission Consent & Treatment Authorization (AH/MRD/FORM - 8 with 4 clinical and financial clauses, emergency resuscitation authorization, personal belongings disclaimer, and signature declarations). Passed automated pytest suite `backend/tests/test_ipd_consent_form.py`. Phase BE-4 is 100% completed.
 

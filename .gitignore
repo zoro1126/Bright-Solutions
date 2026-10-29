@@ -25,6 +25,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Python & FastAPI
+legacy_backend/
 __pycache__/
 **/__pycache__/
 *.py[cod]

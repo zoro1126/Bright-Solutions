@@ -1,18 +1,32 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.core.config import UPLOAD_DIR
-from app.core.database import init_db
-from app.api.v1.api import api_router
 from app.modules.auth.router import router as auth_modular_router
 from app.core.licensing import router as licensing_router
+from app.modules.patient.router import router as patient_router
+from app.modules.opd.router import router as opd_router
+from app.modules.triage.router import router as triage_router
+from app.modules.consultation.router import router as consultation_router
+from app.modules.prescription.router import router as prescription_router
+from app.modules.ipd.router import router as ipd_router
+
+health_router = APIRouter(tags=["Health"])
+
+@health_router.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "service": "Bright Solutions API",
+        "version": "2.0.0"
+    }
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="Bright Solutions API — OPD Management & Decision Support System",
+        title="Bright Solutions API — Modular Hospital Operating System (COS)",
         version="2.0.0",
-        description="Modular Router-Service-Repository backend API powering Bright Solutions Outpatient Department Operations."
+        description="FastAPI Modular Monolith backend powering Bright Solutions Clinical Hospital Operating System."
     )
 
     # Enable CORS for frontend
@@ -28,16 +42,19 @@ def create_app() -> FastAPI:
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-    # Run DB table creation & demo seeds on startup
-    @app.on_event("startup")
-    def on_startup():
-        init_db()
+    # Mount Core Health router
+    app.include_router(health_router, prefix="/api/v1")
+    app.include_router(health_router)
 
-    # Mount master API router
-    app.include_router(api_router)
-    # Mount Phase 2+ Modular Domain Routers
+    # Mount Phase 2+ Modular Domain Routers under /api/v1
     app.include_router(auth_modular_router, prefix="/api/v1")
     app.include_router(licensing_router, prefix="/api/v1")
+    app.include_router(patient_router, prefix="/api/v1")
+    app.include_router(opd_router, prefix="/api/v1")
+    app.include_router(triage_router, prefix="/api/v1")
+    app.include_router(consultation_router, prefix="/api/v1")
+    app.include_router(prescription_router, prefix="/api/v1")
+    app.include_router(ipd_router, prefix="/api/v1")
 
     return app
 
