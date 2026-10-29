@@ -6,12 +6,12 @@ Domain business logic for ward and bed queries, matrix rollups, and bed state ma
 from typing import Any, Dict, List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy import text
-from sqlalchemy.engine import Connection
+from app.core.database import engine
 
 
 class IPDService:
     @staticmethod
-    def get_bed_matrix(conn: Connection, hospital_id: int) -> Dict[str, Any]:
+    def get_bed_matrix(hospital_id: int) -> Dict[str, Any]:
         """
         Retrieves real-time hierarchical bed occupancy matrix:
         Wards -> Rooms -> Beds, along with current occupant details if occupied.
@@ -52,7 +52,8 @@ class IPDService:
             """
         )
 
-        rows = conn.execute(query, {"hospital_id": hospital_id}).mappings().fetchall()
+        with engine.connect() as conn:
+            rows = conn.execute(query, {"hospital_id": hospital_id}).mappings().fetchall()
 
         wards_map: Dict[str, Dict[str, Any]] = {}
         total_beds = 0
@@ -158,7 +159,7 @@ class IPDService:
         }
 
     @staticmethod
-    def list_wards(conn: Connection, hospital_id: int) -> List[Dict[str, Any]]:
+    def list_wards(hospital_id: int) -> List[Dict[str, Any]]:
         """
         Lists all active wards with aggregated capacity and bed status counts.
         """
@@ -185,7 +186,9 @@ class IPDService:
             """
         )
 
-        rows = conn.execute(query, {"hospital_id": hospital_id}).mappings().fetchall()
+        with engine.connect() as conn:
+            rows = conn.execute(query, {"hospital_id": hospital_id}).mappings().fetchall()
+
         return [
             {
                 "uuid": row["uuid"],
@@ -205,7 +208,6 @@ class IPDService:
 
     @staticmethod
     def update_bed_status(
-        conn: Connection,
         hospital_id: int,
         bed_uuid: str,
         new_status: str,
@@ -235,41 +237,43 @@ class IPDService:
             WHERE b.public_id = :bed_uuid AND b.hospital_id = :hospital_id AND b.deleted_at IS NULL
             """
         )
-        bed = conn.execute(
-            bed_query, {"bed_uuid": bed_uuid, "hospital_id": hospital_id}
-        ).mappings().first()
 
-        if not bed:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Bed with UUID '{bed_uuid}' not found.",
-            )
+        with engine.begin() as conn:
+            bed = conn.execute(
+                bed_query, {"bed_uuid": bed_uuid, "hospital_id": hospital_id}
+            ).mappings().first()
 
-        current_status = bed["status"]
+            if not bed:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Bed with UUID '{bed_uuid}' not found.",
+                )
 
-        if current_status == "OCCUPIED" and new_status != "OCCUPIED":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot change status of an OCCUPIED bed directly. Patient must be formally transferred or discharged.",
-            )
+            current_status = bed["status"]
 
-        if new_status == "OCCUPIED" and current_status != "OCCUPIED":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot manually set bed to OCCUPIED. Bed allocation must be performed via IPD Admission or Transfer.",
-            )
+            if current_status == "OCCUPIED" and new_status != "OCCUPIED":
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Cannot change status of an OCCUPIED bed directly. Patient must be formally transferred or discharged.",
+                )
 
-        if current_status != new_status:
-            conn.execute(
-                text(
-                    """
-                    UPDATE beds
-                    SET status = :new_status, updated_at = NOW()
-                    WHERE id = :bed_id
-                    """
-                ),
-                {"new_status": new_status, "bed_id": bed["id"]},
-            )
+            if new_status == "OCCUPIED" and current_status != "OCCUPIED":
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Cannot manually set bed to OCCUPIED. Bed allocation must be performed via IPD Admission or Transfer.",
+                )
+
+            if current_status != new_status:
+                conn.execute(
+                    text(
+                        """
+                        UPDATE beds
+                        SET status = :new_status, updated_at = NOW()
+                        WHERE id = :bed_id
+                        """
+                    ),
+                    {"new_status": new_status, "bed_id": bed["id"]},
+                )
 
         return {
             "uuid": bed["uuid"],

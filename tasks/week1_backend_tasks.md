@@ -18,11 +18,11 @@
 | **Phase BE-1: Database Provisioning & Master Seeds (SaaS Ready)** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-2: Auth, Ed25519 Licensing & Sequences** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 6 | 0 | 0 | 🟢 Completed |
-| **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 0 | 0 | 5 | ⚪ Not Started |
+| **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 1 | 0 | 4 | 🟡 In Progress |
 | **Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine)** | 8 | 0 | 0 | 8 | ⚪ Not Started |
 | **Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing** | 4 | 0 | 0 | 4 | ⚪ Not Started |
 | **Phase BE-7: End-to-End API Integration & Concurrency Hardening** | 3 | 0 | 0 | 3 | ⚪ Not Started |
-| **TOTAL** | **38** | **18** | **0** | **20** | **47.4% Completed** |
+| **TOTAL** | **38** | **19** | **0** | **19** | **50.0% Completed** |
 
 ---
 
@@ -101,7 +101,7 @@
 ### Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents
 *Objective: Support dual intake paths, bed matrix assignment, advance collection, and Forms 8 & 9.*
 
-- [ ] **TASK-BE-4.1:** Bed Occupancy Matrix & Status API (`GET /api/v1/beds/matrix` — guarded by `@require_module("IPD")`):
+- [x] **TASK-BE-4.1:** Bed Occupancy Matrix & Status API (`GET /api/v1/beds/matrix` — guarded by `@require_module("IPD")`):
   - Visual matrix of wards, rooms, and beds with real-time states (`AVAILABLE`, `OCCUPIED`, `CLEANING`, `MAINTENANCE`).
 - [ ] **TASK-BE-4.2:** Dual-Path IPD Admission Endpoint (`POST /api/v1/ipd/admissions`):
   - **Path A (OPD Referral):** Handoff patient from active consultation, pre-populating provisional diagnosis and referring doctor.
@@ -206,4 +206,5 @@
 - **2026-10-29 15:20 IST**: Completed TASK-BE-3.4. Implemented Doctor Consultation Chamber module `app/modules/consultation/` (`router.py`, `service.py`, `schemas.py`). Supports autosaving draft SOAP notes (Subjective, Objective, Assessment, Plan), transitions OPD visit tokens to `IN_CONSULTATION`, seeded 46 canonical ICD-10 India diagnostic codes, and provides typeahead diagnosis search and primary/secondary diagnostic linking via `consultation_diagnoses`. Passed automated pytest suite `backend/tests/test_consultation_chamber.py`.
 - **2026-10-29 15:32 IST**: Completed TASK-BE-3.5. Implemented E-Prescription Creation, CDSS DDI Rule Engine, and Inpatient Referral Order module `app/modules/prescription/` (`router.py`, `service.py`, `schemas.py`). Supports formulating multi-item e-prescriptions with monotonic numbers (`RX-001001`), seeded 8 clinical DDI safety rules in `cdss_ddi_rules` with real-time pair checking (`/api/v1/cdss/check-ddi`), provisioned `opd_ipd_referrals` table, and created 'Admit to IPD' referral endpoints enqueuing patients for bed intake (`/api/v1/opd/referrals/ipd`). Passed automated pytest suite `backend/tests/test_prescription_and_ddi.py`.
 - **2026-10-29 15:36 IST**: Completed TASK-BE-3.6. Implemented Digital Consultation Sign-Off (`POST /api/v1/consultations/{id}/sign`). Immutably locks consultation and SOAP clinical documentation (`status = 'SIGNED'`), sets `signed_at = NOW()`, transitions associated OPD visit and daily queue token to `COMPLETED`, writes clinical audit log record, and verifies queued status of IPD admissions handoff. Passed automated pytest suite `backend/tests/test_consultation_signoff.py`. Phase BE-3 is 100% completed.
+- **2026-10-29 15:52 IST**: Completed TASK-BE-4.1. Implemented Bed Occupancy Matrix & Status API module `app/modules/ipd/` (`router.py`, `service.py`, `schemas.py`). Provides real-time hierarchical ward/room/bed occupancy tree (`GET /api/v1/beds/matrix`) with occupant profile linkages, ward capacity summaries (`GET /api/v1/wards`), and bed state transition manager (`PATCH /api/v1/beds/{bed_uuid}/status`), guarded by `@require_module("IPD")` and `ipd:read` permission with clinical integrity constraints protecting active inpatient beds. Passed automated pytest suite `backend/tests/test_bed_matrix.py`.
 

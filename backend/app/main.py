@@ -54,6 +54,7 @@ def create_app() -> FastAPI:
     app.include_router(triage_router, prefix="/api/v1")
     app.include_router(consultation_router, prefix="/api/v1")
     app.include_router(prescription_router, prefix="/api/v1")
+    app.include_router(ipd_router, prefix="/api/v1")
 
     return app
 

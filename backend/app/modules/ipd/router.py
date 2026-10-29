@@ -3,12 +3,10 @@ Inpatient (IPD) & Bed Matrix API Router
 Guarded by SaaS ModuleGuard ('IPD') and fine-grained RBAC permissions.
 """
 
-from typing import List
+from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.engine import Connection
 
-from app.core.database import get_db_connection
-from app.core.dependencies import require_module, require_permission, UserContext
+from app.core.dependencies import require_module, require_permission
 from app.modules.ipd.schemas import (
     BedDetailResponse,
     BedMatrixResponse,
@@ -26,14 +24,14 @@ router = APIRouter(tags=["Inpatient (IPD) & Bed Matrix"])
     dependencies=[Depends(require_module("IPD"))],
 )
 def get_bed_occupancy_matrix(
-    current_user: UserContext = Depends(require_permission("ipd:read")),
-    conn: Connection = Depends(get_db_connection),
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
 ):
     """
     Returns visual bed occupancy matrix (wards -> rooms -> beds with live occupancy details).
     Guarded by @require_module('IPD') and 'ipd:read' permission.
     """
-    return IPDService.get_bed_matrix(conn, current_user.hospital_id)
+    hospital_id = int(current_user.get("hospital_id", 1))
+    return IPDService.get_bed_matrix(hospital_id)
 
 
 @router.get(
@@ -42,13 +40,13 @@ def get_bed_occupancy_matrix(
     dependencies=[Depends(require_module("IPD"))],
 )
 def list_wards(
-    current_user: UserContext = Depends(require_permission("ipd:read")),
-    conn: Connection = Depends(get_db_connection),
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
 ):
     """
     Lists hospital wards with real-time bed capacity and occupancy totals.
     """
-    return IPDService.list_wards(conn, current_user.hospital_id)
+    hospital_id = int(current_user.get("hospital_id", 1))
+    return IPDService.list_wards(hospital_id)
 
 
 @router.patch(
@@ -59,25 +57,27 @@ def list_wards(
 def update_bed_status(
     bed_uuid: str,
     payload: UpdateBedStatusRequest,
-    current_user: UserContext = Depends(require_permission("ipd:read")),
-    conn: Connection = Depends(get_db_connection),
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
 ):
     """
     Updates bed maintenance/cleaning state (AVAILABLE, CLEANING, MAINTENANCE, RESERVED).
     Guarded against unauthorized modification of active OCCUPIED inpatient beds.
     """
+    role = str(current_user.get("role", "")).upper()
     allowed_roles = {"SUPER_ADMIN", "ADMIN", "NURSE", "RECEPTIONIST"}
-    if current_user.role not in allowed_roles:
+    if role not in allowed_roles:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only nursing or administrative personnel can update bed status.",
         )
 
+    hospital_id = int(current_user.get("hospital_id", 1))
+    user_id = int(current_user.get("user_id", 1))
+
     return IPDService.update_bed_status(
-        conn=conn,
-        hospital_id=current_user.hospital_id,
+        hospital_id=hospital_id,
         bed_uuid=bed_uuid,
         new_status=payload.status.value,
         notes=payload.notes,
-        user_id=current_user.user_id,
+        user_id=user_id,
     )
