@@ -50,7 +50,7 @@ class FormService:
                 validated_payload = validated_instance.model_dump(mode="json")
             except ValidationError as ve:
                 raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                     detail={
                         "error": "FORM_VALIDATION_ERROR",
                         "form_code": clean_code,

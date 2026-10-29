@@ -14,7 +14,11 @@ from app.modules.ipd.schemas import (
     BedMatrixResponse,
     CreateAdmissionRequest,
     CreateTreatmentOrderRequest,
+    DischargeSummaryCreate,
+    DischargeSummaryResponse,
     DiscontinueTreatmentOrderRequest,
+    FormalDischargeRequest,
+    FormalDischargeResponse,
     RecordIntakeOutputRequest,
     RecordMarRequest,
     SubmitClinicalFormRequest,
@@ -24,6 +28,7 @@ from app.modules.ipd.schemas import (
 from app.modules.ipd.service import IPDService
 from app.modules.ipd.form_service import FormService
 from app.modules.ipd.flowsheet_service import FlowsheetService
+from app.modules.ipd.discharge_service import DischargeService
 
 router = APIRouter(tags=["Inpatient (IPD) & Bed Matrix"])
 
@@ -426,6 +431,82 @@ def get_intake_output_history(
         hospital_id=hospital_id,
         admission_uuid=admission_uuid,
     )
+
+
+# -----------------------------------------------------------------------------
+# TASK-BE-6.1 & TASK-BE-6.4: Inpatient Discharge & Bed Release
+# -----------------------------------------------------------------------------
+@router.post(
+    "/ipd/admissions/{admission_uuid}/discharge-summary",
+    response_model=DischargeSummaryResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_module("IPD"))],
+)
+def record_discharge_summary(
+    admission_uuid: str,
+    payload: DischargeSummaryCreate,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:discharge_summary_write")),
+):
+    """
+    Attending doctor writes and digitally signs the structured inpatient discharge summary.
+    Immutably locks the summary upon sign-off.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    user_id = int(current_user.get("id", 1))
+    return DischargeService.record_discharge_summary(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+        doctor_user_id=user_id,
+        payload=payload,
+    )
+
+
+@router.get(
+    "/ipd/admissions/{admission_uuid}/discharge-summary",
+    response_model=DischargeSummaryResponse,
+    dependencies=[Depends(require_module("IPD"))],
+)
+def get_discharge_summary(
+    admission_uuid: str,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Fetches the structured signed discharge summary for an inpatient admission.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    return DischargeService.get_discharge_summary(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+    )
+
+
+@router.post(
+    "/ipd/admissions/{admission_uuid}/discharge",
+    response_model=FormalDischargeResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_module("IPD"))],
+)
+def execute_formal_discharge(
+    admission_uuid: str,
+    payload: FormalDischargeRequest,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:discharge")),
+):
+    """
+    Completes formal discharge:
+    1. Validates doctor signed discharge summary exists.
+    2. Validates final consolidated bill is generated and balance settled to zero (or authorized waiver).
+    3. Sets admission status to 'DISCHARGED' with discharge_date = NOW().
+    4. Releases active bed allocation.
+    5. Transitions bed in beds table to 'CLEANING'.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    return DischargeService.execute_formal_discharge(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+        current_user=current_user,
+        payload=payload,
+    )
+
 
 
 

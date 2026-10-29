@@ -334,5 +334,59 @@ class RecordIntakeOutputRequest(BaseModel):
     remarks: Optional[str] = Field(None, max_length=255)
 
 
+class DischargeSummaryCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    final_diagnosis: str = Field(..., min_length=3, description="Final clinical diagnosis (ICD-10 aligned)")
+    hospital_course: str = Field(..., min_length=5, description="Summary of clinical course and therapeutic progress during admission")
+    condition_at_discharge: Literal["STABLE", "IMPROVED", "LAMA", "EXPIRED", "TRANSFERRED"] = "STABLE"
+    procedures_performed: Optional[str] = Field(None, description="Clinical or surgical procedures performed during stay")
+    discharge_vitals: Optional[Dict[str, Any]] = Field(None, description="Vitals at time of discharge (BP, Pulse, Temp, SpO2)")
+    discharge_medications: Optional[List[Dict[str, Any]]] = Field(None, description="Discharge prescription medications, dose, frequency, days")
+    follow_up_instructions: Optional[str] = Field(None, description="Follow-up advice, clinic date, and dietary advice")
+    emergency_warning_signs: Optional[str] = Field(None, description="Red flag signs requiring immediate emergency room return")
+
+
+class DischargeSummaryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    public_id: str
+    admission_uuid: str
+    ipd_number: str
+    patient_name: str
+    doctor_name: str
+    final_diagnosis: str
+    hospital_course: str
+    condition_at_discharge: str
+    procedures_performed: Optional[str] = None
+    discharge_vitals: Optional[Dict[str, Any]] = None
+    discharge_medications: Optional[List[Dict[str, Any]]] = None
+    follow_up_instructions: Optional[str] = None
+    emergency_warning_signs: Optional[str] = None
+    signed_at: datetime
+    created_at: datetime
+
+
+class FormalDischargeRequest(BaseModel):
+    discharge_type: Literal["NORMAL", "AGAINST_MEDICAL_ADVICE", "REFERRED", "EXPIRED"] = "NORMAL"
+    waiver_reason: Optional[str] = Field(None, max_length=255, description="Authorized financial waiver reason if balance remains")
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class FormalDischargeResponse(BaseModel):
+    admission_uuid: str
+    ipd_number: str
+    patient_id: int
+    status: str
+    discharge_type: str
+    discharge_date: datetime
+    bed_released: bool
+    bed_status: str
+    invoice_number: Optional[str] = None
+    balance_amount: Decimal
+    message: str
+
+
+
 
 

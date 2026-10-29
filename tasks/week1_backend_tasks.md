@@ -20,9 +20,9 @@
 | **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 5 | 0 | 0 | 🟢 Completed |
 | **Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine)** | 8 | 8 | 0 | 0 | 🟢 Completed |
-| **Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing** | 4 | 0 | 0 | 4 | ⚪ Not Started |
+| **Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing** | 4 | 4 | 0 | 0 | 🟢 Completed |
 | **Phase BE-7: End-to-End API Integration & Concurrency Hardening** | 3 | 0 | 0 | 3 | ⚪ Not Started |
-| **TOTAL** | **38** | **31** | **0** | **7** | **81.6% Completed** |
+| **TOTAL** | **38** | **35** | **0** | **3** | **92.1% Completed** |
 
 ---
 
@@ -156,18 +156,18 @@
 ### Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing
 *Objective: Clinical discharge sign-off, bed release, and itemized billing settlement.*
 
-- [ ] **TASK-BE-6.1:** Structured Discharge Summary (`POST /api/v1/ipd/admissions/{id}/discharge-summary`):
+- [x] **TASK-BE-6.1:** Structured Discharge Summary (`POST /api/v1/ipd/admissions/{id}/discharge-summary`):
   - Synthesize provisional diagnosis, hospital course, final ICD-10 diagnosis, condition at discharge (`STABLE`, `IMPROVED`, `LAMA`, `EXPIRED`, `TRANSFERRED`), discharge medications, and follow-up date.
   - Mandatory attending doctor digital sign-off.
-- [ ] **TASK-BE-6.2:** Consolidated 10-Head Inpatient Ledger Calculation:
+- [x] **TASK-BE-6.2:** Consolidated 10-Head Inpatient Ledger Calculation:
   - Service: `BillingService.calculate_accrued_ipd_charges(admission_id)`.
   - Calculate charges across all 10 NABH cost heads: Bed rent, Doctor rounds, Nursing, Procedures, Pharmacy, Lab, OT fees, Anaesthesia, Oxygen/Equipment, Consumables.
-- [ ] **TASK-BE-6.3:** Final Invoice Generation & Payment Settlement (`POST /api/v1/billing/invoices/ipd-final` — guarded by `@require_module("BILLING")`):
+- [x] **TASK-BE-6.3:** Final Invoice Generation & Payment Settlement (`POST /api/v1/billing/invoices/ipd-final` — guarded by `@require_module("BILLING")`):
   - Generate monotonic `INVOICE_IPD` number via `SequenceService` (`INV-IPD-000052`).
   - Credit previously collected `advance_amount_paid`.
   - Collect remaining balance via Cash, UPI UTR, Card auth, or Cheque.
   - Enforce exact rupee reconciliation (`net_amount == paid + balance`).
-- [ ] **TASK-BE-6.4:** Formal Discharge & Bed Release (`POST /api/v1/ipd/admissions/{id}/discharge`):
+- [x] **TASK-BE-6.4:** Formal Discharge & Bed Release (`POST /api/v1/ipd/admissions/{id}/discharge`):
   - Verify discharge summary is signed AND bill balance is zero (or authorized waiver).
   - Set `ipd_admissions.status = 'DISCHARGED'`, `discharge_date = NOW()`.
   - Release bed: set `ipd_bed_allocations.released_at = NOW()`, transition bed to `CLEANING`.
@@ -210,5 +210,7 @@
 - **2026-10-29 16:03 IST**: Completed TASK-BE-4.2, TASK-BE-4.3, and TASK-BE-4.4. Implemented Dual-Path IPD Admission Engine (`POST /api/v1/ipd/admissions`, `GET /api/v1/ipd/admissions/{uuid}`, `GET /api/v1/ipd/admissions`) supporting Path A (OPD Referral handoff with auto-population of diagnosis, doctor, and opd appointment) and Path B (Direct / Emergency Walk-In). Implemented concurrency-safe bed allocation via `SELECT ... FOR UPDATE`, monotonic sequence generation `IPD-000501` via `SequenceService`, historical tariff locking (`ipd_bed_allocations.daily_rate`), double-booking prevention (`409 Conflict`), and Forms 8 & 9 legal and financial data capture (MLC flags, Next of Kin, TPA insurance, advance deposits). Passed automated pytest suite `backend/tests/test_ipd_admission.py`.
 - **2026-10-29 16:13 IST**: Completed TASK-BE-4.5. Implemented Admission Consent & Face Sheet Print Payload endpoint (`GET /api/v1/ipd/admissions/{id}/consent-form`). Generates comprehensive structured print dossier consolidating Hospital Letterhead, Inpatient Admission Face Sheet (AH/MRD/FORM - 9 with patient demographics, bed location, clinical team, MLC details, TPA insurance), and bilingual English & Gujarati Admission Consent & Treatment Authorization (AH/MRD/FORM - 8 with 4 clinical and financial clauses, emergency resuscitation authorization, personal belongings disclaimer, and signature declarations). Passed automated pytest suite `backend/tests/test_ipd_consent_form.py`. Phase BE-4 is 100% completed.
 - **2026-10-29 16:38 IST**: Completed Phase BE-5 (TASK-BE-5.1 to TASK-BE-5.8). Implemented Universal Clinical Form Engine (`app/modules/ipd/form_service.py`), Pydantic schema registry for 12 canonical inpatient clinical forms (`app/modules/ipd/forms/`), Operational Flowsheets & MAR service (`app/modules/ipd/flowsheet_service.py`), and form locking endpoint for immutable legal sign-offs (`POST /api/v1/ipd/admissions/{id}/forms/{code}/lock`). Covers Forms 08, 09, 10, 70, 71, 72, 15, 54, OP_NOTES, HANDOVER, TRANSFER, and bilingual Gujarati/English FEEDBACK, Doctor Treatment Orders (meds, O2, diet), MAR logs, and 24h intake/output fluid balance calculations. Passed automated pytest suite `backend/tests/test_ipd_forms_and_flowsheets.py`. Phase BE-5 is 100% completed.
+- **2026-10-29 17:03 IST**: Completed Phase BE-6 (TASK-BE-6.1 to TASK-BE-6.4). Implemented structured discharge summary with digital doctor sign-off immutability (`app/modules/ipd/discharge_service.py`), 10-head inpatient billing ledger service (`app/modules/billing/service.py`) complying with IRDAI/NABH cost heads (Bed rent, Doctor visits, Nursing, Procedures, Pharmacy, Lab, OT, Anaesthesia, Oxygen, Consumables), monotonic sequential final IPD invoicing (`INV-IPD-XXXXXX`) with advance deposit credit and exact rupee reconciliation, and formal discharge workflow releasing occupied bed allocations and transitioning beds to `'CLEANING'`. Passed automated pytest suite `backend/tests/test_ipd_discharge_and_billing.py` and verified all 11 test suites passing. Phase BE-6 is 100% completed.
+
 
 

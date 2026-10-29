@@ -48,7 +48,11 @@ class IPDService:
             FROM wards w
             JOIN rooms r ON r.ward_id = w.id AND r.deleted_at IS NULL
             JOIN beds b ON b.room_id = r.id AND b.deleted_at IS NULL
-            LEFT JOIN ipd_admissions adm ON adm.current_bed_id = b.id AND adm.status = 'ADMITTED'
+            LEFT JOIN ipd_admissions adm ON adm.id = (
+                SELECT a.id FROM ipd_admissions a
+                WHERE a.current_bed_id = b.id AND a.status = 'ADMITTED'
+                ORDER BY a.id DESC LIMIT 1
+            )
             LEFT JOIN patients p ON adm.patient_id = p.id
             LEFT JOIN users u ON adm.attending_doctor_id = u.id
             WHERE w.hospital_id = :hospital_id AND w.is_active = 1 AND w.deleted_at IS NULL
