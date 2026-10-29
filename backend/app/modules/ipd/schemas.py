@@ -18,6 +18,25 @@ class BedStatusEnum(str, Enum):
     RESERVED = "RESERVED"
 
 
+class AdmissionSourceEnum(str, Enum):
+    OPD_REFERRAL = "OPD_REFERRAL"
+    EMERGENCY_DIRECT = "EMERGENCY_DIRECT"
+    SCHEDULED_TRANSFER = "SCHEDULED_TRANSFER"
+
+
+class AdmissionTypeEnum(str, Enum):
+    ELECTIVE = "ELECTIVE"
+    EMERGENCY = "EMERGENCY"
+    TRANSFER = "TRANSFER"
+
+
+class PaymentCategoryEnum(str, Enum):
+    SELF_PAY_CASH = "SELF_PAY_CASH"
+    TPA_INSURANCE = "TPA_INSURANCE"
+    CORPORATE_PANEL = "CORPORATE_PANEL"
+    AYUSHMAN_BHARAT = "AYUSHMAN_BHARAT"
+
+
 class BedOccupantSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -114,4 +133,58 @@ class BedDetailResponse(BaseModel):
     ward_name: str
     ward_code: str
     daily_tariff: Decimal
+
+
+class CreateAdmissionRequest(BaseModel):
+    bed_uuid: str
+    patient_uuid: Optional[str] = None
+    referral_uuid: Optional[str] = None
+    attending_doctor_uuid: Optional[str] = None
+    admission_source: AdmissionSourceEnum = AdmissionSourceEnum.EMERGENCY_DIRECT
+    admission_type: AdmissionTypeEnum = AdmissionTypeEnum.ELECTIVE
+    provisional_diagnosis: Optional[str] = Field(None, min_length=2)
+    is_mlc: bool = False
+    mlc_details: Optional[str] = Field(None, max_length=255)
+    guardian_name: Optional[str] = Field(None, max_length=150)
+    guardian_relationship: Optional[str] = Field(None, max_length=50)
+    guardian_phone: Optional[str] = Field(None, max_length=20)
+    payment_category: PaymentCategoryEnum = PaymentCategoryEnum.SELF_PAY_CASH
+    tpa_provider: Optional[str] = Field(None, max_length=100)
+    tpa_policy_number: Optional[str] = Field(None, max_length=100)
+    advance_amount_paid: Decimal = Field(default=Decimal("0.00"), ge=0)
+
+
+class AdmissionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    uuid: str
+    ipd_number: str
+    patient_uuid: str
+    patient_name: str
+    uhid: str
+    attending_doctor_uuid: str
+    attending_doctor_name: str
+    bed_uuid: str
+    bed_number: str
+    room_number: str
+    room_type: str
+    ward_name: str
+    ward_code: str
+    daily_tariff: Decimal
+    admission_source: str
+    admission_type: str
+    admission_date: datetime
+    discharge_date: Optional[datetime] = None
+    provisional_diagnosis: str
+    is_mlc: bool
+    mlc_details: Optional[str] = None
+    guardian_name: Optional[str] = None
+    guardian_relationship: Optional[str] = None
+    guardian_phone: Optional[str] = None
+    payment_category: str
+    tpa_provider: Optional[str] = None
+    tpa_policy_number: Optional[str] = None
+    advance_amount_paid: Decimal
+    status: str
+
 

@@ -63,13 +63,20 @@ def test_bed_occupancy_matrix_and_status(client, nurse_token, doctor_token):
     wards = matrix_data["wards"]
     assert len(wards) == 4
 
-    # Pick a bed from first ward and room
-    first_ward = wards[0]
-    assert len(first_ward["rooms"]) > 0
-    first_room = first_ward["rooms"][0]
-    assert len(first_room["beds"]) > 0
-    target_bed = first_room["beds"][0]
-    target_bed_uuid = target_bed["uuid"]
+    # Pick an AVAILABLE bed
+    target_bed_uuid = None
+    for w in wards:
+        for r in w["rooms"]:
+            for b in r["beds"]:
+                if b["status"] == "AVAILABLE":
+                    target_bed_uuid = b["uuid"]
+                    break
+            if target_bed_uuid:
+                break
+        if target_bed_uuid:
+            break
+
+    assert target_bed_uuid is not None, "At least one AVAILABLE bed required for testing"
 
     # 3. Test GET /api/v1/wards
     wards_resp = client.get(

@@ -656,7 +656,7 @@ CREATE TABLE IF NOT EXISTS ipd_admissions (
     CONSTRAINT fk_ipd_patient FOREIGN KEY (patient_id) REFERENCES patients (id),
     CONSTRAINT fk_ipd_doctor FOREIGN KEY (attending_doctor_id) REFERENCES doctor_profiles (id),
     CONSTRAINT fk_ipd_bed FOREIGN KEY (current_bed_id) REFERENCES beds (id),
-    CONSTRAINT fk_ipd_opd FOREIGN KEY (opd_appointment_id) REFERENCES opd_appointments (id) ON DELETE SET NULL,
+    CONSTRAINT fk_ipd_opd FOREIGN KEY (opd_appointment_id) REFERENCES opd_visits (id) ON DELETE SET NULL,
     CONSTRAINT fk_ipd_creator FOREIGN KEY (created_by) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
