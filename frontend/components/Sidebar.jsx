@@ -73,7 +73,7 @@ export default function Sidebar({
       { id: 'dashboard', label: 'Executive Analytics', icon: BarChart3 },
       { id: 'staff', label: 'Staff Roster & Access', icon: Users },
       { id: 'audit', label: 'Clinical Audit Trail', icon: FileText },
-      { id: '__licensing', label: 'License Management', icon: ShieldCheck, route: '/admin/licensing' },
+      { id: 'licensing', label: 'License & Quotas', icon: ShieldCheck, route: '/admin/licensing' },
     ];
   } else if (role === 'doctor') {
     brandTag = 'OPD Consultation';
@@ -179,7 +179,7 @@ export default function Sidebar({
 
   // Check if an item is "active" — either internal tab match or route match
   const isItemActive = (item) => {
-    if (item.route) return location.pathname.startsWith(item.route);
+    if (item.route) return location.pathname.startsWith(item.route) || activeTab === item.id;
     return activeTab === item.id;
   };
 

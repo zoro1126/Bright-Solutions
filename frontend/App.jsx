@@ -309,14 +309,7 @@ function AppRouter() {
         <Route path="/admin/dashboard"    element={mkAdmin('dashboard')} />
         <Route path="/admin/staff"        element={mkAdmin('staff')} />
         <Route path="/admin/audit-logs"   element={mkAdmin('audit')} />
-        <Route
-          path="/admin/licensing"
-          element={
-            <ProtectedRoute>
-              <LicenseManagementPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/admin/licensing"    element={mkAdmin('licensing')} />
 
         {/* ═══════════════════════════════════════════════════════════════
             PUBLIC DISPLAY (no auth)

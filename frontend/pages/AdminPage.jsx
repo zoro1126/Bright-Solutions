@@ -1,7 +1,8 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import AdminFlowGuideModal from '../components/AdminFlowGuideModal';
+import LicenseManagementPage from './LicenseManagementPage';
 import { 
   Users, 
   Receipt, 
@@ -50,8 +51,15 @@ const INITIAL_AUDIT_LOGS = [
 export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeSubTab = 'dashboard', onLogout }) {
   const { patients } = usePatients();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState(activeSubTab || 'dashboard'); // 'dashboard' | 'staff' | 'audit'
+  const [activeTab, setActiveTab] = useState(activeSubTab || 'dashboard'); // 'dashboard' | 'staff' | 'audit' | 'licensing'
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+
+  // Synchronize tab when activeSubTab changes (e.g. from /admin/licensing route)
+  useEffect(() => {
+    if (activeSubTab) {
+      setActiveTab(activeSubTab);
+    }
+  }, [activeSubTab]);
   
   // Staff state
   const [staffList, setStaffList] = useState(INITIAL_STAFF);
@@ -217,6 +225,21 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
               >
                 <FileText size={14} />
                 <span>Audit Logs</span>
+              </button>
+              <button 
+                className="m3-btn"
+                onClick={() => setActiveTab('licensing')}
+                style={{ 
+                  height: 32, 
+                  fontSize: 11.5,
+                  background: activeTab === 'licensing' ? 'var(--adm-brand-gradient, linear-gradient(135deg, #1e3a8a, #2563eb))' : 'var(--bg-subtle)',
+                  color: activeTab === 'licensing' ? '#ffffff' : 'var(--text-primary)',
+                  border: activeTab === 'licensing' ? 'none' : '1px solid var(--border-default)',
+                  fontWeight: 700
+                }}
+              >
+                <ShieldCheck size={14} />
+                <span>License & Quotas</span>
               </button>
             </div>
           </div>
@@ -699,6 +722,11 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
                 </table>
               </div>
             </div>
+          )}
+
+          {/* TAB 4: P-ADM-04 Hospital License & SaaS Quota Governance */}
+          {activeTab === 'licensing' && (
+            <LicenseManagementPage embedded onBack={() => setActiveTab('dashboard')} />
           )}
         </main>
       </div>
