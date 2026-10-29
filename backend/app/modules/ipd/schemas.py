@@ -6,7 +6,7 @@ Canonical Pydantic v2 domain schemas for ward hierarchy, bed matrix, and bed sta
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Literal, Dict, Any
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -288,6 +288,51 @@ class AdmissionPrintDossierResponse(BaseModel):
     generated_at: datetime
     face_sheet: AdmissionFaceSheetPayload
     consent_form: AdmissionConsentPayload
+
+
+class SubmitClinicalFormRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    day_number: Optional[int] = Field(None, ge=1, le=30)
+    as_draft: bool = False
+    payload: Dict[str, Any] = Field(..., description="Structured form payload validated against registered schema")
+
+
+class CreateTreatmentOrderRequest(BaseModel):
+    order_type: Literal["MEDICATION", "O2_THERAPY", "DIET", "SPECIAL_INSTRUCTION"] = "MEDICATION"
+    drug_name: Optional[str] = Field(None, max_length=200)
+    dosage: Optional[str] = Field(None, max_length=100)
+    route: Optional[str] = Field(None, max_length=20)
+    frequency: Optional[str] = Field(None, max_length=50)
+    o2_device: Optional[str] = Field(None, max_length=30)
+    o2_flow_rate_lpm: Optional[Decimal] = Field(None, ge=0, le=60)
+    instructions: Optional[str] = Field(None, max_length=500)
+    start_time: Optional[datetime] = None
+
+
+class DiscontinueTreatmentOrderRequest(BaseModel):
+    reason: str = Field(..., min_length=3, max_length=255)
+
+
+class RecordMarRequest(BaseModel):
+    scheduled_time: datetime = Field(default_factory=datetime.now)
+    status: Literal["GIVEN", "OMITTED", "REFUSED", "HELD_DOCTOR_ORDER"] = "GIVEN"
+    omitted_reason: Optional[str] = Field(None, max_length=255)
+    notes: Optional[str] = Field(None, max_length=255)
+
+
+class RecordIntakeOutputRequest(BaseModel):
+    shift: Literal["MORNING", "EVENING", "NIGHT"] = "MORNING"
+    oral_rt_intake_ml: int = Field(0, ge=0)
+    iv_fluid_type: Optional[str] = Field(None, max_length=100)
+    iv_fluid_intake_ml: int = Field(0, ge=0)
+    blood_products_ml: int = Field(0, ge=0)
+    urine_output_ml: int = Field(0, ge=0)
+    vomitus_rt_aspirate_ml: int = Field(0, ge=0)
+    stool_count: int = Field(0, ge=0)
+    drain_output_ml: int = Field(0, ge=0)
+    remarks: Optional[str] = Field(None, max_length=255)
+
 
 
 

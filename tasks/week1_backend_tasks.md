@@ -19,10 +19,10 @@
 | **Phase BE-2: Auth, Ed25519 Licensing & Sequences** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-3: Outpatient (OPD) Flow & Module Guard** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase BE-4: Inpatient (IPD) Admission, Bed Allocations & Consents** | 5 | 5 | 0 | 0 | 🟢 Completed |
-| **Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine)** | 8 | 0 | 0 | 8 | ⚪ Not Started |
+| **Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine)** | 8 | 8 | 0 | 0 | 🟢 Completed |
 | **Phase BE-6: Inpatient Discharge & Consolidated 10-Head Billing** | 4 | 0 | 0 | 4 | ⚪ Not Started |
 | **Phase BE-7: End-to-End API Integration & Concurrency Hardening** | 3 | 0 | 0 | 3 | ⚪ Not Started |
-| **TOTAL** | **38** | **23** | **0** | **15** | **60.5% Completed** |
+| **TOTAL** | **38** | **31** | **0** | **7** | **81.6% Completed** |
 
 ---
 
@@ -123,32 +123,32 @@
 ### Phase BE-5: 14-Form Inpatient Clinical Suite (Form Engine — ADR-009)
 *Objective: Implement the full 14 clinical and administrative paper forms from `IPD Book 6 Days.pdf`.*
 
-- [ ] **TASK-BE-5.1:** Universal Form Submission Infrastructure (`app/modules/ipd/services/form_service.py`):
+- [x] **TASK-BE-5.1:** Universal Form Submission Infrastructure (`app/modules/ipd/form_service.py`):
   - `POST /api/v1/ipd/admissions/{id}/forms/{form_code}` (validates payload against registered Pydantic schema, stores in `ipd_clinical_form_submissions`).
   - `GET /api/v1/ipd/admissions/{id}/forms/{form_code}` (retrieves latest or specific version of form submission).
   - `GET /api/v1/ipd/admissions/{id}/forms` (lists all submitted forms, timestamps, signing clinicians).
-- [ ] **TASK-BE-5.2:** Pydantic Registry for Intake & Assessment Forms:
+- [x] **TASK-BE-5.2:** Pydantic Registry for Intake & Assessment Forms:
   - **FORM_08:** Admission Consent & Authorization (Authorization for treatment, high-risk surgical acknowledgment, Gujarati/English translations).
   - **FORM_09:** Inpatient Face Sheet & Demographics (Emergency contact, TPA insurance card details, MLC status).
   - **FORM_10:** Doctor H&P Admission Note (Chief Complaints, HPI, past medical/surgical history, home medications, systemic review CVS/RS/PA/CNS).
   - **FORM_70:** Nursing Initial Admission Assessment (15-minute triage, Morse Fall Risk assessment, Braden Pressure Sore score, allergy verification).
-- [ ] **TASK-BE-5.3:** Repeating Daily Operational Flowsheets (Relational Core):
+- [x] **TASK-BE-5.3:** Repeating Daily Operational Flowsheets (Relational Core):
   - **FORM_29 Doctor Treatment Orders (`ipd_treatment_orders`):** Drug name, dose, route, frequency, start/stop times; **Oxygen Therapy** device & flow rate (L/min); special diet instructions.
   - **FORM_29 Nurse MAR (`ipd_treatment_administrations`):** Timestamps for drug doses given, omitted reasons, held-by-doctor flags.
   - **FORM_61 24h Fluid Balance (`ipd_intake_output`):** Shift-wise recording of Oral/RT, IV fluids, Urine, RT aspirate/vomitus, Stool, Drains with signed net balance (`intake - output`).
-- [ ] **TASK-BE-5.4:** Pydantic Registry for Daily Nursing & Care Plans:
+- [x] **TASK-BE-5.4:** Pydantic Registry for Daily Nursing & Care Plans:
   - **FORM_71:** Nurse Care Plan & Daily Goals (Airway patency, fluid balance maintenance, IV site care, pain control goals).
   - **FORM_72:** Nurse Progress Notes & Shift Handover (Morning, Evening, Night shift narrative, NEWS2 score, Wong-Baker 0–10 pain score).
-- [ ] **TASK-BE-5.5:** Pydantic Registry for Surgical & OT Flow:
+- [x] **TASK-BE-5.5:** Pydantic Registry for Surgical & OT Flow:
   - **FORM_15 / FORM_151:** Pre-Anaesthesia Assessment & Surgical Consent (Mallampati score, ASA grading, fasting status, tooth condition, anaesthetic risk sign-off).
   - **FORM_54:** Preoperative Nurse & OT Checklist (Surgical site marking confirmation, NPO status, jewelery removed, blood arranged).
   - **FORM_OP_NOTES:** Surgeon Pre-Op Note, Operation Note (Incisions, findings, procedure performed, swabs counted), and Post-Op Recovery Note.
-- [ ] **TASK-BE-5.6:** Pydantic Registry for Clinical Transitions:
+- [x] **TASK-BE-5.6:** Pydantic Registry for Clinical Transitions:
   - **FORM_HANDOVER:** Doctor Handover & Takeover Form (Attending handover, pending diagnostic tests, critical watch parameters).
   - **FORM_TRANSFER:** Department Transfer Form (Ward-to-ICU / OT transfer checklist, transport vitals, active IV infusions handoff).
-- [ ] **TASK-BE-5.7:** Pydantic Registry for Experience & Feedback:
+- [x] **TASK-BE-5.7:** Pydantic Registry for Experience & Feedback:
   - **FORM_FEEDBACK:** Inpatient Feedback Form (Bilingual English/Gujarati patient rating on nursing care, doctor communication, cleanliness, billing clarity).
-- [ ] **TASK-BE-5.8:** Form Locking & Digital Sign-off (`POST /api/v1/ipd/admissions/{id}/forms/{form_code}/lock`):
+- [x] **TASK-BE-5.8:** Form Locking & Digital Sign-off (`POST /api/v1/ipd/admissions/{id}/forms/{form_code}/lock`):
   - Transition form `status` from `'SUBMITTED'` to `'LOCKED'`, creating an immutable audit trail entry.
 
 ---
@@ -209,4 +209,6 @@
 - **2026-10-29 15:52 IST**: Completed TASK-BE-4.1. Implemented Bed Occupancy Matrix & Status API module `app/modules/ipd/` (`router.py`, `service.py`, `schemas.py`). Provides real-time hierarchical ward/room/bed occupancy tree (`GET /api/v1/beds/matrix`) with occupant profile linkages, ward capacity summaries (`GET /api/v1/wards`), and bed state transition manager (`PATCH /api/v1/beds/{bed_uuid}/status`), guarded by `@require_module("IPD")` and `ipd:read` permission with clinical integrity constraints protecting active inpatient beds. Passed automated pytest suite `backend/tests/test_bed_matrix.py`.
 - **2026-10-29 16:03 IST**: Completed TASK-BE-4.2, TASK-BE-4.3, and TASK-BE-4.4. Implemented Dual-Path IPD Admission Engine (`POST /api/v1/ipd/admissions`, `GET /api/v1/ipd/admissions/{uuid}`, `GET /api/v1/ipd/admissions`) supporting Path A (OPD Referral handoff with auto-population of diagnosis, doctor, and opd appointment) and Path B (Direct / Emergency Walk-In). Implemented concurrency-safe bed allocation via `SELECT ... FOR UPDATE`, monotonic sequence generation `IPD-000501` via `SequenceService`, historical tariff locking (`ipd_bed_allocations.daily_rate`), double-booking prevention (`409 Conflict`), and Forms 8 & 9 legal and financial data capture (MLC flags, Next of Kin, TPA insurance, advance deposits). Passed automated pytest suite `backend/tests/test_ipd_admission.py`.
 - **2026-10-29 16:13 IST**: Completed TASK-BE-4.5. Implemented Admission Consent & Face Sheet Print Payload endpoint (`GET /api/v1/ipd/admissions/{id}/consent-form`). Generates comprehensive structured print dossier consolidating Hospital Letterhead, Inpatient Admission Face Sheet (AH/MRD/FORM - 9 with patient demographics, bed location, clinical team, MLC details, TPA insurance), and bilingual English & Gujarati Admission Consent & Treatment Authorization (AH/MRD/FORM - 8 with 4 clinical and financial clauses, emergency resuscitation authorization, personal belongings disclaimer, and signature declarations). Passed automated pytest suite `backend/tests/test_ipd_consent_form.py`. Phase BE-4 is 100% completed.
+- **2026-10-29 16:38 IST**: Completed Phase BE-5 (TASK-BE-5.1 to TASK-BE-5.8). Implemented Universal Clinical Form Engine (`app/modules/ipd/form_service.py`), Pydantic schema registry for 12 canonical inpatient clinical forms (`app/modules/ipd/forms/`), Operational Flowsheets & MAR service (`app/modules/ipd/flowsheet_service.py`), and form locking endpoint for immutable legal sign-offs (`POST /api/v1/ipd/admissions/{id}/forms/{code}/lock`). Covers Forms 08, 09, 10, 70, 71, 72, 15, 54, OP_NOTES, HANDOVER, TRANSFER, and bilingual Gujarati/English FEEDBACK, Doctor Treatment Orders (meds, O2, diet), MAR logs, and 24h intake/output fluid balance calculations. Passed automated pytest suite `backend/tests/test_ipd_forms_and_flowsheets.py`. Phase BE-5 is 100% completed.
+
 

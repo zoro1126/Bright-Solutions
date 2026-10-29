@@ -13,10 +13,17 @@ from app.modules.ipd.schemas import (
     BedDetailResponse,
     BedMatrixResponse,
     CreateAdmissionRequest,
+    CreateTreatmentOrderRequest,
+    DiscontinueTreatmentOrderRequest,
+    RecordIntakeOutputRequest,
+    RecordMarRequest,
+    SubmitClinicalFormRequest,
     UpdateBedStatusRequest,
     WardSummaryResponse,
 )
 from app.modules.ipd.service import IPDService
+from app.modules.ipd.form_service import FormService
+from app.modules.ipd.flowsheet_service import FlowsheetService
 
 router = APIRouter(tags=["Inpatient (IPD) & Bed Matrix"])
 
@@ -168,5 +175,257 @@ def get_admission_consent_and_face_sheet(
     """
     hospital_id = int(current_user.get("hospital_id", 1))
     return IPDService.get_admission_consent_and_face_sheet(hospital_id, admission_uuid)
+
+
+# -----------------------------------------------------------------------------
+# Phase BE-5: Universal Form Submission Infrastructure (TASK-BE-5.1 & 5.8)
+# -----------------------------------------------------------------------------
+@router.post(
+    "/ipd/admissions/{admission_uuid}/forms/{form_code}",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_module("IPD"))],
+)
+def submit_clinical_form(
+    admission_uuid: str,
+    form_code: str,
+    payload: SubmitClinicalFormRequest,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Validates form payload against registered Pydantic schema and persists into
+    ipd_clinical_form_submissions. Supports draft saving and automatic version increments.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    user_id = int(current_user.get("user_id", 1))
+
+    return FormService.submit_clinical_form(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+        form_code=form_code,
+        payload_data=payload.payload,
+        recorded_by_user_id=user_id,
+        day_number=payload.day_number,
+        as_draft=payload.as_draft,
+    )
+
+
+@router.get(
+    "/ipd/admissions/{admission_uuid}/forms/{form_code}",
+    dependencies=[Depends(require_module("IPD"))],
+)
+def get_clinical_form(
+    admission_uuid: str,
+    form_code: str,
+    version: Optional[int] = Query(None, description="Optional specific version number"),
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Retrieves latest or specific version of clinical form submission.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    return FormService.get_form_submission(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+        form_code=form_code,
+        version=version,
+    )
+
+
+@router.get(
+    "/ipd/admissions/{admission_uuid}/forms",
+    dependencies=[Depends(require_module("IPD"))],
+)
+def list_clinical_forms(
+    admission_uuid: str,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Lists all submitted clinical forms across the patient's stay.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    return FormService.list_admission_forms(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+    )
+
+
+@router.post(
+    "/ipd/admissions/{admission_uuid}/forms/{form_code}/lock",
+    dependencies=[Depends(require_module("IPD"))],
+)
+def lock_clinical_form(
+    admission_uuid: str,
+    form_code: str,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    TASK-BE-5.8: Transitions form submission status to 'LOCKED' creating an immutable clinical audit record.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    user_id = int(current_user.get("user_id", 1))
+
+    return FormService.lock_clinical_form(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+        form_code=form_code,
+        user_id=user_id,
+    )
+
+
+# -----------------------------------------------------------------------------
+# Phase BE-5: Operational Flowsheets (TASK-BE-5.3)
+# -----------------------------------------------------------------------------
+@router.post(
+    "/ipd/admissions/{admission_uuid}/treatment-orders",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_module("IPD"))],
+)
+def create_treatment_order(
+    admission_uuid: str,
+    payload: CreateTreatmentOrderRequest,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Doctor prescribes medication, oxygen therapy, or clinical diet order (AH/MRD/FORM - 29).
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    user_id = int(current_user.get("user_id", 1))
+
+    return FlowsheetService.create_treatment_order(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+        doctor_user_id=user_id,
+        order_type=payload.order_type,
+        drug_name=payload.drug_name,
+        dosage=payload.dosage,
+        route=payload.route,
+        frequency=payload.frequency,
+        o2_device=payload.o2_device,
+        o2_flow_rate_lpm=payload.o2_flow_rate_lpm,
+        instructions=payload.instructions,
+        start_time=payload.start_time,
+    )
+
+
+@router.get(
+    "/ipd/admissions/{admission_uuid}/treatment-orders",
+    dependencies=[Depends(require_module("IPD"))],
+)
+def list_treatment_orders(
+    admission_uuid: str,
+    status_filter: Optional[str] = Query(None, description="ACTIVE, COMPLETED, DISCONTINUED"),
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Lists treatment orders with dose administration counts.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    return FlowsheetService.list_treatment_orders(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+        status_filter=status_filter,
+    )
+
+
+@router.patch(
+    "/ipd/treatment-orders/{order_uuid}/discontinue",
+    dependencies=[Depends(require_module("IPD"))],
+)
+def discontinue_treatment_order(
+    order_uuid: str,
+    payload: DiscontinueTreatmentOrderRequest,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Doctor discontinues treatment order with clinical justification.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    user_id = int(current_user.get("user_id", 1))
+
+    return FlowsheetService.discontinue_treatment_order(
+        hospital_id=hospital_id,
+        order_uuid=order_uuid,
+        user_id=user_id,
+        reason=payload.reason,
+    )
+
+
+@router.post(
+    "/ipd/treatment-orders/{order_uuid}/administer",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_module("IPD"))],
+)
+def record_mar_administration(
+    order_uuid: str,
+    payload: RecordMarRequest,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Nurse logs given, omitted, or refused dose administration in MAR (Form 29).
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    user_id = int(current_user.get("user_id", 1))
+
+    return FlowsheetService.record_mar_administration(
+        hospital_id=hospital_id,
+        order_uuid=order_uuid,
+        nurse_user_id=user_id,
+        scheduled_time=payload.scheduled_time,
+        mar_status=payload.status,
+        omitted_reason=payload.omitted_reason,
+        notes=payload.notes,
+    )
+
+
+@router.post(
+    "/ipd/admissions/{admission_uuid}/intake-output",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_module("IPD"))],
+)
+def record_intake_output(
+    admission_uuid: str,
+    payload: RecordIntakeOutputRequest,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Nurse records shift intake & output with calculated net balance (AH/MRD/FORM - 61).
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    user_id = int(current_user.get("user_id", 1))
+
+    return FlowsheetService.record_intake_output(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+        nurse_user_id=user_id,
+        shift=payload.shift,
+        oral_rt_intake_ml=payload.oral_rt_intake_ml,
+        iv_fluid_type=payload.iv_fluid_type,
+        iv_fluid_intake_ml=payload.iv_fluid_intake_ml,
+        blood_products_ml=payload.blood_products_ml,
+        urine_output_ml=payload.urine_output_ml,
+        vomitus_rt_aspirate_ml=payload.vomitus_rt_aspirate_ml,
+        stool_count=payload.stool_count,
+        drain_output_ml=payload.drain_output_ml,
+        remarks=payload.remarks,
+    )
+
+
+@router.get(
+    "/ipd/admissions/{admission_uuid}/intake-output",
+    dependencies=[Depends(require_module("IPD"))],
+)
+def get_intake_output_history(
+    admission_uuid: str,
+    current_user: Dict[str, Any] = Depends(require_permission("ipd:read")),
+):
+    """
+    Retrieves shift-wise fluid chart with cumulative 24h intake, output, and net balance.
+    """
+    hospital_id = int(current_user.get("hospital_id", 1))
+    return FlowsheetService.get_intake_output_history(
+        hospital_id=hospital_id,
+        admission_uuid=admission_uuid,
+    )
+
 
 
