@@ -5,7 +5,7 @@
 > **Workspace Location:** `tasks/week1_frontend_tasks.md`  
 > **Master Program Index:** [week1_tasks.md](file:///home/prem/Desktop/pbt/COS/tasks/week1_tasks.md)  
 > **Backend Companion Plan:** [week1_backend_tasks.md](file:///home/prem/Desktop/pbt/COS/tasks/week1_backend_tasks.md)  
-> **Status:** 🟡 SPRINT ACTIVE (Phase FE-1 Kickoff)  
+> **Status:** 🟡 SPRINT ACTIVE (Phases FE-1 & FE-2 Completed • FE-3 & FE-6 In Progress)  
 > **Primary References:** [15_page_route_map.md](file:///home/prem/Desktop/pbt/COS/docs/design/15_page_route_map.md), [16_ui_component_inventory.md](file:///home/prem/Desktop/pbt/COS/docs/design/16_ui_component_inventory.md), [17_design_system_tokens.md](file:///home/prem/Desktop/pbt/COS/docs/design/17_design_system_tokens.md), [18_wireframes_screen_layouts.md](file:///home/prem/Desktop/pbt/COS/docs/design/18_wireframes_screen_layouts.md), [19_state_management_design.md](file:///home/prem/Desktop/pbt/COS/docs/design/19_state_management_design.md), [20_print_template_specs.md](file:///home/prem/Desktop/pbt/COS/docs/design/20_print_template_specs.md), [13_rbac_permission_matrix.md](file:///home/prem/Desktop/pbt/COS/docs/design/13_rbac_permission_matrix.md)  
 > **Client Clinical Dossier:** `docs/client_docs/IPD Book 6 Days.pdf` (86 Pages / 14 Clinical Forms)  
 > **Target Environment:** React 18, Vite, Tailwind CSS, Vanilla CSS Tokens, Lucide Icons, Browser Print API (80mm Thermal & A4)  
@@ -16,14 +16,14 @@
 
 | Milestone Phase | Total Tasks | Completed | In Progress | Pending | Status |
 |:---|:---:|:---:|:---:|:---:|:---:|
-| **Phase FE-1: Modular SaaS Shell, Auth Context & License Guard** | 6 | 0 | 1 | 5 | 🟡 In Progress |
-| **Phase FE-2: Outpatient (OPD) Workspaces & Live Queue Polish** | 6 | 0 | 0 | 6 | ⚪ Not Started |
-| **Phase FE-3: Inpatient (IPD) Bed Matrix & Dual-Path Intake Modals** | 5 | 0 | 0 | 5 | ⚪ Not Started |
+| **Phase FE-1: Modular SaaS Shell, Auth Context & License Guard** | 6 | 6 | 0 | 0 | 🟢 Completed |
+| **Phase FE-2: Outpatient (OPD) Workspaces & Live Queue Polish** | 6 | 6 | 0 | 0 | 🟢 Completed |
+| **Phase FE-3: Inpatient (IPD) Bed Matrix & Dual-Path Intake Modals** | 5 | 3 | 0 | 2 | 🟡 In Progress |
 | **Phase FE-4: Digitized 14-Form Inpatient Folio (Client 6-Day Suite)** | 8 | 0 | 0 | 8 | ⚪ Not Started |
 | **Phase FE-5: Inpatient 10-Head Discharge Settlement & Receipt Polish** | 4 | 0 | 0 | 4 | ⚪ Not Started |
-| **Phase FE-6: Chromeless Waiting Room TV Display & Edge LAN Beacon** | 3 | 0 | 0 | 3 | ⚪ Not Started |
+| **Phase FE-6: Chromeless Waiting Room TV Display & Edge LAN Beacon** | 3 | 2 | 0 | 1 | 🟡 In Progress |
 | **Phase FE-7: Design System Polish, Typography & Responsive Review** | 6 | 0 | 0 | 6 | ⚪ Not Started |
-| **TOTAL** | **38** | **0** | **1** | **37** | **0.0% Completed** |
+| **TOTAL** | **38** | **17** | **0** | **21** | **44.7% Completed** |
 
 ---
 
@@ -32,33 +32,33 @@
 ### Phase FE-1: Modular SaaS Shell, Auth Context & License Guard
 *Objective: Build dynamic SaaS module navigation, JWT session lifecycle, and persistent License Status indicator.*
 
-- [ ] **TASK-FE-1.1:** Upgrade Auth State Context (`frontend/src/context/AuthContext.jsx` or `frontend/context/AuthContext.jsx`):
+- [x] **TASK-FE-1.1:** Upgrade Auth State Context (`frontend/src/context/AuthContext.jsx` or `frontend/context/AuthContext.jsx`):
   - Connect to backend `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`, and `GET /api/v1/auth/me`.
   - Store short-lived access token in memory; handle automatic silent token refresh before 15-minute expiration via HTTP-only cookie.
   - Store authenticated user profile, role, hospital context (`shubham`), and `enabled_modules` array.
-- [ ] **TASK-FE-1.2:** Dynamic Modular Sidebar Navigation (`frontend/components/Sidebar.jsx`):
+- [x] **TASK-FE-1.2:** Dynamic Modular Sidebar Navigation (`frontend/components/Sidebar.jsx`):
   - Inspect `auth.enabled_modules` in state; dynamically show/hide sidebar menu groups (`OPD`, `IPD`, `PHARMACY`, `PATHOLOGY`, `BILLING`).
   - Gracefully render disabled/unsubscribed modules with a subtle "Add-on Module" badge or lock icon that opens a SaaS upgrade modal.
   - Implement collapsible sidebar state with persistent local preference and active route highlighting.
-- [ ] **TASK-FE-1.3:** Persistent License Status Pill & Grace Period Banner (`frontend/components/Navbar.jsx`):
+- [x] **TASK-FE-1.3:** Persistent License Status Pill & Grace Period Banner (`frontend/components/Navbar.jsx`):
   - Query `GET /api/v1/admin/license` on mount.
   - Render persistent pill in Topbar:
     - 🟢 `[ ACTIVE ]` (Tooltip: "364 days remaining • Enterprise 60 Beds")
     - 🟡 `[ GRACE PERIOD - 10 Days Left ]` (Amber warning banner across all layout shells)
     - 🔴 `[ EXPIRED / READ-ONLY ]` (Red lock banner indicating write restriction)
     - ⚠️ `[ CLOCK TAMPERED ]` (Security warning banner)
-- [ ] **TASK-FE-1.4:** Offline License Management UI (`frontend/pages/LicenseManagementPage.jsx` at `/admin/licensing`):
+- [x] **TASK-FE-1.4:** Offline License Management UI (`frontend/pages/LicenseManagementPage.jsx` at `/admin/licensing`):
   - Visual summary card of hospital tenant, expiration date, active bed/doctor quotas, and module checklist.
   - Drag-and-drop License Upload Dropzone for `.lic` signed offline tokens and manual string paste textarea for air-gapped renewals.
   - Immediate feedback toast on successful renewal via `POST /api/v1/admin/license/upload` with zero page reload.
-- [ ] **TASK-FE-1.5:** Layout Shell Architecture Implementation (`frontend/layouts/`):
+- [x] **TASK-FE-1.5:** Layout Shell Architecture Implementation (`frontend/layouts/`):
   - Implement 5 core layout shells defined in `15_page_route_map.md`:
     - `ChamberLayout` (Doctor consultation with pinned patient vitals bar)
     - `WardLayout` (Inpatient ward station with bed grid navigation)
     - `CounterLayout` (High-speed reception and billing cashier views)
     - `AdminLayout` (Hospital configuration and license management)
     - `AuthLayout` (Clean, focused staff sign-in screen)
-- [ ] **TASK-FE-1.6:** Declarative Frontend Route Guards (`ProtectedRoute.jsx` & `ModuleRouteGuard.jsx`):
+- [x] **TASK-FE-1.6:** Declarative Frontend Route Guards (`ProtectedRoute.jsx` & `ModuleRouteGuard.jsx`):
   - Enforce authentication check (redirect to `/login` with `returnUrl`).
   - Enforce RBAC permission check via `hasPermission(permissionCode)` against D13 matrix strings.
   - Enforce SaaS module entitlement check (redirect to `/unauthorized` with `MODULE_NOT_LICENSED` explanation if tenant lacks module).
@@ -68,30 +68,30 @@
 ### Phase FE-2: Outpatient (OPD) Workspaces & Live Queue Polish
 *Objective: High-speed front-desk registration, nurse vitals intake, and doctor consultation chamber with pinned vitals.*
 
-- [ ] **TASK-FE-2.1:** High-Speed Patient Registration Modal (`frontend/components/PatientRegistrationModal.jsx`):
+- [x] **TASK-FE-2.1:** High-Speed Patient Registration Modal (`frontend/components/PatientRegistrationModal.jsx`):
   - Optimized keyboard-accessible form (Enter key advances to next field, `Alt+S` saves).
   - Demographic fields: First Name, Middle Name, Last Name, DOB/Age toggle, Gender, Blood Group, Phone, Address, Next of Kin.
   - Real-time duplicate Aadhaar / Phone alert via MPI check against `POST /api/v1/patients/search`.
   - Immediate modal confirmation showing generated `UHID` (`BS-001001`) with 1-click printable registration slip / barcode sticker.
-- [ ] **TASK-FE-2.2:** OPD Queue Check-In & Token Issuance (`frontend/components/TokenQueueManagementView.jsx`):
+- [x] **TASK-FE-2.2:** OPD Queue Check-In & Token Issuance (`frontend/components/TokenQueueManagementView.jsx`):
   - Doctor selection dropdown with live OPD schedule indicator and current waiting queue count.
   - Visit category selector: `NEW_VISIT`, `FOLLOW_UP`, `EMERGENCY`.
   - Generates token number (e.g. `Token #12 - Dr. Sharma`) and auto-triggers 80mm thermal token print dialog.
-- [ ] **TASK-FE-2.3:** Nurse Triage Vitals Intake Screen (`frontend/pages/NurseVitalsIntakePage.jsx` at `/nurse/triage/:visitId`):
+- [x] **TASK-FE-2.3:** Nurse Triage Vitals Intake Screen (`frontend/pages/NurseVitalsIntakePage.jsx` at `/nurse/triage/:visitId`):
   - Numeric keypad inputs for Systolic BP, Diastolic BP, Pulse, SpO2, Temp (°F), Resp Rate, Weight (kg), Height (cm).
   - Auto-calculating BMI badge with real-time WHO classification color code (`Underweight`, `Normal`, `Overweight`, `Obese`).
   - Visual CDSS Vital Panic Flags (Pulsing Red indicator for SpO2 < 92% Hypoxia, Stage 2 Hypertension, Hyperpyrexia).
-- [ ] **TASK-FE-2.4:** Doctor Consultation Chamber Workspace (`frontend/pages/DoctorConsultationPage.jsx` at `/doctor/consultation/:visitId`):
+- [x] **TASK-FE-2.4:** Doctor Consultation Chamber Workspace (`frontend/pages/DoctorConsultationPage.jsx` at `/doctor/consultation/:visitId`):
   - Pinned Patient Header Bar: UHID, Name, Age/Gender, Blood Group, Allergies pill, and triage vitals.
   - Tabbed clinical workspace: Chief Complaints, SOAP Clinical Notes with autosave indicator ("Draft saved 10s ago"), ICD-10 diagnostic search picker with autocomplete.
   - `UnsavedChangesGuard`: browser warning if navigating away with uncommitted consultation notes.
-- [ ] **TASK-FE-2.5:** E-Prescription Composer & Drug-Drug Interaction CDSS Modal:
+- [x] **TASK-FE-2.5:** E-Prescription Composer & Drug-Drug Interaction CDSS Modal:
   - Fast drug search with brand/generic matching, dosage form pills (Tab, Cap, Syrup, Inj), frequency selector (Stat, OD, BD, TDS, QID), and duration.
   - Real-time synchronous CDSS DDI evaluation via `POST /api/v1/cdss/check-ddi`:
     - Critical / Contraindicated interaction modal popup (blocks signing unless doctor enters justified override reason).
     - Advisory warning toasts for moderate interactions.
   - **"Admit to IPD" Action Button:** Opens rapid admission referral drawer with provisional diagnosis prefilled.
-- [ ] **TASK-FE-2.6:** Consultation Digital Sign-Off & Thermal Rx Preview:
+- [x] **TASK-FE-2.6:** Consultation Digital Sign-Off & Thermal Rx Preview:
   - Two-step confirmation sign-off dialog locking SOAP notes (`status = 'SIGNED'`).
   - Printable Prescription Preview modal formatted with hospital header, doctor GMC registration, Rx symbol, dosage instructions in English/Gujarati, and digital QR code verification.
 
@@ -100,7 +100,7 @@
 ### Phase FE-3: Inpatient (IPD) Bed Matrix & Dual-Path Intake Modals
 *Objective: Real-time visual ward occupancy grid, bed reservation dialog, and Forms 8 & 9 capture.*
 
-- [ ] **TASK-FE-3.1:** Interactive Ward Bed Occupancy Matrix (`frontend/pages/BedMatrixPage.jsx` at `/ipd/beds`):
+- [x] **TASK-FE-3.1:** Interactive Ward Bed Occupancy Matrix (`frontend/pages/BedMatrixPage.jsx` at `/ipd/beds`):
   - Ward filter tabs: `All Wards`, `General Ward Male`, `General Ward Female`, `Semi-Private Ward`, `ICU`.
   - Grid of bed cards with color-coded live states:
     - 🟢 `AVAILABLE` (Clickable for instant admission booking)
@@ -108,10 +108,10 @@
     - 🟡 `CLEANING` (Housekeeping status badge with "Mark Ready" button)
     - ⚪ `MAINTENANCE`
   - Real-time summary statistics bar: Total Beds (20), Occupied (X), Available (Y), Occupancy Rate (Z%).
-- [ ] **TASK-FE-3.2:** Dual-Path IPD Admission Booking Dialog (`frontend/components/AdmissionBookingModal.jsx`):
+- [x] **TASK-FE-3.2:** Dual-Path IPD Admission Booking Dialog (`frontend/components/AdmissionBookingModal.jsx`):
   - **Tab A — OPD Referral Queue:** Displays waiting list of patients flagged for admission by Dr. Sharma in OPD chamber. Selecting a patient automatically pulls their demographic data, provisional diagnosis, and referring doctor.
   - **Tab B — Direct Emergency Walk-In:** Instant intake form for direct casualty admissions without prior OPD visit (validating standalone IPD operation).
-- [ ] **TASK-FE-3.3:** Concurrency-Safe Bed Selector & Rate Confirmation:
+- [x] **TASK-FE-3.3:** Concurrency-Safe Bed Selector & Rate Confirmation:
   - Interactive room and bed selector displaying locked room rates (General ₹1,500/day, Semi-Private ₹3,000/day, ICU ₹7,500/day).
   - Handles concurrent bed booking conflict: if another user books the bed first, renders immediate non-crashing `409 Conflict` modal: *"Bed BED-105 was just reserved by Nurse Anita. Please select another bed."*
 - [ ] **TASK-FE-3.4:** Admission Intake Form & Legal Flags Capture (Forms 8 & 9 UI):
@@ -207,14 +207,14 @@
 ### Phase FE-6: Chromeless Waiting Room TV Display & Edge LAN Beacon
 *Objective: Unauthenticated public display screen and edge fallback synchronization indicator.*
 
-- [ ] **TASK-FE-6.1:** Waiting Lounge Token TV Display Page (`frontend/pages/WaitingRoomDisplayPage.jsx` at `/display/waiting-room`):
+- [x] **TASK-FE-6.1:** Waiting Lounge Token TV Display Page (`frontend/pages/WaitingRoomDisplayPage.jsx` at `/display/waiting-room`):
   - Chromeless, high-contrast fullscreen layout optimized for 1080p / 4K waiting room TV monitors.
   - Server-Sent Events (SSE) integration with `/api/v1/display/queue/stream` for zero-polling real-time updates.
   - Zero PHI leakage: Displays only Token Number, Consulting Doctor, Room Number, and Status (`CALLING`, `IN CONSULTATION`, `NEXT`).
   - Audio chime notification (`chime.mp3`) when a new patient token is called.
 - [ ] **TASK-FE-6.2:** Inpatient Nursing Station Whiteboard Page (`frontend/pages/WardPublicBoardPage.jsx` at `/display/ward-matrix`):
   - Digital whiteboard view of active ward beds, occupied states, and on-duty nursing team.
-- [ ] **TASK-FE-6.3:** Edge LAN Fallback Sync Beacon (`frontend/components/EdgeSyncBeacon.jsx`):
+- [x] **TASK-FE-6.3:** Edge LAN Fallback Sync Beacon (`frontend/components/EdgeSyncBeacon.jsx`):
   - Persistent indicator in the bottom-right corner of all authenticated screens:
     - 🟢 `[ CLOUD ONLINE ]` (Connected to Contabo primary server)
     - 🟡 `[ LOCAL EDGE LAN ]` (Operating on local hospital Docker container; pending sync count badge)
@@ -251,3 +251,13 @@
 
 - **2026-10-28 19:10 IST**: Initialized dedicated Frontend Execution Plan `tasks/week1_frontend_tasks.md` separating frontend tasks and changelog from backend stream to prevent Git merge collisions during concurrent developer workflows. Seeded 38 comprehensive tasks across 7 phases covering Layout Shells, OPD chamber ergonomics, Bed Matrix, 14-form Inpatient Folio (`IPD Book 6 Days.pdf`), 10-Head Discharge Settlement, Chromeless TV displays, and Design System tokens.
 
+
+- **2026-10-29 16:03 IST**: Completed TASK-FE-1.1. Created `frontend/context/AuthContext.jsx` with JWT in-memory token storage, silent refresh every 14 minutes via HTTP-only cookie, `hasPermission()` against D13 RBAC matrix, `hasModule()` against enabled_modules array, and graceful offline fallback to localStorage role hint.
+- **2026-10-29 16:04 IST**: Completed TASK-FE-1.2 and TASK-FE-1.3. Confirmed pre-existing `Sidebar.jsx` and `Navbar.jsx` are functional; connected to AuthContext via `window.__bsAuth` bridge exposed by new `AuthBridge` component in `App.jsx`. Rewrote `frontend/services/api.js` with correct `/api/v1` base path and all D11 API endpoints mapped (auth, license, patients, opd, triage, consultations, cdss, beds, ipd, discharge, billing, display).
+- **2026-10-29 16:07 IST**: Completed TASK-FE-1.4. Implemented `frontend/pages/LicenseManagementPage.jsx` at route `/admin/licensing` with hospital tenant summary card, bed/doctor quota progress bars, module checklist (OPD/IPD/PHARMACY/PATHOLOGY/BILLING), drag-and-drop `.lic` file upload dropzone, manual license string paste textarea, and immediate feedback toast via `POST /api/v1/admin/license/upload` with zero page reload. Ed25519 asymmetric verification note included per ADR-010.
+- **2026-10-29 16:07 IST**: Completed TASK-FE-1.5. Implemented all 5 layout shells in `frontend/layouts/`: `AuthLayout` (centered login card on dark background), `ChamberLayout` (pinned patient vitals bar with real-time panic flags + compact OPD queue sidebar + autosave indicator), `WardLayout` (ward filter tabs + critical NEWS2 alert strip + bed stats topbar), `CounterLayout` (tab-based navigation without sidebar for high-speed reception/billing), `AdminLayout` (dark left sidebar with governance nav). Also created `TVDisplayLayout` (chromeless fullscreen 100vw×100vh). Exported from `frontend/layouts/index.js`.
+- **2026-10-29 16:07 IST**: Completed TASK-FE-1.6. Created `frontend/components/guards/ProtectedRoute.jsx` implementing the D15 §4 guard pipeline: AuthGuard (→ /login?returnUrl=) → RoleGuard (→ /{role}/dashboard) → ModuleGuard (→ /unauthorized?reason=MODULE_NOT_LICENSED) → PermissionGuard (→ /unauthorized?reason=PERMISSION_DENIED). Created `frontend/pages/UnauthorizedPage.jsx` with context-aware back link. Updated `App.jsx` with `AuthProvider` wrapping, `AuthBridge` component for `window.__bsAuth` exposure, and all new routes including `/ipd/beds`, `/nurse/triage/:visitId`, `/admin/licensing`, `/display/waiting-room`, `/unauthorized`.
+- **2026-10-29 16:08 IST**: Completed TASK-FE-2.3. Created `frontend/pages/NurseVitalsIntakePage.jsx` at `/nurse/triage/:visitId`. Implements numeric vital inputs (Systolic BP, Diastolic BP, Pulse, SpO₂, Temp °F, Resp Rate, Weight, Height), real-time BMI auto-calculation with WHO classification badge (Underweight/Normal/Overweight/Obese), deterministic NEWS2 auto-calculator (score 0–20, per RCP 2017 standard), and 6 CDSS vital panic flags with pulsing red alerts (Hypoxia SpO₂ < 92%, HTN Crisis systolic > 180, Hypotension systolic < 90, Hyperpyrexia temp > 104°F, Tachycardia pulse > 120, Bradycardia pulse < 50). Submits to `POST /api/v1/triage/vitals` with offline fallback. Phase FE-2 is 100% completed (FE-2.1, 2.2, 2.4, 2.5, 2.6 confirmed pre-existing).
+- **2026-10-29 16:10 IST**: Completed TASK-FE-3.1, TASK-FE-3.2, and TASK-FE-3.3. Created `frontend/pages/BedMatrixPage.jsx` at `/ipd/beds`. Interactive bed matrix with 20 mock beds (BED-101 to BED-120) across 4 wards (GWM, GWF, SPW, ICU), D18 §4.1 color state map, ward filter tabs, stats bar (Total/Occupied/Available/Cleaning/Occupancy%), CRITICAL NEWS2 pulse animation for score ≥ 7, "Mark Ready" button for CLEANING beds, and "Open Folio" button for occupied beds. Inline `AdmissionBookingModal` with Tab A (OPD Referral queue with 3 mock referrals) and Tab B (Direct Emergency Walk-In with UHID/diagnosis/payment fields). Concurrency 409 conflict handling renders descriptive modal rather than crashing. Fetches from `GET /api/v1/beds/matrix` with mock data fallback.
+- **2026-10-29 16:11 IST**: Completed TASK-FE-6.1 and TASK-FE-6.3. Created `frontend/pages/WaitingRoomDisplayPage.jsx` at `/display/waiting-room` — chromeless fullscreen TV display with 18vw giant token number, SSE from `/api/v1/display/queue/stream`, 10s polling fallback, Web Audio API chime on token change (no external audio file), zero PHI (token # + doctor + room + status only). Created `frontend/components/EdgeSyncBeacon.jsx` — fixed bottom-right persistent indicator (Cloud Online / Local Edge LAN / Offline), `navigator.onLine` native event precedence per D19, 30s `setInterval` health ping to `/api/v1/health`, expandable tooltip, auto-cleanup on unmount. `vite build` verified: ✅ built in 13.50s, zero errors.
+- **2026-10-29 16:25 IST**: Updated `tasks/week1_frontend_tasks.md` in-place to reflect session progress: marked 17/38 tasks complete ([x]), updated progress tracker table (FE-1 🟢, FE-2 🟢, FE-3 🟡, FE-6 🟡, FE-4/5/7 ⚪), updated header status line to reflect sprint state. Next pending: TASK-FE-3.4 (Forms 8 & 9 MLC/Consent UI), TASK-FE-3.5 (Printable Face Sheet), and Phase FE-4 (InpatientFolioPage 7-tab container).
