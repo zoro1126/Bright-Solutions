@@ -118,3 +118,4 @@ def test_digital_consultation_signoff_and_ipd_queue():
     list_ref_res = client.get("/api/v1/opd/referrals/ipd", headers=rec_headers)
     assert list_ref_res.status_code == 200
     assert any(q["uhid"] == uhid for q in list_ref_res.json()["data"])
+
