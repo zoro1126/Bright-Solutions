@@ -213,7 +213,7 @@ export default function NursePage({
         {/* Top Navigation Bar */}
         <Navbar
           currentRole={currentRole}
-          onRoleChange={onSwitchRole}
+          dept="OPD"
           onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
           onLogout={onLogout}
         />

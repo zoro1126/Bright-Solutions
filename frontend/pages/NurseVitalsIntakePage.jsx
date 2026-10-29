@@ -11,6 +11,7 @@
  */
 import React, { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 import {
   Activity, AlertTriangle, CheckCircle2, Save,
   ArrowLeft, Thermometer, Heart, Wind, Droplets,
@@ -124,9 +125,17 @@ function VitalInput({ label, value, onChange, unit, icon: Icon, min, max, step =
   );
 }
 
-export default function NurseVitalsIntakePage({ addToast }) {
+export default function NurseVitalsIntakePage({ addToast: addToastProp }) {
   const { visitId } = useParams();
   const navigate    = useNavigate();
+
+  // Self-contained toasts when no parent addToast provided
+  const [selfToasts, setSelfToasts] = useState([]);
+  const addToast = addToastProp || ((msg, type = 'info') => {
+    const id = Date.now();
+    setSelfToasts(prev => [...prev, { id, msg, type }]);
+    setTimeout(() => setSelfToasts(prev => prev.filter(t => t.id !== id)), 4000);
+  });
 
   const [vitals, setVitals] = useState({
     sysBP:  '', diaBP: '',
@@ -214,7 +223,35 @@ export default function NurseVitalsIntakePage({ addToast }) {
   }, [sysn, dian, pulsen, spo2n, tempFn, tempCn, rrn, wtn, htn, bmi, bmiCfg, news2score, news2cfg, visitId, anyPanic, addToast]);
 
   return (
-    <div style={{ maxWidth: 820, margin: '0 auto', padding: '20px 16px' }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+      {/* Navbar with OPD dept active */}
+      <Navbar
+        dept="OPD"
+        currentRole="nurse"
+        onLogout={() => {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('bright_role');
+          window.location.href = '/login';
+        }}
+      />
+
+      {/* Self-contained toasts */}
+      {selfToasts.length > 0 && (
+        <div style={{ position: 'fixed', top: 70, right: 16, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {selfToasts.map(t => (
+            <div key={t.id} style={{
+              padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+              background: t.type === 'error' ? '#FEE2E2' : t.type === 'success' ? '#D1FAE5' : '#E0F2FE',
+              color: t.type === 'error' ? '#B91C1C' : t.type === 'success' ? '#065F46' : '#0369A1',
+              border: `1px solid ${t.type === 'error' ? '#FCA5A5' : t.type === 'success' ? '#6EE7B7' : '#7DD3FC'}`,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxWidth: 360,
+            }}>{t.msg}</div>
+          ))}
+        </div>
+      )}
+
+      {/* Page content */}
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '24px 16px', width: '100%', boxSizing: 'border-box' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
         <button
@@ -384,6 +421,7 @@ export default function NurseVitalsIntakePage({ addToast }) {
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
         input[type=number] { -moz-appearance: textfield; }
       `}</style>
+      </div>
     </div>
   );
 }

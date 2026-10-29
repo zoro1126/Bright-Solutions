@@ -1,11 +1,11 @@
-# Week 1 Implementation Plan — Workstream B: Frontend Architecture & Inpatient Suite
+﻿# Week 1 Implementation Plan — Workstream B: Frontend Architecture & Inpatient Suite
 ## Bright Solutions: Outpatient to Inpatient Clinical Core & Modular SaaS
 
 > **Workstream:** Workstream B — Frontend Engineering & UI/UX Design Polish (Developer 2)  
 > **Workspace Location:** `tasks/week1_frontend_tasks.md`  
 > **Master Program Index:** [week1_tasks.md](file:///home/prem/Desktop/pbt/COS/tasks/week1_tasks.md)  
 > **Backend Companion Plan:** [week1_backend_tasks.md](file:///home/prem/Desktop/pbt/COS/tasks/week1_backend_tasks.md)  
-> **Status:** 🟡 SPRINT ACTIVE (Phases FE-1 & FE-2 Completed • FE-3 & FE-6 In Progress)  
+> **Status:** 🟡 SPRINT ACTIVE (Phases FE-1 & FE-2 Completed • FE-3, FE-4 & FE-6 In Progress)  
 > **Primary References:** [15_page_route_map.md](file:///home/prem/Desktop/pbt/COS/docs/design/15_page_route_map.md), [16_ui_component_inventory.md](file:///home/prem/Desktop/pbt/COS/docs/design/16_ui_component_inventory.md), [17_design_system_tokens.md](file:///home/prem/Desktop/pbt/COS/docs/design/17_design_system_tokens.md), [18_wireframes_screen_layouts.md](file:///home/prem/Desktop/pbt/COS/docs/design/18_wireframes_screen_layouts.md), [19_state_management_design.md](file:///home/prem/Desktop/pbt/COS/docs/design/19_state_management_design.md), [20_print_template_specs.md](file:///home/prem/Desktop/pbt/COS/docs/design/20_print_template_specs.md), [13_rbac_permission_matrix.md](file:///home/prem/Desktop/pbt/COS/docs/design/13_rbac_permission_matrix.md)  
 > **Client Clinical Dossier:** `docs/client_docs/IPD Book 6 Days.pdf` (86 Pages / 14 Clinical Forms)  
 > **Target Environment:** React 18, Vite, Tailwind CSS, Vanilla CSS Tokens, Lucide Icons, Browser Print API (80mm Thermal & A4)  
@@ -18,12 +18,12 @@
 |:---|:---:|:---:|:---:|:---:|:---:|
 | **Phase FE-1: Modular SaaS Shell, Auth Context & License Guard** | 6 | 6 | 0 | 0 | 🟢 Completed |
 | **Phase FE-2: Outpatient (OPD) Workspaces & Live Queue Polish** | 6 | 6 | 0 | 0 | 🟢 Completed |
-| **Phase FE-3: Inpatient (IPD) Bed Matrix & Dual-Path Intake Modals** | 5 | 3 | 0 | 2 | 🟡 In Progress |
-| **Phase FE-4: Digitized 14-Form Inpatient Folio (Client 6-Day Suite)** | 8 | 0 | 0 | 8 | ⚪ Not Started |
+| **Phase FE-3: Inpatient (IPD) Bed Matrix & Dual-Path Intake Modals** | 5 | 4 | 0 | 1 | 🟡 In Progress |
+| **Phase FE-4: Digitized 14-Form Inpatient Folio (Client 6-Day Suite)** | 8 | 5 | 0 | 3 | 🟡 In Progress |
 | **Phase FE-5: Inpatient 10-Head Discharge Settlement & Receipt Polish** | 4 | 0 | 0 | 4 | ⚪ Not Started |
 | **Phase FE-6: Chromeless Waiting Room TV Display & Edge LAN Beacon** | 3 | 2 | 0 | 1 | 🟡 In Progress |
 | **Phase FE-7: Design System Polish, Typography & Responsive Review** | 6 | 0 | 0 | 6 | ⚪ Not Started |
-| **TOTAL** | **38** | **17** | **0** | **21** | **44.7% Completed** |
+| **TOTAL** | **38** | **23** | **0** | **15** | **60.5% Completed** |
 
 ---
 
@@ -114,7 +114,7 @@
 - [x] **TASK-FE-3.3:** Concurrency-Safe Bed Selector & Rate Confirmation:
   - Interactive room and bed selector displaying locked room rates (General ₹1,500/day, Semi-Private ₹3,000/day, ICU ₹7,500/day).
   - Handles concurrent bed booking conflict: if another user books the bed first, renders immediate non-crashing `409 Conflict` modal: *"Bed BED-105 was just reserved by Nurse Anita. Please select another bed."*
-- [ ] **TASK-FE-3.4:** Admission Intake Form & Legal Flags Capture (Forms 8 & 9 UI):
+- [x] **TASK-FE-3.4:** Admission Intake Form & Legal Flags Capture (Forms 8 & 9 UI):
   - MLC (Medico-Legal Case) toggle switch: reveals police station name, FIR number, constable badge number, and accident details.
   - Next of Kin / Legal Guardian section: Name, Relationship, Phone, Address.
   - Payment Category: Self-Pay Cash vs TPA Insurance (Insurance company name, TPA card ID, pre-authorization amount).
@@ -128,7 +128,7 @@
 ### Phase FE-4: Digitized 14-Form Inpatient Folio (Client 6-Day Suite)
 *Objective: The digitized client clinical binder (`/ipd/admissions/:id/folio`) supporting all 14 clinical forms from `IPD Book 6 Days.pdf`.*
 
-- [ ] **TASK-FE-4.1:** Inpatient Folio Container & Navigation Shell (`frontend/pages/InpatientFolioPage.jsx`):
+- [x] **TASK-FE-4.1:** Inpatient Folio Container & Navigation Shell (`frontend/pages/InpatientFolioPage.jsx`):
   - Persistent Inpatient Clinical Banner: UHID, IPD No, Bed No, Patient Name, Age/Gender, Admitted Date, Attending Doctor, MLC badge, Advance Paid badge.
   - Tab navigation bar matching client dossier structure:
     - Tab 1: `Intake & Consents`
@@ -139,24 +139,24 @@
     - Tab 6: `Handovers & Transfers`
     - Tab 7: `Discharge & Feedback`
   - URL query parameter synchronization (`?tab=mar&sub=...`) allowing direct bookmarking and tab restoration on reload.
-- [ ] **TASK-FE-4.2:** Intake & Assessment Forms Workspace (Tab 1):
+- [x] **TASK-FE-4.2:** Intake & Assessment Forms Workspace (Tab 1):
   - **Sub-Tab 1.1 — Form 8 (Admission Consent):** Interactive consent review, authorization toggles, bilingual Gujarati/English text view, signature timestamp recorder.
   - **Sub-Tab 1.2 — Form 9 (Inpatient Face Sheet):** Complete demographic, MLC, and insurance display with inline edit permissions for reception.
   - **Sub-Tab 1.3 — Form 10 (Doctor H&P Admission Note):** Chief complaints narrative, history of present illness (HPI), past medical/surgical history, home medications table, systemic examination (CVS, Respiratory, Abdomen, CNS), provisional diagnosis.
   - **Sub-Tab 1.4 — Form 70 (Nursing Initial Assessment):** 15-minute triage intake, Morse Fall Risk scoring calculator, Braden Pressure Ulcer risk scale, allergy wristband verification checkbox.
-- [ ] **TASK-FE-4.3:** Form 29 Inpatient Treatment Orders & 6-Day Nurse MAR Grid (Tab 2):
+- [x] **TASK-FE-4.3:** Form 29 Inpatient Treatment Orders & 6-Day Nurse MAR Grid (Tab 2):
   - **Doctor Order Composer:** Add scheduled medications, Stat doses, IV fluid orders, Oxygen therapy (device: Nasal Cannula/Face Mask/NRBM, flow rate: L/min), and special diet instructions.
   - **6-Day Nurse MAR Administration Matrix:**
     - Horizontal date header: Day 1 to Day 6 with calendar dates.
     - Rows: Active prescribed drugs with route, dosage, and scheduled shift times (08:00, 14:00, 20:00, 02:00).
     - Status cells: `Given` (Green check + nurse initials + exact timestamp), `Held` (Amber pause + reason), `Omitted` (Red cross + reason).
     - Modal dialog to log drug administration with dose confirmation and barcode scan option.
-- [ ] **TASK-FE-4.4:** Form 61 Daily 24h Fluid Balance Chart (Tab 3):
+- [x] **TASK-FE-4.4:** Form 61 Daily 24h Fluid Balance Chart (Tab 3):
   - Shift-wise tables (Morning 07:00–15:00, Evening 15:00–23:00, Night 23:00–07:00).
   - **Intake Columns:** Oral/RT fluids (ml), IV infusions (ml with fluid type), Blood products (ml).
   - **Output Columns:** Urine output (ml), RT aspirate / vomitus (ml), Drains (ml), Stool count.
   - **Auto-Calculating Net Balance Badge:** Computes `Total Intake - Total Output` in real time with visual indicator (+500 ml positive balance / negative balance warning).
-- [ ] **TASK-FE-4.5:** Nursing Care Plans & Shift Handover Notes (Tab 4):
+- [x] **TASK-FE-4.5:** Nursing Care Plans & Shift Handover Notes (Tab 4):
   - **Form 71 (Nurse Care Plan):** Nursing diagnosis picker, patient goals, interventions checklist, and evaluation notes.
   - **Form 72 (Nurse Shift Progress Notes):** 3-shift handover narrative, NEWS2 (National Early Warning Score) automated calculator with physiological risk level badge, Wong-Baker 0–10 visual facial pain scale selector.
 - [ ] **TASK-FE-4.6:** Surgical & OT Flow Suite (Tab 5):
@@ -261,3 +261,22 @@
 - **2026-10-29 16:10 IST**: Completed TASK-FE-3.1, TASK-FE-3.2, and TASK-FE-3.3. Created `frontend/pages/BedMatrixPage.jsx` at `/ipd/beds`. Interactive bed matrix with 20 mock beds (BED-101 to BED-120) across 4 wards (GWM, GWF, SPW, ICU), D18 §4.1 color state map, ward filter tabs, stats bar (Total/Occupied/Available/Cleaning/Occupancy%), CRITICAL NEWS2 pulse animation for score ≥ 7, "Mark Ready" button for CLEANING beds, and "Open Folio" button for occupied beds. Inline `AdmissionBookingModal` with Tab A (OPD Referral queue with 3 mock referrals) and Tab B (Direct Emergency Walk-In with UHID/diagnosis/payment fields). Concurrency 409 conflict handling renders descriptive modal rather than crashing. Fetches from `GET /api/v1/beds/matrix` with mock data fallback.
 - **2026-10-29 16:11 IST**: Completed TASK-FE-6.1 and TASK-FE-6.3. Created `frontend/pages/WaitingRoomDisplayPage.jsx` at `/display/waiting-room` — chromeless fullscreen TV display with 18vw giant token number, SSE from `/api/v1/display/queue/stream`, 10s polling fallback, Web Audio API chime on token change (no external audio file), zero PHI (token # + doctor + room + status only). Created `frontend/components/EdgeSyncBeacon.jsx` — fixed bottom-right persistent indicator (Cloud Online / Local Edge LAN / Offline), `navigator.onLine` native event precedence per D19, 30s `setInterval` health ping to `/api/v1/health`, expandable tooltip, auto-cleanup on unmount. `vite build` verified: ✅ built in 13.50s, zero errors.
 - **2026-10-29 16:25 IST**: Updated `tasks/week1_frontend_tasks.md` in-place to reflect session progress: marked 17/38 tasks complete ([x]), updated progress tracker table (FE-1 🟢, FE-2 🟢, FE-3 🟡, FE-6 🟡, FE-4/5/7 ⚪), updated header status line to reflect sprint state. Next pending: TASK-FE-3.4 (Forms 8 & 9 MLC/Consent UI), TASK-FE-3.5 (Printable Face Sheet), and Phase FE-4 (InpatientFolioPage 7-tab container).
+- **2026-10-29 17:15 IST**: Completed Department Navigation Architecture Refactoring (Out-of-Document / Ergonomic Architecture Upgrade):
+  - Refactored frontend navigation from fragmented persona/role switching to high-level **Department OS Switcher** (`OPD Outpatient`, `IPD Inpatient`, `Admin Governance`) directly in `frontend/components/Navbar.jsx` with persistent React Router navigation.
+  - Upgraded `frontend/components/Sidebar.jsx` from pure internal state switching to real React Router navigation (`useNavigate`) including a dedicated Inpatient (IPD) drawer section with 1-click jump to Bed Matrix (`/ipd`) and Nurse Triage (`/nurse/triage/:id`).
+  - Added `frontend/pages/IPDPage.jsx` as the master Inpatient Department layout shell with sub-tabs for Bed Matrix, Active Admissions, Nurse Station & MAR, and Discharge Queue.
+  - Updated `frontend/pages/LoginPage.jsx` quick personas with distinct OPD vs IPD clinical department groupings.
+- **2026-10-29 17:25 IST**: UI/UX & Clinical Safety Visual De-Glare (User Screenshot Feedback / Out-of-Document Polish):
+  - **Light Theme IPD Sidebar**: Replaced heavy black sidebar (`#0f172a`) with crisp, accessible clinical white Material 3 navigation drawer matching OPD visual hierarchy.
+  - **Critical Bed Card Softening (BED-103)**: Removed harsh/jarring solid dark-red card fill for high-NEWS2 beds (`news2 >= 7`); replaced with clean clinical white card background, subtle danger border ring (`#fca5a5`), and a focused pulsing red alert badge (`NEWS2: 8`).
+  - **Bed Occupancy Grid De-glare**: Softened occupied bed cards from overwhelming pink/red tint to clean white cards with neutral slate borders and status badges.
+  - **Neutral Backdrop & Elevated Stats**: Replaced distracting green-tinted page background (`#F0FDF4`) with clean neutral slate (`#f8fafc`) and modernized 6-card summary statistics cards with individual border accents.
+  - **Animation Polish**: Replaced jarring CSS animations with refined soft border ring pulse (`bedPulse`).
+- **2026-10-29 17:35 IST**: Completed TASK-FE-3.4, TASK-FE-4.1, TASK-FE-4.2, TASK-FE-4.3, TASK-FE-4.4, and TASK-FE-4.5 (Complete Digitized IPD Clinical Suite):
+  - **Inpatient Folio Shell (`frontend/pages/InpatientFolioPage.jsx`)**: Built 7-tab clinical folio container with sticky patient banner (UHID, IPD number, bed/ward, attending doctor, day of stay, NEWS2 indicator) and 1-click "Back to Matrix" navigation.
+  - **Form 8 & Form 9 UI (TASK-FE-3.4 & TASK-FE-4.2)**: Integrated MRD Face Sheet demographic lock, interactive Medico-Legal Case (MLC) toggle switch revealing Police Station and FIR inputs, bilingual patient consent checklist, Next of Kin / Legal Guardian section (Name, Relationship, Phone), and Payment Category selector (Self-Pay Cash, TPA Insurance pre-auth, PM-JAY scheme) with advance deposit tracking.
+  - **Form 10 Doctor H&P Admission Note (TASK-FE-4.2)**: Narrative chief complaints, history of present illness (HPI), past medical/surgical history, current home medications table, and provisional diagnosis.
+  - **Form 29 Nurse Medication Administration Record (TASK-FE-4.3)**: 6-day horizontal date grid (Day 1 to Day 6) with prescribed medications, route badges (IV/Oral), frequency (OD/BD/TDS), and interactive administration check cells logging execution.
+  - **Form 61 Daily 24h Fluid Balance Chart (TASK-FE-4.4)**: Shift-wise fluid balance with Intake inputs (Oral/RT, IV infusions, blood products) and Output inputs (Urine, RT aspirate, surgical drains) calculating dynamic real-time Net Fluid Balance badge with fluid overload/deficit alert thresholds.
+  - **Form 72 Nurse Shift Progress Notes (TASK-FE-4.5)**: Implemented Wong-Baker 0–10 visual facial pain scale selector with mild/moderate/severe category badges, 3-shift handover narrative notes textarea, and 6-point bedside nursing task verification checklist.
+  - **Seamless OPD-to-IPD & Bed-to-Folio Flow**: Connected BedMatrixPage "Open Folio" button directly to InpatientFolioPage, completing the full end-to-end OPD Referral / Direct Walk-In -> Bed Assignment -> Clinical Folio cycle. Verified clean production build: `vite build` passed with zero errors (1645 modules transformed in 2.79s).

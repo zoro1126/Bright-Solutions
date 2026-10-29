@@ -1,60 +1,87 @@
+/**
+ * Navbar.jsx — Top App Bar
+ * Replaced role-switcher with OPD | IPD department tabs.
+ * Dept prop: 'OPD' | 'IPD' | 'ADMIN' — controls which tab is active.
+ */
 import React from 'react';
-import { Menu, Stethoscope, Users, Receipt, ShieldCheck, LogOut, Sparkles, Activity, Pill } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  Menu,
+  Stethoscope,
+  Bed,
+  ShieldCheck,
+  LogOut,
+  Sparkles,
+  Activity,
+  Sun,
+  Receipt,
+  Pill,
+} from 'lucide-react';
 
-export default function Navbar({ 
-  onToggleSidebar, 
-  currentRole = 'receptionist', 
-  onRoleChange, 
+export default function Navbar({
+  onToggleSidebar,
+  currentRole = 'receptionist',
+  dept,                    // 'OPD' | 'IPD' | 'ADMIN' — preferred over currentRole
+  onRoleChange,            // kept for legacy compatibility; ignored when dept is passed
   onLogout,
   onOpenReceptionistGuide,
   onOpenDoctorGuide,
-  onOpenAdminGuide 
+  onOpenAdminGuide,
 }) {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Role-based title colors for visual contrast
-  let brandRoleColor = 'var(--text-secondary)';
-  let brandPillBg = 'var(--bg-subtle)';
-  let brandPillColor = 'var(--text-secondary)';
-  let brandPillBorder = 'var(--border-default)';
+  // Derive active dept from prop or from URL path
+  const activeDept =
+    dept ||
+    (location.pathname.startsWith('/ipd') ? 'IPD' :
+     location.pathname.startsWith('/admin') ? 'ADMIN' : 'OPD');
 
-  if (currentRole === 'doctor') {
-    brandRoleColor = 'var(--doc-accent-color, #0077B6)';
-    brandPillBg = 'var(--doc-pill-bg, #CAF0F8)';
-    brandPillColor = 'var(--doc-pill-color, #0077B6)';
-    brandPillBorder = 'var(--doc-pill-border, #90E0EF)';
-  } else if (currentRole === 'admin') {
-    brandRoleColor = 'var(--adm-accent-color, #0077B6)';
-    brandPillBg = 'var(--adm-pill-bg, #CAF0F8)';
-    brandPillColor = 'var(--adm-pill-color, #0077B6)';
-    brandPillBorder = 'var(--adm-pill-border, #90E0EF)';
-  } else if (currentRole === 'cashier') {
-    brandRoleColor = 'var(--csh-accent-color, #d97706)';
-    brandPillBg = 'var(--csh-pill-bg, #fef3c7)';
-    brandPillColor = 'var(--csh-pill-color, #92400e)';
-    brandPillBorder = 'var(--csh-pill-border, #fde68a)';
-  } else if (currentRole === 'nurse') {
-    brandRoleColor = '#0d9488';
-    brandPillBg = '#ccfbf1';
-    brandPillColor = '#0f766e';
-    brandPillBorder = '#99f6e4';
-  } else if (currentRole === 'chemist') {
-    brandRoleColor = '#16a34a';
-    brandPillBg = '#dcfce7';
-    brandPillColor = '#15803d';
-    brandPillBorder = '#bbf7d0';
-  } else {
-    brandRoleColor = '#d97706';
-    brandPillBg = '#fef3c7';
-    brandPillColor = '#92400e';
-    brandPillBorder = '#fde68a';
-  }
+  const deptTabs = [
+    {
+      id: 'OPD',
+      label: 'OPD',
+      sublabel: 'Outpatient',
+      icon: Stethoscope,
+      route: '/receptionist/dashboard',
+      activeColor: '#0077b6',
+      activeBg: '#caf0f8',
+      activeBorder: '#90e0ef',
+    },
+    {
+      id: 'IPD',
+      label: 'IPD',
+      sublabel: 'Inpatient',
+      icon: Bed,
+      route: '/ipd',
+      activeColor: '#0d9488',
+      activeBg: '#ccfbf1',
+      activeBorder: '#99f6e4',
+    },
+    {
+      id: 'ADMIN',
+      label: 'Admin',
+      sublabel: 'Governance',
+      icon: ShieldCheck,
+      route: '/admin/dashboard',
+      activeColor: '#6d28d9',
+      activeBg: '#ede9fe',
+      activeBorder: '#c4b5fd',
+    },
+  ];
+
+  const activeDeptMeta = deptTabs.find((d) => d.id === activeDept) || deptTabs[0];
 
   return (
-    <header className="app-header m3-top-app-bar">
+    <header
+      className="app-header m3-top-app-bar"
+      style={{ zIndex: 50 }}
+    >
+      {/* Left: Hamburger + Brand */}
       <div className="brand-section">
         {onToggleSidebar && (
-          <button 
-            className="icon-btn m3-menu-btn" 
+          <button
+            className="icon-btn m3-menu-btn"
             onClick={onToggleSidebar}
             aria-label="Toggle navigation drawer"
           >
@@ -63,157 +90,132 @@ export default function Navbar({
         )}
         <div className="brand-info">
           <div className="brand-title">
-            <span style={{ fontSize: 18, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.02em', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <span>Bright</span>
-            </span>
-            <span style={{ color: 'var(--border-default)', margin: '0 2px' }}>•</span>
-            <span className="brand-title-text" style={{ fontSize: 10.5, fontWeight: 700, color: brandRoleColor }}>
-              {currentRole === 'doctor' 
-                ? 'OPD (Consultation) • Clinical Workspace' 
-                : currentRole === 'nurse'
-                ? 'Inpatient & Ward Station OS'
-                : currentRole === 'chemist'
-                ? 'Dispensary & Pharmacotherapy OS'
-                : currentRole === 'cashier'
-                ? 'Cashier & Settlement Desk'
-                : currentRole === 'admin'
-                ? 'Executive Governance & Audit'
-                : 'OPD (Reception)'}
-            </span>
-            <span 
-              className="brand-counter-pill" 
-              style={{ 
-                fontSize: 8.5, 
-                fontWeight: 800, 
-                background: brandPillBg, 
-                color: brandPillColor, 
-                border: `1px solid ${brandPillBorder}`, 
-                padding: '1.5px 7px',
-                borderRadius: 9999
+            <span
+              style={{
+                fontSize: 18,
+                fontWeight: 900,
+                color: 'var(--text-primary)',
+                letterSpacing: '-0.02em',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
               }}
             >
-              {currentRole === 'doctor' 
-                ? 'Cabin 01 • Dr. Kiran Patel' 
-                : currentRole === 'nurse'
-                ? 'Sr. Mini Joseph, RN'
-                : currentRole === 'chemist'
-                ? 'Central Dispensary 01'
-                : currentRole === 'cashier'
-                ? 'Counter B-02'
-                : currentRole === 'admin'
-                ? 'Admin Desk'
-                : 'Counter 01'}
+              <Sun size={16} color="#f59e0b" strokeWidth={2.5} />
+              Bright
+            </span>
+            <span style={{ color: 'var(--border-default)', margin: '0 4px' }}>•</span>
+            <span
+              className="brand-title-text"
+              style={{
+                fontSize: 10.5,
+                fontWeight: 700,
+                color: activeDeptMeta.activeColor,
+              }}
+            >
+              {activeDept === 'IPD'
+                ? 'Inpatient & Ward Station OS'
+                : activeDept === 'ADMIN'
+                ? 'Executive Governance & Audit'
+                : 'Outpatient Clinical OS'}
             </span>
           </div>
         </div>
       </div>
 
+      {/* Center: OPD / IPD / Admin Department Tabs */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          background: '#f1f5f9',
+          border: '1px solid #e2e8f0',
+          borderRadius: 12,
+          padding: '3px 4px',
+        }}
+      >
+        {deptTabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeDept === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => navigate(tab.route)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 14px',
+                borderRadius: 9,
+                border: isActive ? `1px solid ${tab.activeBorder}` : '1px solid transparent',
+                background: isActive ? tab.activeBg : 'transparent',
+                color: isActive ? tab.activeColor : '#64748b',
+                fontWeight: isActive ? 800 : 600,
+                fontSize: 12,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = '#e2e8f0';
+                  e.currentTarget.style.color = '#334155';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#64748b';
+                }
+              }}
+            >
+              <Icon size={13} strokeWidth={isActive ? 2.5 : 2} />
+              <span>{tab.label}</span>
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 600,
+                  color: isActive ? tab.activeColor : '#94a3b8',
+                  opacity: 0.8,
+                }}
+              >
+                {tab.sublabel}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Right: Guide + Logout */}
       <div className="header-right">
-        {/* Role Switcher Segmented Control with High Contrast Identities */}
-        {onRoleChange && (
-          <div className="m3-role-switcher" style={{ border: '1px solid var(--border-default)' }}>
-            <button
-              className={`m3-role-btn ${currentRole === 'receptionist' ? 'active' : ''}`}
-              onClick={() => onRoleChange('receptionist')}
-              title="OPD (Reception) Desk"
-              data-tour="role-receptionist-btn"
-              style={currentRole === 'receptionist' ? { backgroundColor: '#fef3c7', color: '#92400e', fontWeight: 800 } : undefined}
-            >
-              <Users size={11} />
-              <span>OPD (Reception)</span>
-            </button>
-            <button
-              className={`m3-role-btn ${currentRole === 'doctor' ? 'active' : ''}`}
-              onClick={() => onRoleChange('doctor')}
-              title="OPD (Consultation) Desk"
-              data-tour="role-doctor-btn"
-              style={currentRole === 'doctor' ? { backgroundColor: 'var(--doc-pill-bg, #CAF0F8)', color: 'var(--doc-pill-color, #0077B6)', border: '1px solid var(--doc-pill-border, #90E0EF)', fontWeight: 800 } : undefined}
-            >
-              <Stethoscope size={11} />
-              <span>OPD (Consultation)</span>
-            </button>
-            <button
-              className={`m3-role-btn ${currentRole === 'nurse' ? 'active' : ''}`}
-              onClick={() => onRoleChange('nurse')}
-              title="Inpatient & Ward Nurse Station"
-              data-tour="role-nurse-btn"
-              style={currentRole === 'nurse' ? { backgroundColor: '#ccfbf1', color: '#0f766e', border: '1px solid #99f6e4', fontWeight: 800 } : undefined}
-            >
-              <Activity size={11} />
-              <span>Nurse</span>
-            </button>
-            <button
-              className={`m3-role-btn ${currentRole === 'chemist' ? 'active' : ''}`}
-              onClick={() => onRoleChange('chemist')}
-              title="Dispensary & Pharmacy"
-              data-tour="role-chemist-btn"
-              style={currentRole === 'chemist' ? { backgroundColor: '#dcfce7', color: '#15803d', border: '1px solid #bbf7d0', fontWeight: 800 } : undefined}
-            >
-              <Pill size={11} />
-              <span>Chemist</span>
-            </button>
-            <button
-              className={`m3-role-btn ${currentRole === 'cashier' ? 'active' : ''}`}
-              onClick={() => onRoleChange('cashier')}
-              title="Cashier & Billing"
-              data-tour="role-cashier-btn"
-              style={currentRole === 'cashier' ? { backgroundColor: 'var(--csh-pill-bg, #fef3c7)', color: 'var(--csh-pill-color, #92400e)', border: '1px solid var(--csh-pill-border, #fde68a)', fontWeight: 800 } : undefined}
-            >
-              <Receipt size={11} />
-              <span>Cashier</span>
-            </button>
-            <button
-              className={`m3-role-btn ${currentRole === 'admin' ? 'active' : ''}`}
-              onClick={() => onRoleChange('admin')}
-              title="Executive Admin"
-              style={currentRole === 'admin' ? { backgroundColor: 'var(--adm-pill-bg, #CAF0F8)', color: 'var(--adm-pill-color, #0077B6)', border: '1px solid var(--adm-pill-border, #90E0EF)', fontWeight: 800 } : undefined}
-            >
-              <ShieldCheck size={11} />
-              <span>Admin</span>
-            </button>
-          </div>
-        )}
-
-
-        {/* Interactive Role Quick Guide Button */}
-        {((currentRole === 'receptionist' && onOpenReceptionistGuide) || 
+        {((currentRole === 'receptionist' && onOpenReceptionistGuide) ||
           (currentRole === 'doctor' && onOpenDoctorGuide) ||
           (currentRole === 'admin' && onOpenAdminGuide)) && (
           <button
             className="m3-btn m3-btn-sm anim-hover-lift"
             onClick={() => {
-              if (currentRole === 'receptionist' && onOpenReceptionistGuide) {
-                onOpenReceptionistGuide();
-              } else if (currentRole === 'doctor' && onOpenDoctorGuide) {
-                onOpenDoctorGuide();
-              } else if (currentRole === 'admin' && onOpenAdminGuide) {
-                onOpenAdminGuide();
-              }
+              if (currentRole === 'receptionist' && onOpenReceptionistGuide) onOpenReceptionistGuide();
+              else if (currentRole === 'doctor' && onOpenDoctorGuide) onOpenDoctorGuide();
+              else if (currentRole === 'admin' && onOpenAdminGuide) onOpenAdminGuide();
             }}
-            title={
-              currentRole === 'doctor'
-                ? "Open OPD (Consultation) Clinical Flow Guide"
-                : currentRole === 'admin'
-                ? "Open Executive Admin Guide"
-                : "Open Receptionist Interactive Quick Guide"
-            }
-            style={{ 
-              height: 26, 
-              fontSize: 9.5, 
-              padding: '0 10px', 
+            style={{
+              height: 26,
+              fontSize: 9.5,
+              padding: '0 10px',
               borderRadius: 9999,
-              backgroundColor: currentRole === 'doctor' ? 'var(--doc-pill-bg, #CAF0F8)' : currentRole === 'admin' ? '#dbeafe' : '#fef3c7',
-              color: currentRole === 'doctor' ? 'var(--doc-pill-color, #0077B6)' : currentRole === 'admin' ? '#1e40af' : '#92400e',
-              border: currentRole === 'doctor' ? '1px solid var(--doc-pill-border, #90E0EF)' : currentRole === 'admin' ? '1px solid #93c5fd' : '1px solid #fde68a',
+              backgroundColor: '#fef3c7',
+              color: '#92400e',
+              border: '1px solid #fde68a',
               fontWeight: 800,
               display: 'inline-flex',
               alignItems: 'center',
               gap: 5,
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
           >
-            <Sparkles size={11} className="m3-animate-pulse" color={currentRole === 'doctor' ? '#0077B6' : currentRole === 'admin' ? '#1e40af' : '#d97706'} />
-            <span>{currentRole === 'doctor' ? 'Consultation Guide ⚡' : currentRole === 'admin' ? 'Admin Guide ⚡' : 'Reception Guide ⚡'}</span>
+            <Sparkles size={11} color="#d97706" />
+            <span>Quick Guide ⚡</span>
           </button>
         )}
 
@@ -221,15 +223,15 @@ export default function Navbar({
           <button
             className="icon-btn anim-hover-lift"
             onClick={onLogout}
-            title="Sign Out / Switch Staff Account"
+            title="Sign Out"
             aria-label="Sign Out"
-            style={{ 
+            style={{
               color: 'var(--destructive, #dc2626)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              marginLeft: 4
+              marginLeft: 4,
             }}
           >
             <LogOut size={14} />
@@ -239,4 +241,3 @@ export default function Navbar({
     </header>
   );
 }
-

@@ -76,17 +76,18 @@ const MOCK_REFERRALS = [
   { id: 'vis-003', uhid: 'BS-001017', name: 'Harish Chandra', age: 67, gender: 'M', diagnosis: 'COPD Exacerbation', doctor: 'Dr. Gupta', urgency: 'URGENT' },
 ];
 
-// ─── Bed Status Config (D18 §4.1 color map) ───────────────────────────────────
+// ─── Bed Status Config (D18 §4.1 — softened palette) ─────────────────────────
 function bedStyle(status, news2) {
   if (status === 'OCCUPIED' && news2 >= 7) {
-    return { bg: '#7F1D1D', border: '#DC2626', badgeBg: '#DC2626', badgeColor: '#fff', label: 'CRITICAL', pulse: true };
+    // CRITICAL: white card, strong red border + pulsing badge only (no dark bg)
+    return { bg: '#fff5f5', border: '#fca5a5', badgeBg: '#dc2626', badgeColor: '#fff', label: 'CRITICAL', pulse: true, criticalRing: true };
   }
   switch (status) {
-    case 'AVAILABLE':    return { bg: '#F0FDF4', border: '#86EFAC', badgeBg: '#22C55E', badgeColor: '#fff', label: 'AVAILABLE', pulse: false };
-    case 'OCCUPIED':     return { bg: '#FFF1F2', border: '#FDA4AF', badgeBg: '#EF4444', badgeColor: '#fff', label: 'OCCUPIED',  pulse: false };
-    case 'CLEANING':     return { bg: '#FEFCE8', border: '#FDE047', badgeBg: '#F59E0B', badgeColor: '#fff', label: 'CLEANING',  pulse: false };
-    case 'MAINTENANCE':  return { bg: '#F1F5F9', border: '#CBD5E1', badgeBg: '#94A3B8', badgeColor: '#fff', label: 'MAINT.',    pulse: false };
-    default:             return { bg: '#F8FAFC', border: '#E2E8F0', badgeBg: '#CBD5E1', badgeColor: '#fff', label: status,      pulse: false };
+    case 'AVAILABLE':   return { bg: '#f0fdf4', border: '#86efac', badgeBg: '#16a34a', badgeColor: '#fff', label: 'AVAILABLE',  pulse: false, criticalRing: false };
+    case 'OCCUPIED':    return { bg: '#ffffff', border: '#e2e8f0', badgeBg: '#64748b', badgeColor: '#fff', label: 'OCCUPIED',   pulse: false, criticalRing: false };
+    case 'CLEANING':    return { bg: '#fffbeb', border: '#fde68a', badgeBg: '#f59e0b', badgeColor: '#fff', label: 'CLEANING',   pulse: false, criticalRing: false };
+    case 'MAINTENANCE': return { bg: '#f8fafc', border: '#e2e8f0', badgeBg: '#94a3b8', badgeColor: '#fff', label: 'MAINT.',     pulse: false, criticalRing: false };
+    default:            return { bg: '#f8fafc', border: '#e2e8f0', badgeBg: '#cbd5e1', badgeColor: '#fff', label: status,       pulse: false, criticalRing: false };
   }
 }
 
@@ -96,25 +97,40 @@ function BedCard({ bed, onBook, onMarkReady, onOpenFolio }) {
   const isCritical = bed.patient?.news2 >= 7;
 
   return (
-    <div style={{
-      background: cfg.bg, borderRadius: 12,
-      border: `1.5px solid ${cfg.border}`,
-      padding: '12px 14px',
-      boxShadow: isCritical ? '0 0 12px rgba(220,38,38,0.4)' : '0 1px 4px rgba(0,0,0,0.06)',
-      animation: cfg.pulse ? 'bedPulse 1.8s ease-in-out infinite' : 'none',
-      cursor: bed.status === 'AVAILABLE' ? 'pointer' : 'default',
-      position: 'relative', minHeight: 130,
-      transition: 'transform 0.1s',
-    }}
-    onClick={() => bed.status === 'AVAILABLE' && onBook?.(bed)}
+    <div
+      style={{
+        background: cfg.bg,
+        borderRadius: 12,
+        border: `1.5px solid ${cfg.border}`,
+        padding: '12px 14px',
+        boxShadow: isCritical
+          ? '0 0 0 2px #fca5a5, 0 2px 8px rgba(220,38,38,0.12)'
+          : '0 1px 4px rgba(0,0,0,0.05)',
+        animation: cfg.pulse ? 'bedPulse 2s ease-in-out infinite' : 'none',
+        cursor: bed.status === 'AVAILABLE' ? 'pointer' : 'default',
+        position: 'relative',
+        minHeight: 130,
+        transition: 'transform 0.1s, box-shadow 0.1s',
+      }}
+      onClick={() => bed.status === 'AVAILABLE' && onBook?.(bed)}
+      onMouseEnter={(e) => {
+        if (bed.status === 'AVAILABLE') {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 4px 14px rgba(16,163,74,0.2)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = '';
+        e.currentTarget.style.boxShadow = isCritical ? '0 0 0 2px #fca5a5, 0 2px 8px rgba(220,38,38,0.12)' : '0 1px 4px rgba(0,0,0,0.05)';
+      }}
     >
       {/* Bed number + status badge */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-        <div style={{ fontSize: 14, fontWeight: 900, color: '#0F172A', fontFamily: 'monospace' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 7 }}>
+        <div style={{ fontSize: 13, fontWeight: 900, color: '#0f172a', fontFamily: 'monospace', letterSpacing: '-0.02em' }}>
           {bed.id}
         </div>
         <span style={{
-          padding: '2px 7px', borderRadius: 9999,
+          padding: '2px 8px', borderRadius: 9999,
           background: cfg.badgeBg, color: cfg.badgeColor,
           fontSize: 9, fontWeight: 800, letterSpacing: '0.05em',
         }}>
@@ -123,55 +139,65 @@ function BedCard({ bed, onBook, onMarkReady, onOpenFolio }) {
       </div>
 
       {/* Ward / Room */}
-      <div style={{ fontSize: 9.5, color: '#94A3B8', fontWeight: 600, marginBottom: 6 }}>
+      <div style={{ fontSize: 9.5, color: '#94a3b8', fontWeight: 600, marginBottom: 6 }}>
         {bed.wardName} • {bed.room}
       </div>
 
-      {/* Content by status */}
+      {/* OCCUPIED content */}
       {bed.status === 'OCCUPIED' && bed.patient && (
         <div>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: '#0F172A', lineHeight: 1.3 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', lineHeight: 1.3 }}>
             {bed.patient.name}
           </div>
-          <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>
+          <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
             {bed.patient.uhid} • Day {bed.patient.admDay}
           </div>
-          <div style={{ fontSize: 10, color: '#64748B' }}>{bed.patient.doc}</div>
+          <div style={{ fontSize: 10, color: '#64748b' }}>{bed.patient.doc}</div>
+
+          {/* CRITICAL pulse badge — subtle, not full-card red */}
           {isCritical && (
-            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <AlertTriangle size={11} color="#DC2626" />
-              <span style={{ fontSize: 10, fontWeight: 800, color: '#DC2626' }}>NEWS2: {bed.patient.news2}</span>
+            <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 6, background: '#fee2e2', width: 'fit-content' }}>
+              <AlertTriangle size={10} color="#dc2626" />
+              <span style={{ fontSize: 9.5, fontWeight: 800, color: '#dc2626' }}>NEWS2: {bed.patient.news2}</span>
             </div>
           )}
+
           <button
             onClick={(e) => { e.stopPropagation(); onOpenFolio?.(bed); }}
             style={{
               marginTop: 8, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-              padding: '4px', borderRadius: 6, background: 'rgba(239,68,68,0.08)',
-              border: '1px solid rgba(239,68,68,0.2)', color: '#DC2626',
-              fontSize: 10, fontWeight: 700, cursor: 'pointer',
+              padding: '5px', borderRadius: 7,
+              background: isCritical ? '#fee2e2' : '#f8fafc',
+              border: `1px solid ${isCritical ? '#fca5a5' : '#e2e8f0'}`,
+              color: isCritical ? '#dc2626' : '#475569',
+              fontSize: 10.5, fontWeight: 700, cursor: 'pointer',
+              transition: 'all 0.15s',
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = isCritical ? '#fca5a5' : '#e2e8f0'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = isCritical ? '#fee2e2' : '#f8fafc'; }}
           >
             Open Folio <ChevronRight size={11} />
           </button>
         </div>
       )}
 
+      {/* AVAILABLE */}
       {bed.status === 'AVAILABLE' && (
         <div style={{ marginTop: 4 }}>
-          <div style={{ fontSize: 10.5, color: '#10B981', fontWeight: 700 }}>₹{bed.dailyRate.toLocaleString('en-IN')}/day</div>
-          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 4, color: '#16A34A', fontSize: 10.5, fontWeight: 700 }}>
-            <Plus size={12} /> Click to book
+          <div style={{ fontSize: 10.5, color: '#16a34a', fontWeight: 700 }}>₹{bed.dailyRate.toLocaleString('en-IN')}/day</div>
+          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 4, color: '#16a34a', fontSize: 10.5, fontWeight: 700 }}>
+            <Plus size={12} /> Tap to book
           </div>
         </div>
       )}
 
+      {/* CLEANING */}
       {bed.status === 'CLEANING' && (
         <button
           onClick={(e) => { e.stopPropagation(); onMarkReady?.(bed); }}
           style={{
             marginTop: 8, width: '100%', padding: '5px 10px', borderRadius: 7,
-            background: '#F59E0B', color: '#fff', border: 'none',
+            background: '#f59e0b', color: '#fff', border: 'none',
             fontSize: 10.5, fontWeight: 800, cursor: 'pointer',
           }}
         >
@@ -388,7 +414,14 @@ const WARD_TABS = [
   { id: 'ICU', label: 'ICU' },
 ];
 
-export default function BedMatrixPage({ addToast }) {
+export default function BedMatrixPage({ addToast: addToastProp, embedded = false, onOpenFolioExternal }) {
+  // Self-contained toast state when used embedded (no external addToast)
+  const [selfToasts, setSelfToasts] = React.useState([]);
+  const addToast = addToastProp || ((msg, type = 'info') => {
+    const id = Date.now();
+    setSelfToasts(prev => [...prev, { id, msg, type }]);
+    setTimeout(() => setSelfToasts(prev => prev.filter(t => t.id !== id)), 3500);
+  });
   const [beds, setBeds]             = useState([]);
   const [loading, setLoading]       = useState(true);
   const [wardFilter, setWardFilter] = useState('all');
@@ -432,7 +465,21 @@ export default function BedMatrixPage({ addToast }) {
   const occupancyPct = stats.total ? Math.round((stats.occupied / stats.total) * 100) : 0;
 
   return (
-    <div style={{ padding: '20px 20px', background: '#F0FDF4', minHeight: '100vh' }}>
+    <div style={{ padding: '20px 20px', background: '#f8fafc', minHeight: embedded ? 'unset' : '100vh', position: 'relative' }}>
+      {/* Self-contained toast (used when embedded) */}
+      {selfToasts.length > 0 && (
+        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {selfToasts.map(t => (
+            <div key={t.id} style={{
+              padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+              background: t.type === 'error' ? '#FEE2E2' : t.type === 'success' ? '#D1FAE5' : '#E0F2FE',
+              color: t.type === 'error' ? '#B91C1C' : t.type === 'success' ? '#065F46' : '#0369A1',
+              border: `1px solid ${t.type === 'error' ? '#FCA5A5' : t.type === 'success' ? '#6EE7B7' : '#7DD3FC'}`,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxWidth: 340,
+            }}>{t.msg}</div>
+          ))}
+        </div>
+      )}
       {/* Page header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
@@ -463,16 +510,16 @@ export default function BedMatrixPage({ addToast }) {
       {/* Stats bar */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 20 }}>
         {[
-          { label: 'Total Beds',   val: stats.total,       color: '#334155', bg: '#F1F5F9' },
-          { label: 'Occupied',     val: stats.occupied,    color: '#DC2626', bg: '#FFF1F2' },
-          { label: 'Available',    val: stats.available,   color: '#16A34A', bg: '#F0FDF4' },
-          { label: 'Cleaning',     val: stats.cleaning,    color: '#D97706', bg: '#FEFCE8' },
-          { label: 'Maintenance',  val: stats.maintenance, color: '#64748B', bg: '#F1F5F9' },
-          { label: 'Occupancy',    val: `${occupancyPct}%`, color: occupancyPct >= 85 ? '#DC2626' : '#0D9488', bg: '#F0FDF4' },
-        ].map(({ label, val, color, bg }) => (
-          <div key={label} style={{ background: bg, borderRadius: 10, padding: '12px 14px', textAlign: 'center', border: '1px solid #E2E8F0' }}>
+          { label: 'Total Beds',  val: stats.total,        color: '#334155', bg: '#f1f5f9', border: '#e2e8f0' },
+          { label: 'Occupied',    val: stats.occupied,     color: '#0f172a', bg: '#ffffff',  border: '#e2e8f0' },
+          { label: 'Available',   val: stats.available,    color: '#16a34a', bg: '#f0fdf4',  border: '#86efac' },
+          { label: 'Cleaning',    val: stats.cleaning,     color: '#d97706', bg: '#fffbeb',  border: '#fde68a' },
+          { label: 'Maintenance', val: stats.maintenance,  color: '#64748b', bg: '#f8fafc',  border: '#e2e8f0' },
+          { label: 'Occupancy',   val: `${occupancyPct}%`, color: occupancyPct >= 85 ? '#dc2626' : '#0d9488', bg: '#ffffff', border: '#e2e8f0' },
+        ].map(({ label, val, color, bg, border }) => (
+          <div key={label} style={{ background: bg, borderRadius: 12, padding: '12px 14px', textAlign: 'center', border: `1px solid ${border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <div style={{ fontSize: 24, fontWeight: 900, color, fontFamily: 'monospace' }}>{val}</div>
-            <div style={{ fontSize: 10, color: '#94A3B8', fontWeight: 700, marginTop: 2 }}>{label}</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 700, marginTop: 2 }}>{label}</div>
           </div>
         ))}
       </div>
@@ -518,7 +565,13 @@ export default function BedMatrixPage({ addToast }) {
               bed={bed}
               onBook={(b) => setBookingBed(b)}
               onMarkReady={handleMarkReady}
-              onOpenFolio={(b) => addToast?.(`Opening folio for ${b.patient?.name}…`, 'info')}
+              onOpenFolio={(b) => {
+                if (onOpenFolioExternal) {
+                  onOpenFolioExternal({ bed: b, patient: b.patient });
+                } else {
+                  addToast?.(`Opening folio for ${b.patient?.name}…`, 'info');
+                }
+              }}
             />
           ))}
           {filtered.length === 0 && (
@@ -540,8 +593,11 @@ export default function BedMatrixPage({ addToast }) {
       )}
 
       <style>{`
-        @keyframes bedPulse { 0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(220,38,38,0.4); } 50% { opacity: 0.8; box-shadow: 0 0 22px rgba(220,38,38,0.7); } }
-        @keyframes prSpin   { to { transform: rotate(360deg); } }
+        @keyframes bedPulse {
+          0%, 100% { box-shadow: 0 0 0 2px #fca5a5, 0 2px 8px rgba(220,38,38,0.08); }
+          50%       { box-shadow: 0 0 0 4px #fca5a5, 0 4px 16px rgba(220,38,38,0.18); }
+        }
+        @keyframes prSpin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );

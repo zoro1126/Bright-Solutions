@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { usePatients } from '../context/PatientContext';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
@@ -165,7 +165,7 @@ export default function ChemistPage({
         {/* Top App Bar with Chemist / Dispensary Branding */}
         <Navbar 
           currentRole="chemist"
-          onRoleChange={onSwitchRole}
+          
           onLogout={onLogout}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         />

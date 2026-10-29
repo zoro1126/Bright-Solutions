@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+﻿import React, { useState, useMemo, useEffect } from 'react';
 import { usePatients } from '../context/PatientContext';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
@@ -487,7 +487,7 @@ export default function CashierPage({ currentRole = 'cashier', onSwitchRole, act
         <Navbar 
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           currentRole={currentRole}
-          onRoleChange={onSwitchRole}
+          
           onLogout={onLogout}
         />
 

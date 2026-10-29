@@ -435,7 +435,7 @@ export default function DoctorPage({
         <Navbar 
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           currentRole={currentRole}
-          onRoleChange={onSwitchRole}
+          dept="OPD"
           onLogout={onLogout}
           onOpenDoctorGuide={() => setIsGuideOpen(true)}
         />

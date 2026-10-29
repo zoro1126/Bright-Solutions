@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import AdminFlowGuideModal from '../components/AdminFlowGuideModal';
@@ -124,7 +124,7 @@ export default function AdminPage({ currentRole = 'admin', onSwitchRole, activeS
         <Navbar 
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           currentRole={currentRole}
-          onRoleChange={onSwitchRole}
+          
           onLogout={onLogout}
           onOpenAdminGuide={() => setIsGuideOpen(true)}
         />

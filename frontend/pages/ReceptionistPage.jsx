@@ -115,7 +115,7 @@ export default function ReceptionistPage({ currentRole = 'receptionist', onSwitc
         <Navbar 
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           currentRole={currentRole}
-          onRoleChange={onSwitchRole}
+          dept="OPD"
           onLogout={onLogout}
           onOpenReceptionistGuide={() => setIsGuideOpen(true)}
         />

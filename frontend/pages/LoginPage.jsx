@@ -24,9 +24,9 @@ export const QUICK_PERSONAS = [
   {
     role: 'receptionist',
     username: 'receptionist',
-    displayName: 'Priya Raghavan',
-    title: 'OPD (Reception)',
-    dept: 'Counter 01',
+    displayName: 'Front Desk',
+    title: 'OPD Reception',
+    dept: 'OPD',
     icon: Users,
     color: '#0284c7',
     bg: '#eff6ff'
@@ -34,9 +34,9 @@ export const QUICK_PERSONAS = [
   {
     role: 'doctor',
     username: 'dr_kiran',
-    displayName: 'Dr. Kiran Patel',
-    title: 'OPD (Consultation)',
-    dept: 'Cabin 01',
+    displayName: 'Dr. Kiran',
+    title: 'OPD Consultation',
+    dept: 'OPD',
     icon: Stethoscope,
     color: '#0077b6',
     bg: '#caf0f8'
@@ -44,9 +44,9 @@ export const QUICK_PERSONAS = [
   {
     role: 'nurse',
     username: 'nurse_mini',
-    displayName: 'Sr. Mini Joseph',
-    title: 'Charge Nurse',
-    dept: 'Ward Station 02',
+    displayName: 'IPD Nurse',
+    title: 'Ward Station',
+    dept: 'IPD',
     icon: Activity,
     color: '#0d9488',
     bg: '#ccfbf1'
@@ -54,9 +54,9 @@ export const QUICK_PERSONAS = [
   {
     role: 'chemist',
     username: 'chemist_karthik',
-    displayName: 'Karthik Ramamurthy',
-    title: 'Chief Pharmacist',
-    dept: 'Dispensary 01',
+    displayName: 'Pharmacy',
+    title: 'Dispensary',
+    dept: 'OPD',
     icon: Pill,
     color: '#16a34a',
     bg: '#dcfce7'
@@ -64,9 +64,9 @@ export const QUICK_PERSONAS = [
   {
     role: 'cashier',
     username: 'cashier',
-    displayName: 'Ramesh V.',
-    title: 'Cashier',
-    dept: 'Counter B-02',
+    displayName: 'Cashier',
+    title: 'Billing Desk',
+    dept: 'OPD',
     icon: Receipt,
     color: '#d97706',
     bg: '#fef3c7'
@@ -74,9 +74,9 @@ export const QUICK_PERSONAS = [
   {
     role: 'admin',
     username: 'admin',
-    displayName: 'Dr. Alok Mehta',
+    displayName: 'Admin',
     title: 'Superintendent',
-    dept: 'Directorate',
+    dept: 'ADMIN',
     icon: ShieldCheck,
     color: '#7c3aed',
     bg: '#f3e8ff'
@@ -149,7 +149,9 @@ export default function LoginPage({ onLoginSuccess }) {
       localStorage.setItem('bright_role', userObj.role || inferredRole);
 
       if (onLoginSuccess) {
-        onLoginSuccess(userObj.role || inferredRole, userObj);
+        // Route nurse directly to IPD dept
+        const finalRole = userObj.role || inferredRole;
+        onLoginSuccess(finalRole, userObj);
       }
     } catch (err) {
       setErrorMessage(err.message || 'Authentication failed. Please verify credentials.');
@@ -591,13 +593,17 @@ export default function LoginPage({ onLoginSuccess }) {
             }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: 5 }}>
                 <Sparkles size={12} color="#f59e0b" />
-                <span>1-Click Quick Demo Login</span>
+                <span>1-Click Demo Login</span>
               </span>
-              <span style={{ fontSize: 10, color: '#94a3b8' }}>Instant switch</span>
+              <span style={{ fontSize: 10, color: '#94a3b8' }}>Instant access</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-              {QUICK_PERSONAS.map((p, idx) => {
+            {/* OPD group */}
+            <div style={{ fontSize: 9.5, fontWeight: 800, color: '#0077b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+              🏥 OPD Department
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7, marginBottom: 12 }}>
+              {QUICK_PERSONAS.filter(p => p.dept === 'OPD').map((p, idx) => {
                 const Icon = p.icon;
                 return (
                   <button
@@ -605,18 +611,12 @@ export default function LoginPage({ onLoginSuccess }) {
                     type="button"
                     onClick={() => handleQuickPersona(p)}
                     disabled={isLoading}
-                    title={`Instant login as ${p.displayName} (${p.title})`}
+                    title={`Login as ${p.displayName} — ${p.title}`}
                     style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      padding: '8px 4px',
-                      borderRadius: 10,
-                      border: '1px solid #e2e8f0',
-                      background: '#ffffff',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                      gap: 4
+                      display: 'flex', flexDirection: 'column', alignItems: 'center',
+                      padding: '8px 4px', borderRadius: 10,
+                      border: '1px solid #e2e8f0', background: '#ffffff',
+                      cursor: 'pointer', transition: 'all 0.15s ease', gap: 4
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = p.color;
@@ -630,14 +630,8 @@ export default function LoginPage({ onLoginSuccess }) {
                     }}
                   >
                     <div style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 8,
-                      background: p.bg,
-                      color: p.color,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      width: 28, height: 28, borderRadius: 8, background: p.bg, color: p.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}>
                       <Icon size={15} />
                     </div>
@@ -647,6 +641,52 @@ export default function LoginPage({ onLoginSuccess }) {
                     <span style={{ fontSize: 9, color: '#64748b' }}>
                       {p.title}
                     </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* IPD group */}
+            <div style={{ fontSize: 9.5, fontWeight: 800, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+              🛏️ IPD Department
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 7 }}>
+              {QUICK_PERSONAS.filter(p => p.dept === 'IPD' || p.dept === 'ADMIN').map((p, idx) => {
+                const Icon = p.icon;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleQuickPersona(p)}
+                    disabled={isLoading}
+                    title={`Login as ${p.displayName} — ${p.title}`}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center',
+                      padding: '8px 4px', borderRadius: 10,
+                      border: '1px solid #e2e8f0', background: '#ffffff',
+                      cursor: 'pointer', transition: 'all 0.15s ease', gap: 4
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = p.color;
+                      e.currentTarget.style.background = p.bg;
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                      e.currentTarget.style.background = '#ffffff';
+                      e.currentTarget.style.transform = 'none';
+                    }}
+                  >
+                    <div style={{
+                      width: 28, height: 28, borderRadius: 8, background: p.bg, color: p.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <Icon size={15} />
+                    </div>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap' }}>
+                      {p.displayName.split(' ')[0]}
+                    </span>
+                    <span style={{ fontSize: 9, color: '#64748b' }}>{p.title}</span>
                   </button>
                 );
               })}
