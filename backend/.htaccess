@@ -1,0 +1,37 @@
+# ==============================================================================
+# Bright Solutions Clinical Hospital Operating System (COS)
+# Apache Reverse Proxy Configuration for Backend (/api)
+# Target Server: Contabo LAMP Staging Server
+# Mount Path: ~/public_html/clinicalservices.paperbirdtech.com/api/.htaccess
+# ==============================================================================
+
+# 1. Disable Directory Indexing & Server Signatures
+Options -Indexes
+ServerSignature Off
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /api/
+
+    # 2. Preserve HTTP Authorization Header for JWT Bearer Authentication
+    # Apache by default strips Authorization headers; this forwards it to the proxy.
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+    # 3. Security Hardening: Block direct access to Python code, configs, venv, and logs
+    RewriteRule ^(\.env|\.git|ecosystem\.config\.js|requirements\.txt|.*\.py|.*\.pyc)$ - [F,L]
+    RewriteRule ^(venv|app|scripts|tests|logs|__pycache__)/ - [F,L]
+
+    # 4. Static Uploads (Optional: serve existing media directly if requested)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^uploads/(.*)$ uploads/$1 [L]
+
+    # 5. Reverse Proxy: Route all requests under /api to the local Uvicorn daemon (Port 8000)
+    # [P] = Proxy via mod_proxy_http, [L] = Last rule, [QSA] = Query String Append
+    RewriteRule ^(.*)$ http://127.0.0.1:8000/api/$1 [P,L,QSA]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Inform backend if original client request was over SSL/TLS
+    RequestHeader set X-Forwarded-Proto "https" env=HTTPS
+</IfModule>

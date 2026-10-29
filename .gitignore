@@ -50,6 +50,7 @@ ENV/
 .env
 .env.*
 !.env.example
+!*.example
 backend/.env
 
 # Antigravity IDE & AI Workspace Artifacts
