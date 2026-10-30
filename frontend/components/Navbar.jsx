@@ -3,7 +3,7 @@
  * Replaced role-switcher with OPD | IPD department tabs.
  * Dept prop: 'OPD' | 'IPD' | 'ADMIN' — controls which tab is active.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Menu,
@@ -16,6 +16,8 @@ import {
   Sun,
   Receipt,
   Pill,
+  Tv,
+  ExternalLink,
 } from 'lucide-react';
 
 export default function Navbar({
@@ -30,6 +32,7 @@ export default function Navbar({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [showDisplayMenu, setShowDisplayMenu] = useState(false);
 
   // Derive active dept from prop or from URL path
   const activeDept =
@@ -187,8 +190,65 @@ export default function Navbar({
         })}
       </div>
 
-      {/* Right: Guide + Logout */}
+      {/* Right: Displays + Guide + Logout */}
       <div className="header-right">
+        {/* Waiting Room TV link — OPD ONLY */}
+        {activeDept === 'OPD' && (
+          <a
+            href="/display/waiting-room"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              height: 28,
+              fontSize: 11,
+              padding: '0 10px',
+              borderRadius: 8,
+              backgroundColor: '#eff6ff',
+              color: '#0369a1',
+              border: '1px solid #bae6fd',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              textDecoration: 'none',
+              cursor: 'pointer',
+            }}
+            title="Open Waiting Room Live TV Display in New Tab"
+          >
+            <Tv size={13} color="#0284c7" />
+            <span>Waiting Room TV</span>
+            <ExternalLink size={11} color="#0284c7" />
+          </a>
+        )}
+
+        {/* Ward Board TV link — IPD ONLY */}
+        {activeDept === 'IPD' && (
+          <a
+            href="/display/ward-matrix"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              height: 28,
+              fontSize: 11,
+              padding: '0 10px',
+              borderRadius: 8,
+              backgroundColor: '#f0fdfa',
+              color: '#0f766e',
+              border: '1px solid #99f6e4',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              textDecoration: 'none',
+              cursor: 'pointer',
+            }}
+            title="Open Ward Matrix Digital Whiteboard in New Tab"
+          >
+            <Tv size={13} color="#0d9488" />
+            <span>Ward Board TV</span>
+            <ExternalLink size={11} color="#0d9488" />
+          </a>
+        )}
         {((currentRole === 'receptionist' && onOpenReceptionistGuide) ||
           (currentRole === 'doctor' && onOpenDoctorGuide) ||
           (currentRole === 'admin' && onOpenAdminGuide)) && (

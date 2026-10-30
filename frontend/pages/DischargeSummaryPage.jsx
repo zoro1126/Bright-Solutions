@@ -72,10 +72,11 @@ export default function DischargeSummaryPage() {
   };
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f8fafc', display:'flex', flexDirection:'column' }}>
+    <div style={{ height: '100vh', maxHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <Navbar dept="IPD" currentRole="doctor" onLogout={() => navigate('/login')} />
 
-      <div style={{ maxWidth:900, margin:'0 auto', padding:'24px 20px', width:'100%', boxSizing:'border-box' }}>
+      <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 40 }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 20px', width: '100%', boxSizing: 'border-box' }}>
         {/* Header */}
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
           <button onClick={() => navigate(-1)} style={{
@@ -279,6 +280,7 @@ export default function DischargeSummaryPage() {
           </div>
         )}
       </div>
+      </main>
     </div>
   );
 }

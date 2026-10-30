@@ -2,12 +2,13 @@
  * WaitingRoomDisplayPage.jsx — TASK-FE-6.1
  * Route: /display/waiting-room
  *
- * Chromeless fullscreen TV display for hospital waiting room.
+ * Clean clinical white fullscreen TV display for hospital waiting room.
  * Zero PHI: Token # + Doctor + Room + Status only — NO full patient name.
  * SSE stream from /api/v1/display/queue/stream
  * Web Audio API chime on token change (no external audio file required)
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ArrowLeft, Volume2 } from 'lucide-react';
 
 // ─── Web Audio API chime (no audio file dependency) ──────────────────────────
 function playChime() {
@@ -47,10 +48,10 @@ function Clock() {
   }, []);
   return (
     <div style={{ textAlign: 'right' }}>
-      <div style={{ fontSize: '4vw', fontWeight: 900, color: '#94A3B8', fontFamily: 'monospace', lineHeight: 1, letterSpacing: '-0.02em' }}>
+      <div style={{ fontSize: '3.6vw', fontWeight: 900, color: '#0f172a', fontFamily: 'monospace', lineHeight: 1, letterSpacing: '-0.02em' }}>
         {time.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
       </div>
-      <div style={{ fontSize: '1.2vw', color: '#475569', fontWeight: 600, marginTop: 4 }}>
+      <div style={{ fontSize: '1.1vw', color: '#64748b', fontWeight: 700, marginTop: 4 }}>
         {time.toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
       </div>
     </div>
@@ -59,17 +60,17 @@ function Clock() {
 
 function StatusBadge({ status }) {
   const cfg = {
-    CALLING:        { label: '📢 CALLING',        bg: '#06B6D4', color: '#fff' },
-    IN_CONSULTATION:{ label: '🩺 IN CONSULT',     bg: '#0D9488', color: '#fff' },
-    NEXT:           { label: '⏭ NEXT',            bg: '#F59E0B', color: '#fff' },
-    WAITING:        { label: '⏳ WAITING',         bg: '#334155', color: '#94A3B8' },
-  }[status] || { label: status, bg: '#334155', color: '#94A3B8' };
+    CALLING:        { label: '📢 CALLING',        bg: '#eff6ff', border: '#3b82f6', color: '#1d4ed8' },
+    IN_CONSULTATION:{ label: '🩺 IN CONSULT',     bg: '#f0fdf4', border: '#22c55e', color: '#15803d' },
+    NEXT:           { label: '⏭ NEXT',            bg: '#fffbeb', border: '#f59e0b', color: '#b45309' },
+    WAITING:        { label: '⏳ WAITING',         bg: '#f8fafc', border: '#cbd5e1', color: '#64748b' },
+  }[status] || { label: status, bg: '#f8fafc', border: '#cbd5e1', color: '#64748b' };
 
   return (
     <span style={{
-      padding: '4px 14px', borderRadius: 9999,
-      background: cfg.bg, color: cfg.color,
-      fontSize: '1.1vw', fontWeight: 800, letterSpacing: '0.05em',
+      padding: '6px 16px', borderRadius: 9999,
+      background: cfg.bg, border: `1.5px solid ${cfg.border}`, color: cfg.color,
+      fontSize: '1.1vw', fontWeight: 800, letterSpacing: '0.04em',
     }}>
       {cfg.label}
     </span>
@@ -110,7 +111,6 @@ export default function WaitingRoomDisplayPage() {
       es.onerror = () => {
         setConnected(false);
         es.close();
-        // Fallback to polling every 10s
         setTimeout(pollFallback, 10_000);
       };
     } catch {
@@ -136,7 +136,6 @@ export default function WaitingRoomDisplayPage() {
         setConnected(true);
       }
     } catch { /* API offline — keep mock */ }
-    // Schedule next poll
     setTimeout(pollFallback, 10_000);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -150,58 +149,90 @@ export default function WaitingRoomDisplayPage() {
   return (
     <div style={{
       width: '100vw', height: '100vh',
-      background: '#0F172A', overflow: 'hidden',
+      background: '#ffffff', overflow: 'hidden',
       display: 'flex', flexDirection: 'column',
-      fontFamily: "'Inter', 'Outfit', system-ui, sans-serif",
+      fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
     }}>
-      {/* ── Top bar: Hospital name + Clock ────────────────────────────── */}
+      {/* ── Top bar: Hospital name + Back button + Clock ──────────────── */}
       <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-        padding: '2.5vh 4vw 0',
-        borderBottom: '1px solid #1E293B',
-        paddingBottom: '1.5vh',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '2vh 3.5vw',
+        borderBottom: '2px solid #e2e8f0',
+        background: '#ffffff',
       }}>
-        <div>
-          <div style={{ fontSize: '2.5vw', fontWeight: 900, color: '#F1F5F9', letterSpacing: '-0.03em', lineHeight: 1 }}>
-            Bright Solutions
-          </div>
-          <div style={{ fontSize: '1vw', color: '#475569', fontWeight: 600, marginTop: 4 }}>
-            OPD Consultation Queue Display
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <button
+            onClick={() => window.location.href = '/receptionist/dashboard'}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 14px', borderRadius: 8,
+              background: '#f8fafc', border: '1.5px solid #cbd5e1',
+              color: '#334155', fontSize: '0.95vw', fontWeight: 700, cursor: 'pointer',
+            }}
+            title="Return to OPD Reception"
+          >
+            <ArrowLeft size={16} /> Back to OPD
+          </button>
+          <div>
+            <div style={{ fontSize: '2.2vw', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', lineHeight: 1 }}>
+              Bright Solutions Hospital
+            </div>
+            <div style={{ fontSize: '1vw', color: '#0284c7', fontWeight: 700, marginTop: 4 }}>
+              OPD Consultation Live Queue Display
+            </div>
           </div>
         </div>
-        <Clock />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <button
+            onClick={playChime}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 12px', borderRadius: 8,
+              background: '#f1f5f9', border: '1px solid #cbd5e1',
+              color: '#475569', fontSize: '0.85vw', fontWeight: 600, cursor: 'pointer',
+            }}
+            title="Test announcement chime"
+          >
+            <Volume2 size={14} /> Chime Test
+          </button>
+          <Clock />
+        </div>
       </div>
 
       {/* ── Main content ──────────────────────────────────────────────── */}
-      <div style={{ flex: 1, display: 'flex', gap: 0, overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', gap: 0, overflow: 'hidden', background: '#f8fafc' }}>
 
-        {/* NOW SERVING — large panel */}
+        {/* NOW SERVING — large left panel */}
         <div style={{
-          flex: '1.4', display: 'flex', flexDirection: 'column',
+          flex: '1.3', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          borderRight: '1px solid #1E293B',
+          borderRight: '2px solid #e2e8f0',
           padding: '2vh 4vw',
+          background: '#ffffff',
         }}>
-          <div style={{ fontSize: '1.2vw', color: '#06B6D4', fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '1.5vh' }}>
+          <div style={{
+            fontSize: '1.3vw', color: '#0284c7', fontWeight: 900,
+            letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '1vh',
+          }}>
             Now Serving
           </div>
 
           {/* Giant token number */}
           <div style={{
-            fontSize: '18vw', fontWeight: 900, color: '#06B6D4',
+            fontSize: '17vw', fontWeight: 900, color: '#0077b6',
             fontFamily: 'monospace', lineHeight: 0.85,
-            letterSpacing: '-0.05em',
-            textShadow: '0 0 60px rgba(6,182,212,0.4)',
-            animation: 'tokenGlow 3s ease-in-out infinite',
+            letterSpacing: '-0.04em',
+            margin: '1.5vh 0',
           }}>
             {nowServing?.token ?? '—'}
           </div>
 
-          <div style={{ marginTop: '2vh', textAlign: 'center' }}>
-            <div style={{ fontSize: '3.2vw', fontWeight: 800, color: '#E2E8F0', letterSpacing: '-0.02em' }}>
+          <div style={{ marginTop: '1vh', textAlign: 'center' }}>
+            <div style={{ fontSize: '3vw', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>
               {nowServing?.doctor || '—'}
             </div>
-            <div style={{ fontSize: '1.6vw', color: '#64748B', fontWeight: 600, marginTop: '0.5vh' }}>
+            <div style={{ fontSize: '1.6vw', color: '#475569', fontWeight: 700, marginTop: '0.4vh' }}>
               {nowServing?.room || '—'}
             </div>
           </div>
@@ -213,14 +244,13 @@ export default function WaitingRoomDisplayPage() {
           {/* Connection dot */}
           <div style={{
             marginTop: '3vh', display: 'flex', alignItems: 'center', gap: 6,
-            fontSize: '0.9vw', color: '#334155',
+            fontSize: '0.9vw', color: '#64748b', fontWeight: 600,
           }}>
             <div style={{
               width: 8, height: 8, borderRadius: '50%',
               background: connected ? '#10B981' : '#F59E0B',
-              animation: 'beaconPulse 2s ease-in-out infinite',
             }} />
-            {connected ? 'Live' : 'Polling'}
+            {connected ? 'Live Network Connected' : 'Local Queue Active'}
           </div>
         </div>
 
@@ -229,9 +259,10 @@ export default function WaitingRoomDisplayPage() {
           flex: 1, display: 'flex', flexDirection: 'column',
           padding: '3vh 3vw',
           overflow: 'hidden',
+          background: '#f8fafc',
         }}>
           <div style={{ fontSize: '1.1vw', color: '#475569', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.5vh' }}>
-            Up Next
+            Up Next In Lounge
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2vh', overflow: 'hidden' }}>
             {queue.slice(0, 6).map((item, i) => (
@@ -239,24 +270,29 @@ export default function WaitingRoomDisplayPage() {
                 key={item.token}
                 style={{
                   display: 'flex', alignItems: 'center',
-                  padding: '1.5vh 2vw', borderRadius: '1vw',
-                  background: i === 0 ? '#1E3A5F' : '#0D1B2A',
-                  border: `1px solid ${i === 0 ? '#2563EB' : '#1E293B'}`,
+                  padding: '1.5vh 2vw', borderRadius: 12,
+                  background: i === 0 ? '#eff6ff' : '#ffffff',
+                  border: `1.5px solid ${i === 0 ? '#3b82f6' : '#e2e8f0'}`,
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
                   gap: '2vw',
-                  opacity: i >= 4 ? 0.5 : 1,
-                  transition: 'all 0.3s',
+                  opacity: i >= 4 ? 0.6 : 1,
+                  transition: 'all 0.2s',
                 }}
               >
                 {/* Token */}
-                <div style={{ fontSize: '3vw', fontWeight: 900, color: i === 0 ? '#93C5FD' : '#64748B', fontFamily: 'monospace', lineHeight: 1, minWidth: '5vw', textAlign: 'right' }}>
+                <div style={{
+                  fontSize: '2.8vw', fontWeight: 900,
+                  color: i === 0 ? '#1d4ed8' : '#334155',
+                  fontFamily: 'monospace', lineHeight: 1, minWidth: '5vw', textAlign: 'right',
+                }}>
                   {item.token}
                 </div>
                 {/* Doctor + Room */}
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '1.4vw', fontWeight: 700, color: i === 0 ? '#E2E8F0' : '#94A3B8' }}>
+                  <div style={{ fontSize: '1.3vw', fontWeight: 800, color: '#0f172a' }}>
                     {item.doctor}
                   </div>
-                  <div style={{ fontSize: '1vw', color: '#475569', fontWeight: 600 }}>
+                  <div style={{ fontSize: '0.95vw', color: '#64748b', fontWeight: 600 }}>
                     {item.room}
                   </div>
                 </div>
@@ -265,25 +301,19 @@ export default function WaitingRoomDisplayPage() {
               </div>
             ))}
             {queue.length === 0 && (
-              <div style={{ textAlign: 'center', color: '#334155', fontSize: '1.2vw', padding: '4vh 0' }}>
+              <div style={{ textAlign: 'center', color: '#64748b', fontSize: '1.2vw', padding: '4vh 0' }}>
                 No patients in queue
               </div>
             )}
           </div>
 
           {/* Footer notice */}
-          <div style={{ marginTop: 'auto', paddingTop: '2vh', borderTop: '1px solid #1E293B', fontSize: '0.9vw', color: '#334155', lineHeight: 1.5 }}>
+          <div style={{ marginTop: 'auto', paddingTop: '2vh', borderTop: '1.5px solid #e2e8f0', fontSize: '0.9vw', color: '#64748b', lineHeight: 1.5 }}>
             🔔 Please listen for your token announcement and proceed to the indicated cabin.<br />
-            Kindly maintain social distancing in the waiting area.
+            Kindly maintain silence and order in the consultation waiting lounge.
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes tokenGlow   { 0%, 100% { text-shadow: 0 0 60px rgba(6,182,212,0.4); } 50% { text-shadow: 0 0 90px rgba(6,182,212,0.7); } }
-        @keyframes beaconPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-      `}</style>
     </div>
   );
 }
-

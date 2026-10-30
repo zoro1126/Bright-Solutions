@@ -26,6 +26,7 @@ import {
   LogOut,
   ExternalLink,
   ArrowRightCircle,
+  Tv,
 } from 'lucide-react';
 import { usePatients } from '../context/PatientContext';
 
@@ -295,70 +296,37 @@ export default function Sidebar({
           );
         })}
 
-        {/* ── IPD Quick-Jump (always visible for OPD roles) ────────────── */}
+        {/* ── Public TV Displays (OPD Waiting Room TV) — OPD roles only ─────────────── */}
         {role !== 'admin' && (
           <>
             {!collapsed && (
               <div
                 className="drawer-section-label"
-                style={{ marginTop: 12 }}
+                style={{ marginTop: 14 }}
               >
-                <span style={{ color: '#0d9488', fontWeight: 700 }}>Inpatient (IPD)</span>
+                <span style={{ color: '#0284c7', fontWeight: 700 }}>TV Displays</span>
               </div>
             )}
-
-            {/* Bed Matrix */}
-            <button
-              className={`m3-nav-item ${location.pathname.startsWith('/ipd') ? 'active' : ''}`}
-              style={
-                location.pathname.startsWith('/ipd')
-                  ? { backgroundColor: '#ccfbf1', color: '#0f766e', borderLeft: '3px solid #0d9488', fontWeight: 700 }
-                  : undefined
-              }
-              onClick={() => navigate('/ipd')}
-              title={collapsed ? 'IPD Bed Matrix & Admissions' : undefined}
+            <a
+              href="/display/waiting-room"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="m3-nav-item"
+              title={collapsed ? 'Waiting Room TV Display' : undefined}
+              style={{ textDecoration: 'none' }}
             >
-              <div className="nav-icon-container" style={{ color: location.pathname.startsWith('/ipd') ? '#0f766e' : '#0d9488' }}>
-                <Bed size={17} strokeWidth={location.pathname.startsWith('/ipd') ? 2.5 : 2.2} />
+              <div className="nav-icon-container" style={{ color: '#0284c7' }}>
+                <Tv size={17} strokeWidth={2.2} />
               </div>
               {!collapsed && (
                 <>
-                  <span
-                    className="nav-label"
-                    style={{
-                      color: location.pathname.startsWith('/ipd') ? '#0f766e' : '#334155',
-                      fontWeight: location.pathname.startsWith('/ipd') ? 800 : 600,
-                    }}
-                  >
-                    Bed Matrix & Admissions
+                  <span className="nav-label" style={{ color: '#334155', fontWeight: 600 }}>
+                    Waiting Room TV
                   </span>
-                  <span
-                    className="nav-badge"
-                    style={{ background: '#ccfbf1', color: '#0f766e', fontWeight: 700 }}
-                  >
-                    IPD
-                  </span>
+                  <ExternalLink size={12} color="#94a3b8" />
                 </>
               )}
-            </button>
-
-            {/* Nurse Triage Vitals — only relevant for receptionist/nurse */}
-            {(role === 'receptionist' || role === 'nurse') && (
-              <button
-                className="m3-nav-item"
-                onClick={() => navigate('/nurse/triage/demo-visit-1')}
-                title={collapsed ? 'Nurse Triage Vitals' : undefined}
-              >
-                <div className="nav-icon-container" style={{ color: '#0d9488' }}>
-                  <Activity size={17} strokeWidth={2.2} />
-                </div>
-                {!collapsed && (
-                  <span className="nav-label" style={{ color: '#334155', fontWeight: 600 }}>
-                    Nurse Triage Vitals
-                  </span>
-                )}
-              </button>
-            )}
+            </a>
           </>
         )}
       </div>

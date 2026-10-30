@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePatients } from '../context/PatientContext';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
@@ -67,6 +68,8 @@ export default function DoctorPage({
     signAndLockConsultation,
     addToast 
   } = usePatients();
+
+  const navigate = useNavigate();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [doctorNav, setDoctorNav] = useState(activeSubTab || 'workspace');
@@ -1997,7 +2000,7 @@ export default function DoctorPage({
                       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                         <button
                           type="button"
-                          onClick={() => { window.location.href = '/ipd'; }}
+                          onClick={() => navigate('/ipd')}
                           style={{
                             display: 'flex', alignItems: 'center', gap: 8,
                             padding: '10px 22px', borderRadius: 9,

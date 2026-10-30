@@ -9,12 +9,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import BedMatrixPage from './BedMatrixPage';
 import InpatientFolioPage from './InpatientFolioPage';
+import NurseVitalsIntakePage from './NurseVitalsIntakePage';
 import {
   Bed, ClipboardList, Activity, LogOut,
   ChevronLeft, ChevronRight, Settings,
   User, AlertTriangle, CheckCircle2, Clock,
   Pill, Droplets, Heart, Search, Filter,
-  ArrowRight, Phone,
+  ArrowRight, Phone, Tv, ExternalLink,
 } from 'lucide-react';
 
 // ─── IPD Sidebar (Light Theme matching OPD sidebar) ──────────────────────────
@@ -23,6 +24,7 @@ function IPDSidebar({ activeTab, setActiveTab, collapsed, setCollapsed, onOpenFo
     { id: 'bed-matrix',  label: 'Bed Matrix & Admissions', icon: Bed,           badge: null },
     { id: 'admissions',  label: 'Active Admissions',        icon: ClipboardList, badge: 8   },
     { id: 'nursing',     label: 'Nurse Station & MAR',      icon: Activity,      badge: null },
+    { id: 'vitals',      label: 'Nurse Triage Vitals',      icon: Heart,         badge: null },
     { id: 'discharge',   label: 'Discharge Queue',          icon: LogOut,        badge: 3   },
   ];
 
@@ -134,6 +136,33 @@ function IPDSidebar({ activeTab, setActiveTab, collapsed, setCollapsed, onOpenFo
             </button>
           );
         })}
+
+        {/* Public TV Displays — IPD Ward Board ONLY */}
+        {!collapsed && (
+          <div className="drawer-section-label" style={{ marginTop: 14 }}>
+            <span style={{ color: '#0d9488', fontWeight: 700 }}>Public Displays</span>
+          </div>
+        )}
+        <a
+          href="/display/ward-matrix"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="m3-nav-item"
+          title={collapsed ? 'Ward Digital Whiteboard' : undefined}
+          style={{ textDecoration: 'none' }}
+        >
+          <div className="nav-icon-container" style={{ color: '#0d9488' }}>
+            <Tv size={17} strokeWidth={2.2} />
+          </div>
+          {!collapsed && (
+            <>
+              <span className="nav-label" style={{ color: '#334155', fontWeight: 600 }}>
+                Ward Matrix Board
+              </span>
+              <ExternalLink size={12} color="#94a3b8" />
+            </>
+          )}
+        </a>
       </div>
 
       {/* Footer staff card */}
@@ -556,7 +585,7 @@ export default function IPDPage({ onSwitchDept, onLogout }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#f8fafc' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', maxHeight: '100vh', background: '#f8fafc', overflow: 'hidden' }}>
       <Navbar
         dept="IPD"
         currentRole="nurse"
@@ -585,6 +614,12 @@ export default function IPDPage({ onSwitchDept, onLogout }) {
 
           {activeTab === 'nursing' && (
             <NurseStationTab />
+          )}
+
+          {activeTab === 'vitals' && (
+            <div style={{ padding: '20px 24px' }}>
+              <NurseVitalsIntakePage embedded />
+            </div>
           )}
 
           {activeTab === 'discharge' && (

@@ -125,7 +125,7 @@ function VitalInput({ label, value, onChange, unit, icon: Icon, min, max, step =
   );
 }
 
-export default function NurseVitalsIntakePage({ addToast: addToastProp }) {
+export default function NurseVitalsIntakePage({ addToast: addToastProp, embedded = false, onBack }) {
   const { visitId } = useParams();
   const navigate    = useNavigate();
 
@@ -223,17 +223,19 @@ export default function NurseVitalsIntakePage({ addToast: addToastProp }) {
   }, [sysn, dian, pulsen, spo2n, tempFn, tempCn, rrn, wtn, htn, bmi, bmiCfg, news2score, news2cfg, visitId, anyPanic, addToast]);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-      {/* Navbar with OPD dept active */}
-      <Navbar
-        dept="OPD"
-        currentRole="nurse"
-        onLogout={() => {
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('bright_role');
-          window.location.href = '/login';
-        }}
-      />
+    <div style={{ height: embedded ? 'auto' : '100vh', maxHeight: embedded ? 'none' : '100vh', background: embedded ? 'transparent' : '#f8fafc', display: 'flex', flexDirection: 'column', overflow: embedded ? 'visible' : 'hidden' }}>
+      {/* Navbar with OPD dept active — only when not embedded */}
+      {!embedded && (
+        <Navbar
+          dept="OPD"
+          currentRole="nurse"
+          onLogout={() => {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('bright_role');
+            window.location.href = '/login';
+          }}
+        />
+      )}
 
       {/* Self-contained toasts */}
       {selfToasts.length > 0 && (
@@ -251,15 +253,18 @@ export default function NurseVitalsIntakePage({ addToast: addToastProp }) {
       )}
 
       {/* Page content */}
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '24px 16px', width: '100%', boxSizing: 'border-box' }}>
+      <main style={{ flex: 1, overflowY: embedded ? 'visible' : 'auto', overflowX: 'hidden' }}>
+      <div style={{ maxWidth: 860, margin: embedded ? '0' : '0 auto', padding: embedded ? '8px 0' : '24px 16px', width: '100%', boxSizing: 'border-box' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700 }}
-        >
-          <ArrowLeft size={15} /> Back
-        </button>
+        {!embedded && (
+          <button
+            onClick={() => onBack ? onBack() : navigate(-1)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700 }}
+          >
+            <ArrowLeft size={15} /> Back
+          </button>
+        )}
         <div style={{ flex: 1 }}>
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#0F172A' }}>
             Nurse Triage Vitals Intake
@@ -422,6 +427,7 @@ export default function NurseVitalsIntakePage({ addToast: addToastProp }) {
         input[type=number] { -moz-appearance: textfield; }
       `}</style>
       </div>
+      </main>
     </div>
   );
 }

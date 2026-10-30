@@ -113,6 +113,43 @@ function IntakeTab({ admission }) {
   const [chiefComplaint, setChiefComplaint] = useState('');
   const [saved, setSaved] = useState(false);
 
+  // Form 10 Systemic Exam
+  const [systemicExam, setSystemicExam] = useState({
+    cvs: 'S1 S2 heard, normal rhythm, no murmurs',
+    resp: 'Bilateral vesicular breath sounds, chest clear',
+    abdomen: 'Soft, non-tender, bowel sounds present',
+    cns: 'Conscious, oriented to time, place and person, no focal deficit'
+  });
+
+  // Form 70 Nursing Initial Assessment
+  const [vitalsTriage, setVitalsTriage] = useState({
+    bp: '124/82', pulse: '76', spo2: '98', temp: '98.4', rr: '16'
+  });
+  const [morse, setMorse] = useState({
+    historyOfFalls: 0,
+    secondaryDx: 15,
+    ambulatoryAid: 0,
+    ivTherapy: 20,
+    gait: 0,
+    mentalStatus: 0,
+  });
+  const morseScore = Object.values(morse).reduce((a, b) => a + Number(b), 0);
+  const morseRisk = morseScore >= 51 ? { label: 'High Risk', color: '#dc2626', bg: '#fee2e2' }
+    : morseScore >= 25 ? { label: 'Moderate Risk', color: '#d97706', bg: '#fef3c7' }
+    : { label: 'Low Risk', color: '#16a34a', bg: '#f0fdf4' };
+
+  const [braden, setBraden] = useState({
+    sensory: 4, moisture: 4, activity: 3, mobility: 3, nutrition: 3, friction: 2
+  });
+  const bradenScore = Object.values(braden).reduce((a, b) => a + Number(b), 0);
+  const bradenRisk = bradenScore <= 9 ? { label: 'Very High Risk', color: '#dc2626', bg: '#fee2e2' }
+    : bradenScore <= 12 ? { label: 'High Risk', color: '#ea580c', bg: '#fff7ed' }
+    : bradenScore <= 14 ? { label: 'Moderate Risk', color: '#d97706', bg: '#fef3c7' }
+    : bradenScore <= 18 ? { label: 'Mild Risk', color: '#0284c7', bg: '#f0f9ff' }
+    : { label: 'No Risk', color: '#16a34a', bg: '#f0fdf4' };
+
+  const [wristbandVerified, setWristbandVerified] = useState(true);
+
   const handleSave = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -254,8 +291,216 @@ function IntakeTab({ admission }) {
             <textarea rows={3} placeholder="Drug, dose, frequency..." style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
           </div>
         </div>
+        {/* Systemic Examination (CVS, Resp, Abdomen, CNS) */}
+        <div style={{ marginTop: 14, marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', marginBottom: 8 }}>🩺 Systemic Examination</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Cardiovascular (CVS)</label>
+              <input type="text" value={systemicExam.cvs} onChange={e => setSystemicExam(s => ({ ...s, cvs: e.target.value }))}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Respiratory System (RS)</label>
+              <input type="text" value={systemicExam.resp} onChange={e => setSystemicExam(s => ({ ...s, resp: e.target.value }))}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Abdomen (GI)</label>
+              <input type="text" value={systemicExam.abdomen} onChange={e => setSystemicExam(s => ({ ...s, abdomen: e.target.value }))}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Central Nervous System (CNS)</label>
+              <input type="text" value={systemicExam.cns} onChange={e => setSystemicExam(s => ({ ...s, cns: e.target.value }))}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+          </div>
+        </div>
+
         <InputField label="Provisional Diagnosis" placeholder="ICD-10 code or description" />
         <InputField label="Allergies" placeholder="Drug / food allergies (NKDA if none)" />
+      </SectionCard>
+
+      {/* Form 70 — Nursing Initial Assessment (Morse Fall Risk & Braden Scale) */}
+      <SectionCard title="Form 70 — Nursing Initial Admission Assessment (15-Min Triage)" defaultOpen={false}>
+        {/* Triage vitals */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', marginBottom: 8 }}>⚡ 15-Minute Triage Baseline Vitals</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+            {[
+              ['BP (mmHg)', vitalsTriage.bp, 'bp'],
+              ['Pulse (bpm)', vitalsTriage.pulse, 'pulse'],
+              ['SpO₂ (%)', vitalsTriage.spo2, 'spo2'],
+              ['Temp (°F)', vitalsTriage.temp, 'temp'],
+              ['Resp. Rate (/min)', vitalsTriage.rr, 'rr'],
+            ].map(([lbl, val, key]) => (
+              <div key={key} style={{ background: '#f8fafc', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 4 }}>{lbl}</span>
+                <input
+                  type="text"
+                  value={val}
+                  onChange={e => setVitalsTriage(vt => ({ ...vt, [key]: e.target.value }))}
+                  style={{ width: '100%', padding: '4px 6px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13, fontWeight: 800, color: '#0f172a', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Morse Fall Risk Calculator */}
+        <div style={{ marginBottom: 16, padding: '14px', borderRadius: 10, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a' }}>
+              🚶 Morse Fall Risk Scale
+            </div>
+            <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800, background: morseRisk.bg, color: morseRisk.color, border: `1px solid ${morseRisk.color}40` }}>
+              Score: {morseScore} — {morseRisk.label}
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, fontSize: 11.5 }}>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>1. History of Falling (within 3 mos)</label>
+              <select value={morse.historyOfFalls} onChange={e => setMorse(m => ({ ...m, historyOfFalls: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 12 }}>
+                <option value={0}>No (0 pts)</option>
+                <option value={25}>Yes (25 pts)</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>2. Secondary Diagnosis (&gt;1 medical dx)</label>
+              <select value={morse.secondaryDx} onChange={e => setMorse(m => ({ ...m, secondaryDx: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 12 }}>
+                <option value={0}>No (0 pts)</option>
+                <option value={15}>Yes (15 pts)</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>3. Ambulatory Aid</label>
+              <select value={morse.ambulatoryAid} onChange={e => setMorse(m => ({ ...m, ambulatoryAid: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 12 }}>
+                <option value={0}>None / Bed Rest / Nurse assist (0 pts)</option>
+                <option value={15}>Crutches / Cane / Walker (15 pts)</option>
+                <option value={30}>Furniture clutching (30 pts)</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>4. IV Line / Saline Lock</label>
+              <select value={morse.ivTherapy} onChange={e => setMorse(m => ({ ...m, ivTherapy: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 12 }}>
+                <option value={0}>No (0 pts)</option>
+                <option value={20}>Yes (20 pts)</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>5. Gait / Transferring</label>
+              <select value={morse.gait} onChange={e => setMorse(m => ({ ...m, gait: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 12 }}>
+                <option value={0}>Normal / Immobile / Wheelchair (0 pts)</option>
+                <option value={10}>Weak (10 pts)</option>
+                <option value={20}>Impaired / Shuffling (20 pts)</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>6. Mental Status</label>
+              <select value={morse.mentalStatus} onChange={e => setMorse(m => ({ ...m, mentalStatus: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 12 }}>
+                <option value={0}>Oriented to own ability (0 pts)</option>
+                <option value={15}>Overestimates / Forgets limitations (15 pts)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Braden Pressure Ulcer Risk Scale */}
+        <div style={{ marginBottom: 16, padding: '14px', borderRadius: 10, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a' }}>
+              🛡️ Braden Pressure Injury Risk Scale
+            </div>
+            <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800, background: bradenRisk.bg, color: bradenRisk.color, border: `1px solid ${bradenRisk.color}40` }}>
+              Score: {bradenScore}/23 — {bradenRisk.label}
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, fontSize: 11.5 }}>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>Sensory Perception</label>
+              <select value={braden.sensory} onChange={e => setBraden(b => ({ ...b, sensory: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5 }}>
+                <option value={1}>1 - Completely Limited</option>
+                <option value={2}>2 - Very Limited</option>
+                <option value={3}>3 - Slightly Limited</option>
+                <option value={4}>4 - No Impairment</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>Moisture</label>
+              <select value={braden.moisture} onChange={e => setBraden(b => ({ ...b, moisture: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5 }}>
+                <option value={1}>1 - Constantly Moist</option>
+                <option value={2}>2 - Very Moist</option>
+                <option value={3}>3 - Occasionally Moist</option>
+                <option value={4}>4 - Rarely Moist</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>Activity</label>
+              <select value={braden.activity} onChange={e => setBraden(b => ({ ...b, activity: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5 }}>
+                <option value={1}>1 - Bedfast</option>
+                <option value={2}>2 - Chairfast</option>
+                <option value={3}>3 - Walks Occasionally</option>
+                <option value={4}>4 - Walks Frequently</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>Mobility</label>
+              <select value={braden.mobility} onChange={e => setBraden(b => ({ ...b, mobility: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5 }}>
+                <option value={1}>1 - Completely Immobile</option>
+                <option value={2}>2 - Very Limited</option>
+                <option value={3}>3 - Slightly Limited</option>
+                <option value={4}>4 - No Limitations</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>Nutrition</label>
+              <select value={braden.nutrition} onChange={e => setBraden(b => ({ ...b, nutrition: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5 }}>
+                <option value={1}>1 - Very Poor</option>
+                <option value={2}>2 - Probably Inadequate</option>
+                <option value={3}>3 - Adequate</option>
+                <option value={4}>4 - Excellent</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontWeight: 600, color: '#475569', marginBottom: 4 }}>Friction &amp; Shear</label>
+              <select value={braden.friction} onChange={e => setBraden(b => ({ ...b, friction: Number(e.target.value) }))}
+                style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5 }}>
+                <option value={1}>1 - Problem</option>
+                <option value={2}>2 - Potential Problem</option>
+                <option value={3}>3 - No Apparent Problem</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Allergy Wristband Verification */}
+        <label style={{
+          display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+          padding: '10px 14px', borderRadius: 8, background: wristbandVerified ? '#f0fdf4' : '#fff5f5',
+          border: `1.5px solid ${wristbandVerified ? '#86efac' : '#fca5a5'}`,
+        }}>
+          <input
+            type="checkbox"
+            checked={wristbandVerified}
+            onChange={e => setWristbandVerified(e.target.checked)}
+            style={{ accentColor: '#10b981', width: 16, height: 16 }}
+          />
+          <span style={{ fontSize: 12, fontWeight: 700, color: wristbandVerified ? '#15803d' : '#dc2626' }}>
+            🏷️ Physical Allergy Wristband verified and placed on patient's wrist (NABH Mandate)
+          </span>
+        </label>
       </SectionCard>
 
       {/* Save bar */}
@@ -425,26 +670,206 @@ function FluidTab() {
   );
 }
 
-// ─── Tab 4: Nursing & Care (Form 72) ─────────────────────────────────────────
+// ─── Tab 4: Nursing & Care (Form 71 & 72) ─────────────────────────────────────────
 function NursingTab() {
-  const [painScore, setPainScore] = useState(0);
-  const [shiftNotes, setShiftNotes] = useState('');
+  // Form 71 State
+  const [carePlan, setCarePlan] = useState({
+    diagnosis: 'Acute Pain related to surgical incision / tissue injury',
+    goal: 'Patient will report pain <= 3/10 within 1 hour; maintain SpO2 >= 95% on room air',
+    interventions: {
+      vitalsQ4H: true,
+      analgesicSchedule: true,
+      reposition2H: true,
+      fluidChart: true,
+      sideRailsUp: true,
+      patientReassurance: false,
+    },
+    evaluation: 'Goal met. Pain reduced from 6/10 to 2/10. Patient resting comfortably in semi-fowler position.',
+  });
+
+  // Form 72 State
+  const [shift, setShift] = useState('Morning');
+  const [shiftVitals, setShiftVitals] = useState({
+    sysBP: 126, diaBP: 82, pulse: 78, spo2: 98, tempF: 98.6, rr: 16
+  });
+  const [painScore, setPainScore] = useState(2);
+  const [shiftNotes, setShiftNotes] = useState('Patient resting comfortably. Morning oral medications administered. IV cannula patent on left forearm without redness or extravasation. Clear urine output.');
+  const [savedNotes, setSavedNotes] = useState(false);
+
+  // Compute NEWS2 dynamically for the shift
+  const tempC = ((shiftVitals.tempF - 32) * 5) / 9;
+  let news2 = 0;
+  if (shiftVitals.rr < 9 || shiftVitals.rr > 24) news2 += 3;
+  else if (shiftVitals.rr >= 21) news2 += 2;
+  else if (shiftVitals.rr <= 11) news2 += 1;
+
+  if (shiftVitals.spo2 < 92) news2 += 3;
+  else if (shiftVitals.spo2 <= 93) news2 += 2;
+  else if (shiftVitals.spo2 <= 95) news2 += 1;
+
+  if (tempC <= 35.0 || tempC >= 39.1) news2 += 3;
+  else if (tempC <= 36.0 || tempC >= 38.1) news2 += 1;
+
+  if (shiftVitals.sysBP <= 90 || shiftVitals.sysBP >= 220) news2 += 3;
+  else if (shiftVitals.sysBP <= 100) news2 += 2;
+  else if (shiftVitals.sysBP <= 110) news2 += 1;
+
+  if (shiftVitals.pulse <= 40 || shiftVitals.pulse >= 131) news2 += 3;
+  else if (shiftVitals.pulse >= 111) news2 += 2;
+  else if (shiftVitals.pulse <= 50 || shiftVitals.pulse >= 91) news2 += 1;
+
+  const news2Color = news2 >= 7 ? '#dc2626' : news2 >= 5 ? '#d97706' : '#10b981';
+  const news2Bg    = news2 >= 7 ? '#fee2e2' : news2 >= 5 ? '#fef3c7' : '#f0fdf4';
+  const news2Text  = news2 >= 7 ? 'HIGH RISK (NEWS2 >= 7)' : news2 >= 5 ? 'MEDIUM RISK (NEWS2 5-6)' : 'LOW RISK (NEWS2 0-4)';
+
+  const handleSave = () => {
+    setSavedNotes(true);
+    setTimeout(() => setSavedNotes(false), 2000);
+  };
 
   return (
     <div>
-      <SectionCard title="Form 72 — Nurse Shift Progress Note">
-        {/* Pain Scale */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 10 }}>
-            Wong-Baker Pain Scale (0 = No pain, 10 = Worst pain)
+      {/* Form 71 — Nurse Care Plan */}
+      <SectionCard title="Form 71 — Inpatient Nurse Care Plan">
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Nursing Diagnosis</label>
+          <select
+            value={carePlan.diagnosis}
+            onChange={e => setCarePlan(c => ({ ...c, diagnosis: e.target.value }))}
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12.5, outline: 'none' }}
+          >
+            <option>Acute Pain related to surgical incision / tissue injury</option>
+            <option>Ineffective Airway Clearance related to retained secretions</option>
+            <option>Impaired Gas Exchange related to ventilation-perfusion mismatch</option>
+            <option>Risk for Fall related to generalized weakness and sedative medications</option>
+            <option>Fluid Volume Excess related to compromised regulatory mechanism</option>
+            <option>Impaired Skin Integrity related to bed rest and reduced mobility</option>
+            <option>Risk for Infection related to invasive lines and catheter</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Expected Patient Goals &amp; Outcomes</label>
+          <input
+            type="text"
+            value={carePlan.goal}
+            onChange={e => setCarePlan(c => ({ ...c, goal: e.target.value }))}
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12.5, outline: 'none', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>Planned Nursing Interventions Checklist</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {[
+              ['vitalsQ4H', 'Monitor vital signs & SpO2 every 4 hours'],
+              ['analgesicSchedule', 'Administer prescribed analgesics and monitor pain score'],
+              ['reposition2H', 'Reposition patient every 2 hours and inspect pressure points'],
+              ['fluidChart', 'Maintain strict 24-hour fluid intake & output ledger'],
+              ['sideRailsUp', 'Keep bed side rails elevated and call bell within reach'],
+              ['patientReassurance', 'Provide reassurance, patient education and relaxation cues'],
+            ].map(([k, label]) => (
+              <label key={k} style={{
+                display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+                padding: '8px 12px', borderRadius: 8, background: '#f8fafc', border: '1px solid #e2e8f0',
+              }}>
+                <input
+                  type="checkbox"
+                  checked={carePlan.interventions[k]}
+                  onChange={e => setCarePlan(c => ({ ...c, interventions: { ...c.interventions, [k]: e.target.checked } }))}
+                  style={{ accentColor: '#0d9488' }}
+                />
+                <span style={{ fontSize: 11.5, color: '#334155', fontWeight: 500 }}>{label}</span>
+              </label>
+            ))}
           </div>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Care Plan Evaluation &amp; Progress</label>
+          <textarea
+            rows={2}
+            value={carePlan.evaluation}
+            onChange={e => setCarePlan(c => ({ ...c, evaluation: e.target.value }))}
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12.5, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          />
+        </div>
+      </SectionCard>
+
+      {/* Form 72 — Nurse Shift Progress Note & NEWS2 Early Warning */}
+      <SectionCard title="Form 72 — Nurse Shift Progress Notes & NEWS2 Monitor">
+        {/* Active shift buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>Active Shift:</span>
+          {['Morning (07:00–15:00)', 'Evening (15:00–23:00)', 'Night (23:00–07:00)'].map(s => {
+            const id = s.split(' ')[0];
+            return (
+              <button
+                key={id}
+                onClick={() => setShift(id)}
+                style={{
+                  padding: '5px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+                  border: `1.5px solid ${shift === id ? '#0d9488' : '#e2e8f0'}`,
+                  background: shift === id ? '#f0fdfa' : '#fff',
+                  color: shift === id ? '#0d9488' : '#64748b',
+                }}
+              >
+                {s}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Shift Vitals & Live NEWS2 Score */}
+        <div style={{ marginBottom: 16, padding: '14px', borderRadius: 10, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a' }}>
+              📊 Shift Vitals &amp; NEWS2 Calculator
+            </div>
+            <span style={{
+              padding: '3px 12px', borderRadius: 20, fontSize: 11, fontWeight: 800,
+              background: news2Bg, color: news2Color, border: `1px solid ${news2Color}40`,
+            }}>
+              NEWS2 Score: {news2} — {news2Text}
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+            {[
+              ['Systolic BP', shiftVitals.sysBP, 'sysBP', 'mmHg'],
+              ['Pulse Rate', shiftVitals.pulse, 'pulse', 'bpm'],
+              ['SpO₂', shiftVitals.spo2, 'spo2', '%'],
+              ['Temp (°F)', shiftVitals.tempF, 'tempF', '°F'],
+              ['Resp Rate', shiftVitals.rr, 'rr', '/min'],
+            ].map(([lbl, val, key, u]) => (
+              <div key={key} style={{ background: '#fff', padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1' }}>
+                <span style={{ fontSize: 9.5, fontWeight: 700, color: '#64748b', display: 'block', marginBottom: 2 }}>{lbl}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <input
+                    type="number"
+                    value={val}
+                    onChange={e => setShiftVitals(v => ({ ...v, [key]: Number(e.target.value) }))}
+                    style={{ width: '100%', border: 'none', outline: 'none', fontSize: 13, fontWeight: 800, color: '#0f172a' }}
+                  />
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>{u}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Pain Scale */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 8 }}>
+            Wong-Baker Facial Pain Scale (0 = No pain, 10 = Worst pain)
+          </div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
             {[0,1,2,3,4,5,6,7,8,9,10].map(s => (
               <button
                 key={s}
                 onClick={() => setPainScore(s)}
                 style={{
-                  width: 36, height: 36, borderRadius: 8, fontWeight: 800, fontSize: 13,
+                  width: 34, height: 34, borderRadius: 8, fontWeight: 800, fontSize: 12.5,
                   border: `2px solid ${painScore === s ? '#0d9488' : '#e2e8f0'}`,
                   background: painScore === s ? '#0d9488' : s >= 7 ? '#fff5f5' : '#f8fafc',
                   color: painScore === s ? '#fff' : s >= 7 ? '#dc2626' : '#334155',
@@ -455,38 +880,50 @@ function NursingTab() {
               </button>
             ))}
             <span style={{
-              marginLeft: 8, padding: '4px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+              marginLeft: 8, padding: '4px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 700,
               background: painScore >= 7 ? '#fee2e2' : painScore >= 4 ? '#fef3c7' : '#f0fdf4',
               color: painScore >= 7 ? '#dc2626' : painScore >= 4 ? '#d97706' : '#16a34a',
             }}>
-              {painScore >= 7 ? 'SEVERE' : painScore >= 4 ? 'MODERATE' : 'MILD / NONE'} — Score {painScore}
+              {painScore >= 7 ? 'SEVERE PAIN' : painScore >= 4 ? 'MODERATE PAIN' : 'MILD / NO PAIN'} — Score {painScore}
             </span>
           </div>
         </div>
 
         {/* Shift Notes */}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Shift Narrative Notes</label>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Shift Narrative Observations</label>
           <textarea
-            rows={5}
+            rows={4}
             value={shiftNotes}
             onChange={e => setShiftNotes(e.target.value)}
             placeholder="Patient condition, interventions performed, responses observed, pending tasks..."
-            style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 13, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12.5, resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
             onFocus={e => e.target.style.borderColor = '#0d9488'}
             onBlur={e => e.target.style.borderColor = '#e2e8f0'}
           />
         </div>
 
         {/* Nursing checklist */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {['Vitals recorded', 'Medications administered', 'IV line patent & site checked', 'Pressure area care done', 'Fluid balance documented', 'Patient repositioned (2-hourly)'].map((item, i) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+          {['Vitals recorded in chart', 'Medications administered & signed in MAR', 'IV line patent & site inspected', 'Pressure area care & repositioning done', 'Fluid balance balance documented', 'Patient orientation & safety confirmed'].map((item, i) => (
             <label key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '6px 10px', borderRadius: 7, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-              <input type="checkbox" style={{ accentColor: '#0d9488' }} />
-              <span style={{ fontSize: 12, color: '#334155', fontWeight: 500 }}>{item}</span>
+              <input type="checkbox" defaultChecked style={{ accentColor: '#0d9488' }} />
+              <span style={{ fontSize: 11.5, color: '#334155', fontWeight: 500 }}>{item}</span>
             </label>
           ))}
         </div>
+
+        <button
+          onClick={handleSave}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 8,
+            border: 'none', cursor: 'pointer', background: savedNotes ? '#10b981' : 'linear-gradient(135deg,#0d9488,#0f766e)',
+            color: '#fff', fontSize: 12.5, fontWeight: 700, transition: 'background 0.2s',
+          }}
+        >
+          {savedNotes ? <CheckCircle2 size={14} /> : <Save size={14} />}
+          {savedNotes ? 'Shift Record Saved!' : 'Save Shift Record'}
+        </button>
       </SectionCard>
     </div>
   );

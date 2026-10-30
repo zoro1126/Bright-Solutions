@@ -148,10 +148,11 @@ export default function IpdSettlementPage() {
   );
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f8fafc', display:'flex', flexDirection:'column' }}>
+    <div style={{ height: '100vh', maxHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <Navbar dept="IPD" currentRole="cashier" onLogout={() => navigate('/login')} />
 
-      <div style={{ maxWidth:960, margin:'0 auto', padding:'24px 20px', width:'100%', boxSizing:'border-box' }}>
+      <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 40 }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px', width: '100%', boxSizing: 'border-box' }}>
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
           <button onClick={() => navigate(-1)} style={{
             display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:9,
@@ -314,6 +315,7 @@ export default function IpdSettlementPage() {
           </div>
         )}
       </div>
+      </main>
     </div>
   );
 }
