@@ -33,9 +33,14 @@ import IPDPage from './pages/IPDPage';
 import NurseVitalsIntakePage from './pages/NurseVitalsIntakePage';
 import BedMatrixPage from './pages/BedMatrixPage';
 import WaitingRoomDisplayPage from './pages/WaitingRoomDisplayPage';
+import WardPublicBoardPage from './pages/WardPublicBoardPage';
 import LicenseManagementPage from './pages/LicenseManagementPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import EdgeSyncBeacon from './components/EdgeSyncBeacon';
+import IpdSettlementPage from './pages/IpdSettlementPage';
+import DischargeSummaryPage from './pages/DischargeSummaryPage';
+import GlobalKeyboardShortcuts from './components/GlobalKeyboardShortcuts';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // ─── Auth bridge ──────────────────────────────────────────────────────────────
 function AuthBridge({ children }) {
@@ -190,6 +195,8 @@ function AppRouter() {
 
   return (
     <>
+      <GlobalKeyboardShortcuts />
+      <ErrorBoundary label="application">
       <Routes>
         {/* ── Auth ──────────────────────────────────────────────────────── */}
         <Route
@@ -286,21 +293,12 @@ function AppRouter() {
         <Route path="/ipd/beds"                          element={mkIPD()} />
         <Route path="/ipd/admissions"                    element={mkIPD()} />
         <Route path="/ipd/admissions/:id/folio"          element={mkIPD()} />
-        <Route path="/ipd/admissions/:id/discharge"      element={mkIPD()} />
         <Route path="/ipd/nursing"                       element={mkIPD()} />
         <Route path="/ipd/discharge"                     element={mkIPD()} />
 
         {/* Billing IPD Settlement */}
-        <Route
-          path="/billing/ipd-settlement/:admissionId"
-          element={
-            <ProtectedRoute>
-              <div style={{ padding: 32, color: '#334155', fontSize: 16 }}>
-                💰 IPD 10-Head Settlement — Coming in Phase FE-5
-              </div>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/billing/ipd-settlement/:admissionId" element={<ProtectedRoute><IpdSettlementPage /></ProtectedRoute>} />
+        <Route path="/ipd/admissions/:id/discharge" element={<ProtectedRoute><DischargeSummaryPage /></ProtectedRoute>} />
 
         {/* ═══════════════════════════════════════════════════════════════
             ADMIN DEPARTMENT
@@ -315,21 +313,7 @@ function AppRouter() {
             PUBLIC DISPLAY (no auth)
         ════════════════════════════════════════════════════════════════ */}
         <Route path="/display/waiting-room" element={<WaitingRoomDisplayPage />} />
-        <Route
-          path="/display/ward-matrix"
-          element={
-            <div
-              style={{
-                background: '#0F172A',
-                minHeight: '100vh',
-                padding: 32,
-                color: '#94A3B8',
-              }}
-            >
-              Ward Matrix Display — Coming in Phase FE-6
-            </div>
-          }
-        />
+        <Route path="/display/ward-matrix" element={<WardPublicBoardPage />} />
 
         {/* ── Catch-all fallback ────────────────────────────────────────── */}
         <Route
@@ -347,6 +331,7 @@ function AppRouter() {
           }
         />
       </Routes>
+      </ErrorBoundary>
 
       {/* EdgeSyncBeacon — persistent on all authenticated screens */}
       {(localStorage.getItem('bright_role') ||

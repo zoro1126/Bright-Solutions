@@ -1976,6 +1976,52 @@ export default function DoctorPage({
                         />
                       </div>
                     </div>
+
+                    {/* ─── Admit to IPD — OPD Referral ───────────────────── */}
+                    <div style={{
+                      marginTop: 20, padding: '18px 20px',
+                      background: '#fff7ed', borderRadius: 12,
+                      border: '1.5px solid #fed7aa',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <span style={{ fontSize: 20 }}>🏥</span>
+                        <span style={{ fontSize: 14, fontWeight: 900, color: '#c2410c' }}>
+                          Admit Patient to Inpatient (IPD)
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 12, color: '#7c2d12', marginBottom: 14, lineHeight: 1.6 }}>
+                        Patient requires inpatient admission. Click below to open the IPD Bed Matrix
+                        where you can assign a bed via <strong>OPD Referral tab</strong> using this
+                        patient's consultation as the referral record.
+                      </div>
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => { window.location.href = '/ipd'; }}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 8,
+                            padding: '10px 22px', borderRadius: 9,
+                            border: 'none', cursor: 'pointer',
+                            background: 'linear-gradient(135deg,#ea580c,#c2410c)',
+                            color: '#fff', fontSize: 13, fontWeight: 800,
+                          }}
+                        >
+                          🏥 Admit to IPD — Open Bed Matrix
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => addToast && addToast('Admission referral flagged. IPD team will assign a bed.', 'info')}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            padding: '10px 18px', borderRadius: 9, cursor: 'pointer',
+                            border: '1.5px solid #fed7aa', background: '#fff',
+                            color: '#c2410c', fontSize: 12, fontWeight: 700,
+                          }}
+                        >
+                          📋 Flag for IPD (notify ward)
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
 

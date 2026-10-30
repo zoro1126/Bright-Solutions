@@ -16,6 +16,7 @@
  *   7. Discharge & Feedback
  */
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, FileText, Pill, Droplets, Heart,
   Scissors, ArrowRightLeft, LogOut, AlertTriangle,
@@ -491,6 +492,491 @@ function NursingTab() {
   );
 }
 
+// ─── Tab 5: Surgical & OT ────────────────────────────────────────────────────
+function SurgicalOTTab() {
+  const [pa, setPaState] = useState({
+    mallampati: '', asa: '', npoHours: '', looseTeeth: false, dentures: false, riskAck: false,
+  });
+  const [otChecklist, setOTChecklist] = useState({
+    siteMarking: false, jewellery: false, dentures2: false, voiding: false,
+    consentVerified: false, crossmatch: false, siteConfirmed: false,
+  });
+  const [opNotes, setOpNotes] = useState({
+    preOpNote: '', procedure: '', intraOpFindings: '', swabCount: false, postOpOrders: '',
+  });
+
+  const setPa = (k, v) => setPaState(p => ({ ...p, [k]: v }));
+  const setOT = (k, v) => setOTChecklist(p => ({ ...p, [k]: v }));
+  const setOp = (k, v) => setOpNotes(p => ({ ...p, [k]: v }));
+
+  const mallampatiOpts = [
+    { value: 'I',   label: 'Class I — Full visibility of tonsils, uvula, soft palate' },
+    { value: 'II',  label: 'Class II — Partial visibility, upper tonsils obscured' },
+    { value: 'III', label: 'Class III — Soft + hard palate visible, base of uvula only' },
+    { value: 'IV',  label: 'Class IV — Only hard palate visible' },
+  ];
+  const asaOpts = [
+    { value: 'I',   label: 'ASA I — Normal healthy patient' },
+    { value: 'II',  label: 'ASA II — Mild systemic disease' },
+    { value: 'III', label: 'ASA III — Severe systemic disease' },
+    { value: 'IV',  label: 'ASA IV — Life-threatening systemic disease' },
+    { value: 'V',   label: 'ASA V — Moribund, not expected to survive without surgery' },
+    { value: 'VI',  label: 'ASA VI — Brain-dead, organ donation' },
+  ];
+
+  const radioGroup = (name, value, opts, setter, color) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+      {opts.map(o => (
+        <label key={o.value} style={{
+          display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer',
+          padding: '7px 12px', borderRadius: 8,
+          border: `1.5px solid ${value === o.value ? color : '#e2e8f0'}`,
+          background: value === o.value ? `${color}12` : '#fff',
+          fontSize: 11.5, fontWeight: value === o.value ? 700 : 500,
+          color: value === o.value ? color : '#334155',
+        }}>
+          <input type="radio" name={name} value={o.value} checked={value === o.value}
+            onChange={() => setter(o.value)} style={{ accentColor: color, marginTop: 1 }} />
+          {o.label}
+        </label>
+      ))}
+    </div>
+  );
+
+  const checkItem = (label, checked, onChange) => (
+    <label style={{
+      display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+      padding: '9px 14px', borderRadius: 9,
+      border: `1.5px solid ${checked ? '#10b981' : '#e2e8f0'}`,
+      background: checked ? '#f0fdf4' : '#fff',
+    }}>
+      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)}
+        style={{ accentColor: '#10b981', width: 16, height: 16 }} />
+      <span style={{ fontSize: 12, fontWeight: checked ? 700 : 500, color: checked ? '#065f46' : '#334155' }}>
+        {label}
+      </span>
+    </label>
+  );
+
+  const textArea = (label, val, setter, placeholder) => (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 5 }}>{label}</label>
+      <textarea value={val} onChange={e => setter(e.target.value)} placeholder={placeholder}
+        style={{ width: '100%', minHeight: 90, padding: '9px 12px', borderRadius: 9, border: '1.5px solid #e2e8f0',
+          background: '#fff', fontSize: 12, color: '#0f172a', resize: 'vertical',
+          fontFamily: 'inherit', boxSizing: 'border-box', outline: 'none' }} />
+    </div>
+  );
+
+  return (
+    <div>
+      <SectionCard title="📋 Form 15 / 151 — Pre-Anaesthesia Assessment">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>Mallampati Airway Classification</div>
+            {radioGroup('mallampati', pa.mallampati, mallampatiOpts, v => setPa('mallampati', v), '#6d28d9')}
+          </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>ASA Physical Status Grade</div>
+            {radioGroup('asa', pa.asa, asaOpts, v => setPa('asa', v), '#0077b6')}
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginTop: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 5 }}>NPO Hours (fasting)</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input type="number" value={pa.npoHours} onChange={e => setPa('npoHours', e.target.value)}
+                min="0" max="24" placeholder="6"
+                style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12.5, outline: 'none' }} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>hrs</span>
+            </div>
+          </div>
+          <div style={{ marginTop: 18 }}>{checkItem('Loose teeth present', pa.looseTeeth, v => setPa('looseTeeth', v))}</div>
+          <div style={{ marginTop: 18 }}>{checkItem('Dentures / prosthetics', pa.dentures, v => setPa('dentures', v))}</div>
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          {checkItem('✅ Patient / guardian acknowledges anaesthetic risk and consents to procedure', pa.riskAck, v => setPa('riskAck', v))}
+        </div>
+      </SectionCard>
+
+      <SectionCard title="✅ Form 54 — Preoperative OT Nursing Checklist">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {checkItem('Surgical site clearly marked by surgeon', otChecklist.siteMarking, v => setOT('siteMarking', v))}
+          {checkItem('All jewellery / metal objects removed', otChecklist.jewellery, v => setOT('jewellery', v))}
+          {checkItem('Dentures / prosthetics removed', otChecklist.dentures2, v => setOT('dentures2', v))}
+          {checkItem('Preoperative voiding confirmed', otChecklist.voiding, v => setOT('voiding', v))}
+          {checkItem('Consent form verified and signed', otChecklist.consentVerified, v => setOT('consentVerified', v))}
+          {checkItem('Blood units crossmatched & arranged', otChecklist.crossmatch, v => setOT('crossmatch', v))}
+          {checkItem('Operative site confirmed verbally with patient', otChecklist.siteConfirmed, v => setOT('siteConfirmed', v))}
+        </div>
+      </SectionCard>
+
+      <SectionCard title="🔪 Operative Notes">
+        {textArea('Surgeon Pre-Op Note', opNotes.preOpNote, v => setOp('preOpNote', v), 'Planned procedure, relevant history, patient positioning...')}
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 5 }}>Procedure Performed</label>
+          <input type="text" value={opNotes.procedure} onChange={e => setOp('procedure', e.target.value)}
+            placeholder="e.g. Laparoscopic Appendectomy"
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12.5, boxSizing: 'border-box', outline: 'none' }} />
+        </div>
+        {textArea('Intraoperative Findings', opNotes.intraOpFindings, v => setOp('intraOpFindings', v), 'Findings, complications, blood loss...')}
+        <div style={{ marginBottom: 14 }}>
+          {checkItem('✅ Gauze / Swab Count verified and correct', opNotes.swabCount, v => setOp('swabCount', v))}
+        </div>
+        {textArea('Post-Op Recovery Orders', opNotes.postOpOrders, v => setOp('postOpOrders', v), 'Vitals frequency, pain management, diet, activity restrictions...')}
+        <button style={{
+          display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9,
+          border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg,#6d28d9,#5b21b6)',
+          color: '#fff', fontSize: 12.5, fontWeight: 700,
+        }}>
+          💾 Save OT Record
+        </button>
+      </SectionCard>
+    </div>
+  );
+}
+
+// ─── Tab 6: Handovers & Transfers ─────────────────────────────────────────────
+function HandoverTab() {
+  const [sbar, setSbar] = useState({ situation: '', background: '', assessment: '', recommendation: '' });
+  const [pendingTests, setPendingTests] = useState([
+    { id: 1, test: 'CBC',    ordered: '2026-10-30', status: 'Pending'    },
+    { id: 2, test: 'LFT',    ordered: '2026-10-30', status: 'Processing' },
+  ]);
+  const [transfer, setTransfer] = useState({
+    ivAccessVerified: false, transportVitals: false, familyInformed: false,
+    medicationsHanded: false, notesTransferred: false,
+    destinationWard: '', transportVitalsBP: '', transportVitalsPulse: '',
+  });
+  const [newTest, setNewTest] = useState('');
+
+  const setSBAR = (k, v) => setSbar(s => ({ ...s, [k]: v }));
+  const setT = (k, v) => setTransfer(t => ({ ...t, [k]: v }));
+
+  const statusColor = (s) => s === 'Done' ? '#10b981' : s === 'Processing' ? '#d97706' : '#64748b';
+  const statusBg    = (s) => s === 'Done' ? '#f0fdf4' : s === 'Processing' ? '#fffbeb' : '#f8fafc';
+
+  const sbarSection = (label, key, placeholder, color) => (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ display: 'block', fontSize: 11.5, fontWeight: 800, color, marginBottom: 6 }}>{label}</label>
+      <textarea value={sbar[key]} onChange={e => setSBAR(key, e.target.value)} placeholder={placeholder}
+        style={{ width: '100%', minHeight: 80, padding: '9px 12px', borderRadius: 9,
+          border: `1.5px solid ${color}40`, background: `${color}08`,
+          fontSize: 12, color: '#0f172a', resize: 'vertical',
+          fontFamily: 'inherit', boxSizing: 'border-box', outline: 'none' }} />
+    </div>
+  );
+
+  return (
+    <div>
+      <SectionCard title="📞 SBAR — Structured Clinical Handover">
+        <div style={{ background: '#f8fafc', borderRadius: 10, padding: '10px 14px', marginBottom: 14, fontSize: 11.5, color: '#64748b' }}>
+          Standardized communication framework for clinical handovers: Situation → Background → Assessment → Recommendation
+        </div>
+        {sbarSection('S — Situation (What is happening right now?)',   'situation',      'State the patient name, bed, current concern...', '#0077b6')}
+        {sbarSection('B — Background (Clinical context)',              'background',     'Relevant history, admission diagnosis, key investigations, medications...', '#6d28d9')}
+        {sbarSection('A — Assessment (Your clinical assessment)',      'assessment',     'Your judgment of the current situation, relevant vitals, NEWS2 score...', '#d97706')}
+        {sbarSection('R — Recommendation (What action is needed?)',   'recommendation', 'What do you need from the receiving team? Orders, reviews, escalation...', '#dc2626')}
+        <button style={{
+          display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9,
+          border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg,#0077b6,#0369a1)',
+          color: '#fff', fontSize: 12.5, fontWeight: 700,
+        }}>
+          📋 Sign &amp; Submit Handover
+        </button>
+      </SectionCard>
+
+      <SectionCard title="🔬 Pending Investigations Tracker">
+        <div style={{ marginBottom: 12, display: 'flex', gap: 8 }}>
+          <input type="text" value={newTest} onChange={e => setNewTest(e.target.value)}
+            placeholder="Add test name..."
+            style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12.5, outline: 'none' }} />
+          <button
+            onClick={() => {
+              if (newTest.trim()) {
+                setPendingTests(t => [...t, { id: Date.now(), test: newTest.trim(), ordered: new Date().toISOString().slice(0,10), status: 'Pending' }]);
+                setNewTest('');
+              }
+            }}
+            style={{ padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#0d9488', color: '#fff', fontSize: 12, fontWeight: 700 }}
+          >
+            + Add
+          </button>
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+              {['Test Name', 'Ordered Date', 'Status', 'Action'].map(h => (
+                <th key={h} style={{ textAlign: 'left', padding: '6px 10px', fontSize: 11, fontWeight: 700, color: '#64748b' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {pendingTests.map(row => (
+              <tr key={row.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <td style={{ padding: '8px 10px', fontWeight: 600, color: '#0f172a' }}>{row.test}</td>
+                <td style={{ padding: '8px 10px', color: '#64748b' }}>{row.ordered}</td>
+                <td style={{ padding: '8px 10px' }}>
+                  <select value={row.status}
+                    onChange={e => setPendingTests(t => t.map(x => x.id === row.id ? { ...x, status: e.target.value } : x))}
+                    style={{ padding: '4px 8px', borderRadius: 6, border: `1.5px solid ${statusColor(row.status)}40`,
+                      background: statusBg(row.status), color: statusColor(row.status), fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                    {['Pending','Processing','Done','Cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </td>
+                <td style={{ padding: '8px 10px' }}>
+                  <button onClick={() => setPendingTests(t => t.filter(x => x.id !== row.id))}
+                    style={{ padding: '3px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                    ✕
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </SectionCard>
+
+      <SectionCard title="🚑 Department Transfer Checklist">
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 5 }}>Destination Ward / Unit</label>
+          <select value={transfer.destinationWard} onChange={e => setT('destinationWard', e.target.value)}
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12.5, outline: 'none' }}>
+            <option value="">— Select destination —</option>
+            {['ICU','HDU','OT','PACU','General Ward Male','General Ward Female','Semi-Private Ward','Private Room'].map(w => (
+              <option key={w} value={w}>{w}</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 5 }}>Transport BP (mmHg)</label>
+            <input type="text" value={transfer.transportVitalsBP} onChange={e => setT('transportVitalsBP', e.target.value)}
+              placeholder="120/80" style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12.5, outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 5 }}>Transport Pulse (bpm)</label>
+            <input type="number" value={transfer.transportVitalsPulse} onChange={e => setT('transportVitalsPulse', e.target.value)}
+              placeholder="82" style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 12.5, outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {[
+            ['ivAccessVerified', 'IV access patent & site verified'],
+            ['transportVitals',  'Transport vitals recorded above'],
+            ['familyInformed',   'Family / next of kin informed'],
+            ['medicationsHanded','Medications & infusions handed over'],
+            ['notesTransferred', 'Clinical notes & investigation reports transferred'],
+          ].map(([k, label]) => (
+            <label key={k} style={{
+              display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+              padding: '9px 14px', borderRadius: 9,
+              border: `1.5px solid ${transfer[k] ? '#10b981' : '#e2e8f0'}`,
+              background: transfer[k] ? '#f0fdf4' : '#fff',
+            }}>
+              <input type="checkbox" checked={!!transfer[k]} onChange={e => setT(k, e.target.checked)}
+                style={{ accentColor: '#10b981', width: 16, height: 16 }} />
+              <span style={{ fontSize: 12, fontWeight: transfer[k] ? 700 : 500, color: transfer[k] ? '#065f46' : '#334155' }}>
+                {label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
+
+// ─── Tab 7: Discharge & Feedback ──────────────────────────────────────────────
+function DischargeTab({ admission }) {
+  const navigate = useNavigate();
+  const [condition, setCondition] = useState('');
+  const [followUpDate, setFollowUpDate] = useState('');
+  const [meds, setMeds] = useState([
+    { id: 1, drug: 'Tab. Amoxicillin 500mg', dose: '500mg', freq: '3x/day', duration: '5 days', instructions: 'After food' },
+  ]);
+  const [newMed, setNewMed] = useState({ drug: '', dose: '', freq: '', duration: '', instructions: '' });
+  const [ratings, setRatings] = useState({ nursing: 0, doctor: 0, cleanliness: 0, billing: 0 });
+  const [submitted, setSubmitted] = useState(false);
+
+  const CONDITIONS  = ['STABLE','IMPROVED','RELIEVED','LAMA','EXPIRED','TRANSFERRED'];
+  const condColor   = { STABLE: '#10b981', IMPROVED: '#0077b6', RELIEVED: '#6d28d9', LAMA: '#d97706', EXPIRED: '#64748b', TRANSFERRED: '#0d9488' };
+  const condBg      = { STABLE: '#f0fdf4', IMPROVED: '#eff6ff', RELIEVED: '#f5f3ff', LAMA: '#fffbeb', EXPIRED: '#f8fafc', TRANSFERRED: '#f0fdfa' };
+
+  const addMed = () => {
+    if (newMed.drug.trim()) {
+      setMeds(m => [...m, { ...newMed, id: Date.now() }]);
+      setNewMed({ drug: '', dose: '', freq: '', duration: '', instructions: '' });
+    }
+  };
+
+  const StarRating = ({ category, label }) => (
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>{label}</div>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
+        {[1,2,3,4,5].map(s => (
+          <button key={s} onClick={() => setRatings(r => ({ ...r, [category]: s }))}
+            style={{
+              fontSize: 20, background: 'none', border: 'none', cursor: 'pointer',
+              transition: 'transform 0.1s',
+              transform: ratings[category] >= s ? 'scale(1.2)' : 'scale(1)',
+              filter: ratings[category] >= s ? 'none' : 'grayscale(1) opacity(0.4)',
+            }}>
+            ⭐
+          </button>
+        ))}
+      </div>
+      <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 3 }}>
+        {['','Poor','Fair','Good','Very Good','Excellent'][ratings[category]] || 'Not rated'}
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      <SectionCard title="🏥 Patient Condition at Discharge">
+        <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 12 }}>
+          Select the clinical condition at the time of discharge:
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          {CONDITIONS.map(c => (
+            <button key={c} onClick={() => setCondition(c)} style={{
+              padding: '10px 22px', borderRadius: 10, cursor: 'pointer', fontWeight: 800, fontSize: 13,
+              border: `2px solid ${condition === c ? condColor[c] : '#e2e8f0'}`,
+              background: condition === c ? condBg[c] : '#fff',
+              color: condition === c ? condColor[c] : '#94a3b8',
+              transition: 'all 0.15s',
+            }}>
+              {c}
+            </button>
+          ))}
+        </div>
+        {condition && (
+          <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 9,
+            background: condBg[condition], border: `1.5px solid ${condColor[condition]}40` }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: condColor[condition] }}>Selected: {condition}</span>
+          </div>
+        )}
+      </SectionCard>
+
+      <SectionCard title="💊 Discharge Medications">
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 14 }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+              {['Drug & Strength','Dose','Frequency','Duration','Instructions',''].map(h => (
+                <th key={h} style={{ textAlign: 'left', padding: '6px 8px', fontSize: 10.5, fontWeight: 700, color: '#64748b' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {meds.map(m => (
+              <tr key={m.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <td style={{ padding: '8px 8px', fontWeight: 600, color: '#0f172a' }}>{m.drug}</td>
+                <td style={{ padding: '8px 8px', color: '#334155' }}>{m.dose}</td>
+                <td style={{ padding: '8px 8px', color: '#334155' }}>{m.freq}</td>
+                <td style={{ padding: '8px 8px', color: '#334155' }}>{m.duration}</td>
+                <td style={{ padding: '8px 8px', color: '#64748b', fontStyle: 'italic' }}>{m.instructions}</td>
+                <td style={{ padding: '8px 8px' }}>
+                  <button onClick={() => setMeds(ms => ms.filter(x => x.id !== m.id))}
+                    style={{ padding: '2px 8px', borderRadius: 5, border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
+                    ✕
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 2fr auto', gap: 8, alignItems: 'end' }}>
+          {[
+            ['drug','Drug & Strength','Tab. Paracetamol 500mg'],
+            ['dose','Dose','500mg'],
+            ['freq','Frequency','2x/day'],
+            ['duration','Duration','5 days'],
+            ['instructions','Instructions','After food'],
+          ].map(([k, lbl, ph]) => (
+            <div key={k}>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>{lbl}</label>
+              <input type="text" value={newMed[k]} onChange={e => setNewMed(m => ({ ...m, [k]: e.target.value }))}
+                placeholder={ph}
+                style={{ width: '100%', padding: '7px 9px', borderRadius: 7, border: '1.5px solid #e2e8f0', fontSize: 11.5, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+          ))}
+          <button onClick={addMed}
+            style={{ padding: '7px 14px', borderRadius: 7, border: 'none', background: '#0d9488', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'end' }}>
+            + Add
+          </button>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="📅 Follow-up Appointment">
+        <div style={{ maxWidth: 280 }}>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>Follow-up Date</label>
+          <input type="date" value={followUpDate} onChange={e => setFollowUpDate(e.target.value)}
+            style={{ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid #e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+          {followUpDate && (
+            <div style={{ marginTop: 8, fontSize: 12, color: '#0d9488', fontWeight: 700 }}>
+              📅 {new Date(followUpDate).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </div>
+          )}
+        </div>
+      </SectionCard>
+
+      <SectionCard title="⭐ Patient Experience Feedback">
+        {submitted ? (
+          <div style={{ textAlign: 'center', padding: '32px 20px' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🙏</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#10b981', marginBottom: 6 }}>Thank you for your feedback!</div>
+            <div style={{ fontSize: 12, color: '#64748b' }}>Your response has been recorded anonymously.</div>
+          </div>
+        ) : (
+          <>
+            <div style={{ background: '#f8fafc', borderRadius: 9, padding: '10px 14px', marginBottom: 16, fontSize: 11.5, color: '#64748b' }}>
+              📝 Feedback is <strong>optional and anonymous</strong> — આ સ્વૈચ્છિક અને ગુપ્ત છે
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+              <StarRating category="nursing"     label="👩‍⚕️ Nursing Responsiveness" />
+              <StarRating category="doctor"      label="🩺 Doctor Explanation & Care" />
+              <StarRating category="cleanliness" label="🧹 Ward Cleanliness" />
+              <StarRating category="billing"     label="💰 Billing Transparency" />
+            </div>
+            <button onClick={() => setSubmitted(true)} style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '10px 24px', borderRadius: 9,
+              border: 'none', cursor: 'pointer',
+              background: 'linear-gradient(135deg,#d97706,#b45309)', color: '#fff', fontSize: 13, fontWeight: 700,
+            }}>
+              ⭐ Submit Feedback
+            </button>
+          </>
+        )}
+      </SectionCard>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
+        <button
+          onClick={() => navigate(`/ipd/admissions/${admission?.id || 'ADM-2026-001'}/discharge`)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 10,
+            border: 'none', cursor: 'pointer',
+            background: 'linear-gradient(135deg,#0077b6,#0284c7)', color: '#fff', fontSize: 13, fontWeight: 800,
+          }}
+        >
+          📄 Generate Discharge Summary
+        </button>
+        <button
+          onClick={() => navigate(`/billing/ipd-settlement/${admission?.id || 'ADM-2026-001'}`)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 10,
+            border: 'none', cursor: 'pointer',
+            background: 'linear-gradient(135deg,#d97706,#b45309)', color: '#fff', fontSize: 13, fontWeight: 800,
+          }}
+        >
+          💰 Proceed to IPD Settlement
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main InpatientFolioPage ──────────────────────────────────────────────────
 export default function InpatientFolioPage({ admission, onBack }) {
   const [activeTab, setActiveTab] = useState('intake');
@@ -543,6 +1029,17 @@ export default function InpatientFolioPage({ admission, onBack }) {
             <span style={{ padding: '4px 10px', borderRadius: 7, background: '#ede9fe', border: '1px solid #c4b5fd', fontSize: 11, fontWeight: 700, color: '#6d28d9' }}>
               IPD-{Math.floor(10000 + Math.random() * 89999)}
             </span>
+            <button
+              onClick={() => window.print()}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '4px 12px', borderRadius: 7,
+                background: '#fff', border: '1.5px solid #e2e8f0',
+                color: '#334155', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              🖨️ Print Face Sheet
+            </button>
             {p.news2 >= 7 && (
               <span style={{ padding: '4px 10px', borderRadius: 7, background: '#fee2e2', border: '1px solid #fca5a5', fontSize: 11, fontWeight: 700, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <AlertTriangle size={11} /> CRITICAL NEWS2: {p.news2}
@@ -588,21 +1085,9 @@ export default function InpatientFolioPage({ admission, onBack }) {
         {activeTab === 'nursing'   && <NursingTab />}
 
         {/* Remaining tabs — Phase FE-4 placeholders */}
-        {['surgical', 'handover', 'discharge'].includes(activeTab) && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 360, gap: 16, color: '#64748b' }}>
-            <div style={{ width: 56, height: 56, borderRadius: 16, background: '#f1f5f9', border: '1.5px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {activeTab === 'surgical'  && <Scissors size={26} color="#6d28d9" strokeWidth={1.5} />}
-              {activeTab === 'handover'  && <ArrowRightLeft size={26} color="#0d9488" strokeWidth={1.5} />}
-              {activeTab === 'discharge' && <LogOut size={26} color="#d97706" strokeWidth={1.5} />}
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
-                {TABS.find(t => t.id === activeTab)?.label}
-              </div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>Coming in Phase FE-4</div>
-            </div>
-          </div>
-        )}
+        {activeTab === 'surgical'  && <SurgicalOTTab />}
+        {activeTab === 'handover'  && <HandoverTab />}
+        {activeTab === 'discharge' && <DischargeTab admission={admission} />}
       </div>
     </div>
   );
