@@ -1,7 +1,16 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# Explicitly locate .env in project root and force override=True so ambient
+# shell variables (e.g. from other apps on the server) never hijack DB credentials.
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+env_path = BASE_DIR / ".env"
+
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path, override=True)
+else:
+    load_dotenv(override=True)
 
 class Settings:
     PROJECT_NAME: str = "Bright Solutions API — OPD Management & Decision Support System"

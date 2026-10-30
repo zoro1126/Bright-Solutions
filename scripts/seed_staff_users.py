@@ -2,9 +2,16 @@ import sys
 import uuid
 from pathlib import Path
 
-backend_dir = Path(__file__).resolve().parent.parent / "backend"
-if str(backend_dir) not in sys.path:
-    sys.path.insert(0, str(backend_dir))
+script_dir = Path(__file__).resolve().parent
+if (script_dir.parent / "app").exists():
+    root_dir = script_dir.parent
+elif (script_dir.parent / "backend").exists():
+    root_dir = script_dir.parent / "backend"
+else:
+    root_dir = script_dir.parent
+
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
 
 from sqlalchemy import text
 from app.core.database import engine

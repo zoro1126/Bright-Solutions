@@ -2,15 +2,28 @@ import os
 import sys
 from pathlib import Path
 
-# Ensure backend directory is in sys.path
-backend_dir = Path(__file__).resolve().parent.parent / "backend"
-if str(backend_dir) not in sys.path:
-    sys.path.insert(0, str(backend_dir))
+script_dir = Path(__file__).resolve().parent
+# Support both local repo layout (where app is in backend/) and server layout (where app is directly in api/)
+if (script_dir.parent / "app").exists():
+    root_dir = script_dir.parent
+elif (script_dir.parent / "backend").exists():
+    root_dir = script_dir.parent / "backend"
+else:
+    root_dir = script_dir.parent
+
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
 
 from sqlalchemy import text
 from app.core.database import engine
 
-DDL_FILE_PATH = Path(__file__).resolve().parent.parent / "docs" / "design" / "09_database_schema_ddl.sql"
+# Resolve DDL file path across both directory layouts
+ddl_candidates = [
+    script_dir.parent / "docs" / "design" / "09_database_schema_ddl.sql",
+    script_dir.parent / "docs_archive" / "design" / "09_database_schema_ddl.sql",
+    script_dir.parent.parent / "docs" / "design" / "09_database_schema_ddl.sql",
+]
+DDL_FILE_PATH = next((p for p in ddl_candidates if p.exists()), ddl_candidates[0])
 
 def split_sql_statements(sql_text: str):
     """Splits a multi-statement SQL script by semicolons, preserving statements."""
@@ -33,6 +46,17 @@ def split_sql_statements(sql_text: str):
     return statements
 
 def provision_canonical_schema():
+    target_db = str(engine.url.database or "")
+    print("=" * 70)
+    print(f"⚠️  TARGET DATABASE: {target_db} on {engine.url.host}")
+    print("=" * 70)
+
+    # Hard safety check to prevent accidental wipes of other databases
+    if not any(k in target_db.lower() for k in ("bright", "cos", "clinicos", "hospital")):
+        print(f"❌ SAFETY ABORT: Database '{target_db}' does not contain expected identifier ('bright' / 'cos').")
+        print("Aborting to protect existing server databases. Check your DB_NAME in .env.")
+        sys.exit(1)
+
     print(f"Connecting to database using QueuePool engine: {engine.url.database}@{engine.url.host}")
     
     with engine.begin() as conn:
